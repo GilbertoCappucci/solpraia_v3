@@ -17,7 +17,6 @@ class UserSeeder extends Seeder
 
         User::factory()->create([
             'id' => 1,
-            'user_id' => null,
             'name' => 'User root',
             'email' => 'root@gmail.com',
             'remember_token' => null,
@@ -30,7 +29,6 @@ class UserSeeder extends Seeder
 
         User::factory()->create([
             'id' => 2,
-            'user_id' => null,
             'name' => 'User admin',
             'email' => 'admin@gmail.com',
             'remember_token' => null,
@@ -41,7 +39,7 @@ class UserSeeder extends Seeder
             'active' => true,
         ]);
 
-        for ($i = 0; $i < 20; $i++){
+        for ($i = 0; $i < 4; $i++){
             User::factory()->create();
         }
     }

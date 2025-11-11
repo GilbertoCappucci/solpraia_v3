@@ -6,9 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Category extends Model
+class Product extends Model
 {
-    /** @use HasFactory<\Database\Factories\CategoryFactory> */
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
@@ -16,27 +15,17 @@ class Category extends Model
         'category_id',
         'name',
         'description',
+        'price',
         'active',
     ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
 
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
 
-    public function categories()
+    public function user()
     {
-        return $this->hasMany(Category::class, 'category_id');
-    }
-
-    public function products()
-    {
-        return $this->hasMany(Product::class, 'category_id');
-    }
-
+        return $this->belongsTo(User::class, 'user_id');
+    }   
 }
