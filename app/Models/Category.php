@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProductCategory extends Model
+class Category extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProductCategoryFactory> */
+    /** @use HasFactory<\Database\Factories\CategoryFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -20,12 +20,12 @@ class ProductCategory extends Model
 
     public function parent()
     {
-        return $this->belongsTo(ProductCategory::class, 'parent_id');
+        return $this->belongsTo(Category::class, 'parent_id');
     }
 
     public function children()
     {
-        return $this->hasMany(ProductCategory::class, 'parent_id');
+        return $this->hasMany(Category::class, 'parent_id');
     }
 
     public function user()
