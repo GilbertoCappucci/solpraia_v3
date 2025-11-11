@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             EmployeeSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
+            BeachUmbrellaSeeder::class,
         ]);
     }
 }
