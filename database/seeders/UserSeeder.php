@@ -41,6 +41,8 @@ class UserSeeder extends Seeder
             'active' => true,
         ]);
 
-        User::factory()->create(10);
+        for ($i = 0; $i < 100; $i++){
+            User::factory()->create();
+        }
     }
 }

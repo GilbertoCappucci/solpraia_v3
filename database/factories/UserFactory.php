@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\RoleEnum;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -22,7 +24,11 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+
+        $creator_id = $this->getRandomCreatorId();
+
         return [
+            'user_id' => $creator_id,
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
@@ -32,7 +38,29 @@ class UserFactory extends Factory
             'two_factor_recovery_codes' => Str::random(10),
             'two_factor_confirmed_at' => now(),
             'active' => fake()->boolean(90),
+            'role' => $this->getRandomRole($creator_id),
         ];
+    }
+
+    public function getRandomCreatorId(): int|null
+    {
+
+        if(fake()->boolean(10)) {
+            return null;
+        }
+
+        return User::where('role', 'admin')
+            ->inRandomOrder()
+            ->first()?->id;
+    }
+
+    public function getRandomRole(int|null $creator_id): string
+    {
+        if($creator_id === null) {
+            return RoleEnum::ADMIN->value;
+        }
+
+        return RoleEnum::USER->value;
     }
 
     /**
