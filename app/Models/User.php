@@ -72,6 +72,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === RoleEnum::ADMIN->value;
     }
 
+    public function menus()
+    {
+        return $this->hasMany(Menu::class, 'user_id');
+    }
+
     public function categories()
     {
         return $this->hasMany(Category::class, 'user_id');
