@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\OrderStatusEnum;
 use App\Enums\RoleEnum;
-use App\Models\BeachUmbrella;
+use App\Models\Table;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -23,7 +23,7 @@ class OrderFactory extends Factory
 
         $user = User::where(['role' => RoleEnum::ADMIN->value, 'active' => true])->inRandomOrder()->first();
 
-        $beachUmbrella = $user->beachUmbrellas()->where('active', true)->inRandomOrder()->first();
+        $Table = $user->Tables()->where('active', true)->inRandomOrder()->first();
 
         $employee = $user->employees()->where('active', true)->inRandomOrder()->first();
 
@@ -31,7 +31,7 @@ class OrderFactory extends Factory
 
         return [
             'employee_id' => $employee->id,
-            'beach_umbrella_id' => $beachUmbrella->id,
+            'beach_umbrella_id' => $Table->id,
             'product_id' => $product->id,
             'quantity' => fake()->numberBetween(1, 5),
             'status' => fake()->randomElement(OrderStatusEnum::cases())->value,

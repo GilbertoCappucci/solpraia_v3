@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class BeachUmbrella extends Model
+class Table extends Model
 {
-    /** @use HasFactory<\Database\Factories\BeachUmbrellaFactory> */
+    /** @use HasFactory<\Database\Factories\TableFactory> */
     use HasFactory, SoftDeletes;
 
     protected $fillable = [

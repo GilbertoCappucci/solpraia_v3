@@ -92,8 +92,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Employee::class, 'user_id');
     }
 
-    public function beachUmbrellas()
+    public function Tables()
     {
-        return $this->hasMany(BeachUmbrella::class, 'user_id');
+        return $this->hasMany(Table::class, 'user_id');
     }
 }

@@ -3,12 +3,12 @@
 namespace Database\Seeders;
 
 use App\Enums\RoleEnum;
-use App\Models\BeachUmbrella;
+use App\Models\Table;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class BeachUmbrellaSeeder extends Seeder
+class TableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -21,7 +21,7 @@ class BeachUmbrellaSeeder extends Seeder
             // Create between 5 to 15 beach umbrellas for each user
             $numUmbrellas = rand(5, 15);
             for ($i = 0; $i < $numUmbrellas; $i++) {
-                BeachUmbrella::factory()->create([
+                Table::factory()->create([
                     'user_id' => $user->id,
                 ]);
             }

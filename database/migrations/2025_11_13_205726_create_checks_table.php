@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('beach_umbrellas', function (Blueprint $table) {
+        Schema::create('checks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('name')->nullable();
-            $table->integer('number');
-            $table->boolean('active')->default(true);
+            $table->foreignId('table_id')->constrained('tables')->onDelete('cascade');
+            $table->enum('status', ['OPEN', 'CLOSED'])->default('OPEN');
+            $table->decimal('total', 10, 2);
+            $table->dateTime('opened_at')->nullable();
+            $table->dateTime('closed_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('beach_umbrellas');
+        Schema::dropIfExists('checks');
     }
 };
