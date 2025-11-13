@@ -27,7 +27,7 @@ class MenuFactory extends Factory
         return [
             'user_id' => $userId,
             'name' => $this->faker->word(),
-            'is_active' => ($this->hasMenus($userId)) ? false : true,
+            'active' => ($this->hasMenus($userId)) ? false : true,
         ];
     }
 

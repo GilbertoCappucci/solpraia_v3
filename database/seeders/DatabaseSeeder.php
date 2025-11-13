@@ -28,7 +28,9 @@ class DatabaseSeeder extends Seeder
             MenuSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
+            MenuItemSeeder::class,
             BeachUmbrellaSeeder::class,
+            OrderSeeder::class,
         ]);
     }
 }

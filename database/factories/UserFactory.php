@@ -34,7 +34,7 @@ class UserFactory extends Factory
             'two_factor_secret' => Str::random(10),
             'two_factor_recovery_codes' => Str::random(10),
             'two_factor_confirmed_at' => now(),
-            'active' => fake()->boolean(90),
+            'active' => fake()->boolean(70),
             'role' => RoleEnum::ADMIN->value,
         ];
     }

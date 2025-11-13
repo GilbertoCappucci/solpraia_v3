@@ -3,12 +3,12 @@
 namespace Database\Factories;
 
 use App\Enums\RoleEnum;
-use App\Models\beachUmbrella;
+use App\Models\BeachUmbrella;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\beachUmbrella>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\BeachUmbrella>
  */
 class BeachUmbrellaFactory extends Factory
 {
@@ -23,8 +23,9 @@ class BeachUmbrellaFactory extends Factory
 
         return [
             'user_id' => $userId,
+            'name' => $this->faker->optional()->word(),
             'number' => $this->getNextUmbrellaNumber($userId),
-            'available' => $this->faker->boolean(80),
+            'active' => $this->faker->boolean(80),
         ];
     }
 
@@ -37,7 +38,7 @@ class BeachUmbrellaFactory extends Factory
 
     public function getNextUmbrellaNumber(int $userId): int
     {
-        $lastUmbrella = beachUmbrella::where('user_id', $userId)
+        $lastUmbrella = BeachUmbrella::where('user_id', $userId)
             ->orderBy('number', 'desc')
             ->first();
         return $lastUmbrella ? $lastUmbrella->number + 1 : 1;

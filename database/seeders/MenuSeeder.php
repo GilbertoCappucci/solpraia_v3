@@ -16,10 +16,10 @@ class MenuSeeder extends Seeder
         Menu::factory()->create([
             'user_id' => 2,
             'name' => 'Main Menu',
-            'is_active' => true,
+            'active' => true,
         ]);
 
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 15; $i++) {
             Menu::factory()->create();
         }
     }

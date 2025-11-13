@@ -19,11 +19,11 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        $user_id = $this->getRamdomUserId();
+        //$user_id = $this->getRamdomUserId();
 
         return [
-            'user_id' => $user_id,
-            'category_id' => $this->getRandomCategoryId($user_id),
+            //'user_id' => $user_id,
+            //'category_id' => $this->getRandomCategoryId($user_id),
             'name' => fake()->word(),
             'description' => fake()->sentence(),
             'price' => fake()->randomFloat(2, 1, 100),
@@ -33,16 +33,17 @@ class ProductFactory extends Factory
 
     public function getRamdomUserId(): int
     {
-        return User::where(['role' => RoleEnum::ADMIN->value])
+        return User::where('role', RoleEnum::ADMIN->value)
+            ->where('active', true)
             ->inRandomOrder()
             ->first()->id;
     }
     
-    public function getRandomCategoryId(int $user_id): ?int
+    public function getRandomCategoryId(int $user_id): int
     {
         return Category::whereNull(['category_id'])
-            ->where(['user_id' => $user_id])
+            ->where(['user_id' => $user_id, 'active' => true])
             ->inRandomOrder()
-            ->first()?->id;
+            ->first()->id;
     }
 }
