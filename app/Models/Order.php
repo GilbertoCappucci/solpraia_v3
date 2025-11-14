@@ -12,10 +12,25 @@ class Order extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
-        'beach_umbrella_id',
+        'employee_id',
+        'check_id',
         'product_id',
         'quantity',
         'status',
     ];
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
+    public function check()
+    {
+        return $this->belongsTo(Check::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

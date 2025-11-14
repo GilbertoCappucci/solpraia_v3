@@ -19,10 +19,12 @@ class TableSeeder extends Seeder
 
         foreach ($users as $user) {
             // Create between 5 to 15 beach umbrellas for each user
-            $numUmbrellas = rand(5, 15);
+            $numUmbrellas = rand(2, 5);
             for ($i = 0; $i < $numUmbrellas; $i++) {
                 Table::factory()->create([
                     'user_id' => $user->id,
+                    'number' => $i + 1,
+                    'active' => true,
                 ]);
             }
         }

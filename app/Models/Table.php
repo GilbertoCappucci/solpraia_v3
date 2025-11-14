@@ -17,4 +17,14 @@ class Table extends Model
         'number',
         'active',
     ];
+
+    public function checks()
+    {
+        return $this->hasMany(Check::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

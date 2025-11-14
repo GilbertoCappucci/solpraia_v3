@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CheckStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,7 +15,7 @@ return new class extends Migration
         Schema::create('checks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('table_id')->constrained('tables')->onDelete('cascade');
-            $table->enum('status', ['OPEN', 'CLOSED'])->default('OPEN');
+            $table->enum('status', array_column(CheckStatusEnum::cases(), 'value'))->default(CheckStatusEnum::OPEN->value);
             $table->decimal('total', 10, 2);
             $table->dateTime('opened_at')->nullable();
             $table->dateTime('closed_at')->nullable();

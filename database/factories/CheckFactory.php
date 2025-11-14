@@ -2,7 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Table;
+use App\Enums\CheckStatusEnum;
+use App\Models\Order;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,14 +19,8 @@ class CheckFactory extends Factory
     public function definition(): array
     {
 
-        $table_id = Table::inRandomOrder()->first()->id;
-
         return [
-            'table_id' => $table_id,
-            'total' => fake()->randomFloat(2, 10, 500),
-            'status' => 'OPEN',
-            'opened_at' => now(),
-            'closed_at' => null,
+
         ];
     }
 }
