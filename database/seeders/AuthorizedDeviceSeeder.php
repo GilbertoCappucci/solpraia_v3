@@ -17,14 +17,6 @@ class AuthorizedDeviceSeeder extends Seeder
         // Garantir que existe pelo menos um admin
         $admin = User::where('role', RoleEnum::ADMIN->value)->first();
         
-        if (!$admin) {
-            $admin = User::factory()->create([
-                'role' => RoleEnum::ADMIN->value,
-                'name' => 'Admin Principal',
-                'email' => 'admin@restaurant.com',
-            ]);
-        }
-
         // Dispositivos principais ativos
         AuthorizedDevice::factory()
             ->permanent()
