@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             TableSeeder::class,
             CheckSeeder::class,
             OrderSeeder::class,
+            AuthorizedDeviceSeeder::class,
         ]);
     }
 }
