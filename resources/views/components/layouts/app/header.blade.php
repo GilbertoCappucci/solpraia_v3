@@ -119,6 +119,9 @@
 
         {{ $slot }}
 
+        {{-- Modal de Autorização de Dispositivo --}}
+        <livewire:device-authorization-modal />
+
         @fluxScripts
     </body>
 </html>

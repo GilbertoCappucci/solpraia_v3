@@ -127,6 +127,11 @@
 
         {{ $slot }}
 
+        @if(false)
+        {{-- Modal de Autorização de Dispositivo --}}
+        <livewire:device-authorization-modal />
+        @endif
+
         @fluxScripts
     </body>
 </html>

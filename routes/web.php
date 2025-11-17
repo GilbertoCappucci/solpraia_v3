@@ -11,10 +11,17 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Rotas do Admin (com login tradicional)
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified', 'admin'])
     ->name('dashboard');
 
+// Rotas com autenticação via device token
+Route::middleware(['device.token'])->group(function () {
+    Route::view('orders', 'orders')->name('orders');
+});
+
+// Rotas de configuração (auth padrão)
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
@@ -33,3 +40,5 @@ Route::middleware(['auth'])->group(function () {
         )
         ->name('two-factor.show');
 });
+
+

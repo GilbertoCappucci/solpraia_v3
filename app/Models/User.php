@@ -10,11 +10,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable, SoftDeletes;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, SoftDeletes, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -95,5 +96,56 @@ class User extends Authenticatable implements MustVerifyEmail
     public function Tables()
     {
         return $this->hasMany(Table::class, 'user_id');
+    }
+
+    /**
+     * Gerar token de device para employee (chamado pelo Admin)
+     * 
+     * @param string $deviceName Nome descritivo do device
+     * @param int $expirationDays Dias até expiração (padrão: 365 = 1 ano)
+     * @return string Token gerado (plaintext)
+     */
+    public function generateDeviceToken(string $deviceName = 'Device', int $expirationDays = 365): string
+    {
+        $token = $this->createToken(
+            name: $deviceName,
+            abilities: ['employee-access'],
+            expiresAt: now()->addDays($expirationDays)
+        );
+
+        return $token->plainTextToken;
+    }
+
+    /**
+     * Obter todos os tokens de device do usuário
+     */
+    public function deviceTokens()
+    {
+        return $this->tokens()
+            ->whereNotNull('device_fingerprint')
+            ->orWhere('name', 'like', '%Device%')
+            ->orWhereJsonContains('abilities', 'employee-access');
+    }
+
+    /**
+     * Revogar token específico
+     */
+    public function revokeDeviceToken(int $tokenId): bool
+    {
+        return $this->tokens()->where('id', $tokenId)->delete() > 0;
+    }
+
+    /**
+     * Revogar todos os tokens de device
+     */
+    public function revokeAllDeviceTokens(): int
+    {
+        return $this->tokens()
+            ->where(function($query) {
+                $query->whereNotNull('device_fingerprint')
+                    ->orWhere('name', 'like', '%Device%')
+                    ->orWhereJsonContains('abilities', 'employee-access');
+            })
+            ->delete();
     }
 }

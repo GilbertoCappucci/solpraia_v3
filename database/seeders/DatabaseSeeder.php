@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             EmployeeSeeder::class,
+            DeviceSeeder::class,
             MenuSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
@@ -32,7 +33,6 @@ class DatabaseSeeder extends Seeder
             TableSeeder::class,
             CheckSeeder::class,
             OrderSeeder::class,
-            AuthorizedDeviceSeeder::class,
         ]);
     }
 }
