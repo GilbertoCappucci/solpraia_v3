@@ -6,5 +6,7 @@
     <body class="min-h-screen bg-white dark:bg-zinc-800">
     <h1>Orders</h1>
     <livewire:device-authorization-modal />
+    @if(false)@dd(session()->all())@endif
+    @if(false)@php(session()->flush())@endif
 </body>
 </html>

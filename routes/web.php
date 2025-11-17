@@ -13,7 +13,7 @@ Route::get('/', function () {
 
 // Rotas do Admin (com login tradicional)
 Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'verified', 'admin', 'device.token'])
     ->name('dashboard');
 
 // Rotas com autenticação via device token

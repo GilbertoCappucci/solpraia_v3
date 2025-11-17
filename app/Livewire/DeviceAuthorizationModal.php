@@ -15,23 +15,22 @@ class DeviceAuthorizationModal extends Component
     public $deviceName = '';
     public $expiresAt = null;
     public $canClose = false;
+    public $sessionInfo = '';
 
     protected $listeners = ['checkDeviceAuthorization' => 'checkAuthorization'];
 
     public function mount()
     {
-        $this->checkAuthorization();
-    }
 
-    public function checkAuthorization()
-    {
-        // Verificar se há flag de autenticação pendente
-        if (session('device_auth_required')) {
+        if(!session('device_token_validated') && session('device_auth_required') ) {
             $this->showModal = true;
         } else {
             $this->showModal = false;
         }
+
+        $this->sessionInfo = json_encode(session()->all(), JSON_PRETTY_PRINT);
     }
+
 
     public function closeModal()
     {
@@ -127,17 +126,9 @@ class DeviceAuthorizationModal extends Component
 
     private function generateFingerprint(): string
     {
-        $components = [
-            request()->userAgent(),                      // Navegador + OS + versões
-            request()->header('Accept-Language'),        // Idioma configurado
-            request()->header('Accept-Encoding'),        // Encodings suportados
-            request()->header('Accept'),                 // MIME types aceitos
-            request()->header('DNT'),                    // Do Not Track
-            request()->header('Sec-Ch-Ua-Platform'),     // Platform do Client Hints
-            request()->header('Sec-Ch-Ua-Mobile'),       // Se é mobile
-        ];
-
-        return hash('sha256', implode('|', array_filter($components)));
+        // Usar apenas User-Agent pois outros headers podem variar entre requisições
+        // (Accept, Accept-Encoding mudam em AJAX vs HTML, por exemplo)
+        return hash('sha256', request()->userAgent() ?? '');
     }
 
     public function render()

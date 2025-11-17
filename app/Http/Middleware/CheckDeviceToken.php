@@ -52,14 +52,27 @@ class CheckDeviceToken
             return $next($request);
         }
 
-        // Gerar fingerprint do device atual
+        // Gerar fingerprint do device atual (baseado nos headers ATUAIS da requisição)
         $currentFingerprint = $this->generateDeviceFingerprint($request);
-
-        // Validar fingerprint
+        
+        //dd($device, $currentFingerprint);
+        
+        // Validar fingerprint do banco vs fingerprint atual
         if (!$device->validateFingerprint($currentFingerprint)) {
             // Device diferente, token não pode ser usado
-            session()->forget('device_token');
+            session()->forget(['device_token', 'device_token_validated', 'device_info']);
             session(['device_auth_required' => true]);
+            cookie()->queue(cookie()->forget('device_token_ls'));
+            return $next($request);
+        }
+
+        // Validação adicional: verificar se fingerprint da sessão também corresponde ao atual
+        $sessionFingerprint = session('device_info.fingerprint');
+        if ($sessionFingerprint && $sessionFingerprint !== $currentFingerprint) {
+            // Fingerprint mudou desde a última validação - possível adulteração
+            session()->forget(['device_token', 'device_token_validated', 'device_info']);
+            session(['device_auth_required' => true]);
+            cookie()->queue(cookie()->forget('device_token_ls'));
             return $next($request);
         }
 
@@ -68,14 +81,14 @@ class CheckDeviceToken
             $device->registerFingerprint($currentFingerprint);
         }
 
-        // Token válido, salvar na sessão
+        // Token válido, salvar/atualizar na sessão com fingerprint atual
         session([
             'device_token' => $token,
             'device_token_validated' => true,
             'device_info' => [
                 'id' => $device->id,
                 'nickname' => $device->nickname,
-                'fingerprint' => $device->device_fingerprint,
+                'fingerprint' => $currentFingerprint, // Sempre o fingerprint atual
                 'last_used' => now(),
             ]
         ]);
@@ -94,20 +107,12 @@ class CheckDeviceToken
 
     /**
      * Gerar fingerprint único do device
-     * Baseado em características do navegador/hardware (não usa IP por ser dinâmico)
+     * Baseado apenas no User-Agent (mais estável entre requisições)
      */
     protected function generateDeviceFingerprint(Request $request): string
     {
-        $components = [
-            $request->userAgent(),                      // Navegador + OS + versões
-            $request->header('Accept-Language'),        // Idioma configurado
-            $request->header('Accept-Encoding'),        // Encodings suportados
-            $request->header('Accept'),                 // MIME types aceitos
-            $request->header('DNT'),                    // Do Not Track
-            $request->header('Sec-Ch-Ua-Platform'),     // Platform do Client Hints
-            $request->header('Sec-Ch-Ua-Mobile'),       // Se é mobile
-        ];
-
-        return hash('sha256', implode('|', array_filter($components)));
+        // Usar apenas User-Agent pois outros headers podem variar entre requisições
+        // (Accept, Accept-Encoding mudam em AJAX vs HTML, por exemplo)
+        return hash('sha256', $request->userAgent() ?? '');
     }
 }

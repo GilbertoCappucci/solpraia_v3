@@ -25,6 +25,7 @@
                             </button>
                             
                             <div class="text-5xl mb-3">🔐</div>
+                            <pre class="text-left text-xs max-h-48 overflow-auto bg-black/10 p-2 rounded">Session info: {{ $sessionInfo }}</pre>
                             <h2 class="text-2xl font-bold mb-2">Autorização Necessária</h2>
                             <p class="text-sm opacity-90">Este dispositivo precisa ser autorizado</p>
                         </div>
@@ -187,23 +188,19 @@
         const storedData = localStorage.getItem('restaurant_device_token');
         
         if (storedData) {
-            alert('Token encontrado no localStorage.');
             console.log('Token encontrado no localStorage');
             
             try {
                 const data = JSON.parse(storedData);
                 console.log('Dados do token:', data);
-                alert('Token encontrado: ' + data.token);
                 
                 // Verificar se não expirou
                 if (data.expires_at) {
                     const expiryDate = new Date(data.expires_at);
                     console.log('Data de expiração:', expiryDate);
                     console.log('Data atual:', new Date());
-                    alert('Data de expiração: ' + expiryDate + '\nData atual: ' + new Date());
                     if (expiryDate < new Date()) {
                         console.warn('⚠️ Token do localStorage expirado, removendo...');
-                        alert('Token expirado, removendo do localStorage.');
                         localStorage.removeItem('restaurant_device_token');
                         document.cookie = 'device_token_ls=; path=/; max-age=0';
                         return;
@@ -214,16 +211,13 @@
                 if (data.token) {
                     document.cookie = `device_token_ls=${data.token}; path=/; max-age=86400; SameSite=Lax`;
                     console.log('✅ Token do localStorage salvo em cookie:', data.token);
-                    alert('Token salvo em cookie: ' + data.token);
                 }
             } catch (error) {
-                alert('Erro ao processar token do localStorage: ' + error);
                 console.error('❌ Erro ao processar token do localStorage:', error);
                 localStorage.removeItem('restaurant_device_token');
                 document.cookie = 'device_token_ls=; path=/; max-age=0';
             }
         } else {
-            alert('Nenhum token encontrado no localStorage.');
             console.log('Nenhum token no localStorage');
         }
     })();
@@ -233,7 +227,6 @@
 @if($authorized)
     <script>
         console.log('Token autorizado! Recarregando em 1.5 segundos...');
-        alert('Token autorizado! Recarregando em 1.5 segundos...');
         setTimeout(function() {
             window.location.reload();
         }, 1500);
