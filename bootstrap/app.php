@@ -17,10 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'admin' => AdminMiddleware::class,
-            'device.token' => CheckDeviceToken::class,
-            'abilities' => CheckAbilities::class,
-            'ability' => CheckForAnyAbility::class
+            
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

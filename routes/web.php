@@ -13,13 +13,9 @@ Route::get('/', function () {
 
 // Rotas do Admin (com login tradicional)
 Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified', 'admin', 'device.token'])
+    ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-// Rotas com autenticação via device token
-Route::middleware(['device.token'])->group(function () {
-    Route::view('orders', 'orders')->name('orders');
-});
 
 // Rotas de configuração (auth padrão)
 Route::middleware(['auth'])->group(function () {
