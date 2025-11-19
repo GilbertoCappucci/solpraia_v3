@@ -31,6 +31,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class UserResource extends Resource
 {
@@ -95,6 +96,7 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->poll('5s')
             ->recordTitleAttribute('name')
             ->columns([
                 TextColumn::make('name')
@@ -103,6 +105,16 @@ class UserResource extends Resource
                     ->searchable(),
                 TextColumn::make('role')
                     ->searchable(),
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->getStateUsing(fn (User $record): string => 
+                        Cache::has('user-is-online-' . $record->id) ? 'Online' : 'Offline'
+                    )
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Online' => 'success',
+                        'Offline' => 'gray',
+                    }),
                 TextColumn::make('created_at')
                     ->dateTime('d/m/Y H:i'),
                 ToggleColumn::make('active')
