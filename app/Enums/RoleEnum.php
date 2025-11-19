@@ -6,6 +6,5 @@ enum RoleEnum: string
 {
     case ROOT = 'root';
     case ADMIN = 'admin';
-    case EMPLOYEE = 'employee';
     case DEVICE = 'device';
 }

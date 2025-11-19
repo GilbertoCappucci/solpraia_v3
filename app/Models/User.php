@@ -88,12 +88,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Product::class, 'user_id');
     }
 
-    public function employees()
+    public function devices()
     {
-        return $this->hasMany(Employee::class, 'user_id');
+        return $this->hasMany(User::class, 'user_id');
     }
 
-    public function Tables()
+    public function tables()
     {
         return $this->hasMany(Table::class, 'user_id');
     }

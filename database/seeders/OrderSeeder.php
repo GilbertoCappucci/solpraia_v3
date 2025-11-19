@@ -21,6 +21,7 @@ class OrderSeeder extends Seeder
         for ($i = 0; $i < 50; $i++) {
 
             $user = User::where('role', RoleEnum::ADMIN->value)->inRandomOrder()->first();
+            $deviceUser = $user->devices()->inRandomOrder()->first();
             $tables = $user->tables()->where('active', true)->get();
 
             if ($tables->isEmpty()) {
@@ -35,11 +36,10 @@ class OrderSeeder extends Seeder
                 $check = $this->openCheck($table);
             }
 
-            $employee = $user->employees()->inRandomOrder()->first();
             $product = $user->products()->inRandomOrder()->first();
             $quantity = rand(1, 5);
 
-            $order = $this->addOrder($employee, $check, $product, $quantity);
+            $order = $this->addOrder($deviceUser, $check, $product, $quantity);
             $this->updateCheckTotal($check, $product->price * $quantity);
 
             // Randomly decide to cancel or complete the order
@@ -82,10 +82,10 @@ class OrderSeeder extends Seeder
         ]);
     }
 
-    private function addOrder($employee, $check, $product, $quantity)
+    private function addOrder($deviceUser, $check, $product, $quantity)
     {
         return Order::factory()->create([
-            'employee_id' => $employee->id,
+            'user_id' => $deviceUser->id,
             'check_id' => $check->id,
             'product_id' => $product->id,
             'quantity' => $quantity,

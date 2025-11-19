@@ -15,6 +15,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
 
+        // Create root
         User::factory()->create([
             'id' => 1,
             'user_id' => null,
@@ -28,6 +29,7 @@ class UserSeeder extends Seeder
             'active' => true,
         ]);
 
+        // Create admin
         User::factory()->create([
             'id' => 2,
             'user_id' => null,
@@ -41,10 +43,11 @@ class UserSeeder extends Seeder
             'active' => true,
         ]);
 
+        //Create device 001
         User::factory()->create([
             'id' => 3,
             'user_id' => 2,
-            'name' => 'Comanda 001',
+            'name' => 'Device 001',
             'email' => 'device_001_2@sol.com.br',
             'email_verified_at' => now(),
             'password' => '45rtfgvb',
@@ -56,10 +59,11 @@ class UserSeeder extends Seeder
             'active' => true,
         ]);
 
+        //Create device 002
         User::factory()->create([
             'id' => 4,
             'user_id' => 2,
-            'name' => 'Cozinha 002',
+            'name' => 'Device 002',
             'email' => 'device_002_2@sol.com.br',
             'email_verified_at' => now(),
             'password' => '45rtfgvb',
@@ -70,6 +74,8 @@ class UserSeeder extends Seeder
             'role' => RoleEnum::DEVICE->value,
             'active' => true,
         ]);
+
+
 
         /*
         for ($i = 0; $i < 2; $i++){
