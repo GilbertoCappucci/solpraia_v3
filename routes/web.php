@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Orders;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
@@ -11,13 +12,23 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// Rotas do Admin (com login tradicional)
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+// =============================================
+// ROTAS ADMIN
+// =============================================
+Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
+    Route::view('dashboard', 'dashboard')->name('dashboard');
+});
 
+// =============================================
+// ROTAS DEVICE - Mobile
+// =============================================
+Route::middleware(['auth', 'role:device'])->group(function () {
+    Route::get('orders', Orders::class)->name('orders');
+});
 
-// Rotas de configuração (auth padrão)
+// =============================================
+// ROTAS COMPARTILHADAS (admin + device)
+// =============================================
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
@@ -36,5 +47,4 @@ Route::middleware(['auth'])->group(function () {
         )
         ->name('two-factor.show');
 });
-
 

@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\CheckDeviceToken;
+use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\TrackUserActivity;
 use Illuminate\Foundation\Application;
@@ -24,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         
         $middleware->alias([
-            
+            'role' => CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

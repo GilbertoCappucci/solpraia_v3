@@ -80,6 +80,30 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     }
 
     /**
+     * Determine if the user is a device.
+     */
+    public function isDevice(): bool
+    {
+        return $this->role === RoleEnum::DEVICE->value;
+    }
+
+    /**
+     * Determine if the user can access the dashboard.
+     */
+    public function canAccessDashboard(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    /**
+     * Determine if the user can access orders.
+     */
+    public function canAccessOrders(): bool
+    {
+        return $this->isAdmin() || $this->isDevice();
+    }
+
+    /**
      * Determine if the user can access the Filament panel.
      */
     public function canAccessPanel(Panel $panel): bool
