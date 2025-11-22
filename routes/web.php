@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\RedirectByRole;
 use App\Livewire\Orders;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
@@ -11,6 +12,11 @@ use Laravel\Fortify\Features;
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+// Rota que redireciona baseado na role
+Route::get('/home', function () {
+    return redirect('/');
+})->middleware([RedirectByRole::class])->name('home.redirect');
 
 // =============================================
 // ROTAS ADMIN

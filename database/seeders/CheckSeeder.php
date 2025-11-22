@@ -16,6 +16,7 @@ class CheckSeeder extends Seeder
      */
     public function run(): void
     {
+        /*
         foreach(User::where('role', RoleEnum::ADMIN->value)->get() as $user) {
 
             $tables = $user->tables()->where('active', true)->get();
@@ -31,5 +32,6 @@ class CheckSeeder extends Seeder
                 ]);
             }
         }
+        */
     }
 }

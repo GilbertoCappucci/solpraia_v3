@@ -17,6 +17,35 @@ class MenuItemSeeder extends Seeder
     public function run(): void
     {
 
+        MenuItem::factory()->createMany([
+            [
+                'menu_id' => 1,
+                'product_id' => 1,
+                'active' => true,
+            ],
+            [
+                'menu_id' => 1,
+                'product_id' => 2,
+                'active' => true,
+            ],
+            [
+                'menu_id' => 1,
+                'product_id' => 3,
+                'active' => true,
+            ],
+            [
+                'menu_id' => 1,
+                'product_id' => 4,
+                'active' => true,
+            ],
+            [
+                'menu_id' => 1,
+                'product_id' => 5,
+                'active' => true,
+            ],
+        ]);
+
+        /*
         foreach (User::where(['role'=>RoleEnum::ADMIN->value, 'active'=>true])->get() as $user) {
 
             $menu = $user->menus()
@@ -48,5 +77,6 @@ class MenuItemSeeder extends Seeder
                 }
             }
         }
+        */
     }
 }

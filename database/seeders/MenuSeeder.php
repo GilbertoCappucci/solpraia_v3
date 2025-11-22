@@ -19,8 +19,10 @@ class MenuSeeder extends Seeder
             'active' => true,
         ]);
 
+        /*
         for ($i = 0; $i < 15; $i++) {
             Menu::factory()->create();
         }
+        */
     }
 }

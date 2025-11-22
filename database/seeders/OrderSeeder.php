@@ -18,6 +18,7 @@ class OrderSeeder extends Seeder
      */
     public function run(): void
     {
+        /*
         for ($i = 0; $i < 50; $i++) {
 
             $user = User::where('role', RoleEnum::ADMIN->value)->inRandomOrder()->first();
@@ -54,6 +55,7 @@ class OrderSeeder extends Seeder
                 $this->closeCheck($check);
             }
         }
+        */
     }
 
     private function hasTableCheck($table): ?Check

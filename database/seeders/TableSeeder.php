@@ -15,6 +15,37 @@ class TableSeeder extends Seeder
      */
     public function run(): void
     {
+
+
+        Table::factory()->createMany([
+            [
+                'user_id' => 2,
+                'number' => 1,
+                'active' => true,
+            ],
+            [
+                'user_id' => 2,
+                'number' => 2,
+                'active' => true,
+            ],
+            [
+                'user_id' => 2,
+                'number' => 3,
+                'active' => true,
+            ],
+            [
+                'user_id' => 2,
+                'number' => 4,
+                'active' => true,
+            ],
+            [
+                'user_id' => 2,
+                'number' => 5,
+                'active' => true,
+            ],
+        ]);
+
+        /*
         $users = User::where(['role' => RoleEnum::ADMIN->value, 'active' => true])->get();
 
         foreach ($users as $user) {
@@ -28,5 +59,6 @@ class TableSeeder extends Seeder
                 ]);
             }
         }
+        */
     }
 }

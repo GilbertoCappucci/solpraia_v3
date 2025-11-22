@@ -74,8 +74,19 @@ class CategorySeeder extends Seeder
             ],
         );
 
+        //Id:7 - Agua de coco
+        Category::factory()->create(
+            [
+                'user_id' => 2,
+                'category_id' => 2,
+                'name' => 'Agua de coco',
+                'description' => 'Agua de coco gelada'
+            ],
+        );
+        /*
         for ($i = 0; $i < 30; $i++) {
             Category::factory()->create();
         }
+        */
     }
 }

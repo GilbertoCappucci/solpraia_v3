@@ -197,7 +197,6 @@ class Orders extends Component
     public function render()
     {
         $tables = Table::where('active', true)
-            ->where('user_id', Auth::user()->user_id)
             ->orderBy('number')
             ->get();
 

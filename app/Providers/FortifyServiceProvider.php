@@ -7,6 +7,7 @@ use App\Actions\Fortify\ResetUserPassword;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -32,6 +33,7 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+        $this->configureRedirects();
     }
 
     /**
@@ -86,6 +88,29 @@ class FortifyServiceProvider extends ServiceProvider
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
+        });
+    }
+
+    /**
+     * Configure redirects after authentication.
+     */
+    private function configureRedirects(): void
+    {
+        Fortify::redirects('login', function () {
+            $user = Auth::user();
+            
+            // Admin vai para dashboard
+            if ($user->isAdmin()) {
+                return route('dashboard');
+            }
+            
+            // Device vai para orders
+            if ($user->isDevice()) {
+                return route('orders');
+            }
+            
+            // Fallback para home
+            return route('home');
         });
     }
 }
