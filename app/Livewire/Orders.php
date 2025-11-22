@@ -14,6 +14,7 @@ use Livewire\Component;
 
 class Orders extends Component
 {
+    public $userId; // ID do usuário dono dos dados (admin ou device)
     public $selectedTableId = null;
     public $selectedTable = null;
     public $currentCheck = null;
@@ -25,6 +26,12 @@ class Orders extends Component
     
     public function mount()
     {
+        // Se for admin, usa o user_id do admin
+        // Se for device, usa o user_id do criador (admin que criou o device)
+        $this->userId = Auth::user()->isAdmin() 
+            ? Auth::id() 
+            : Auth::user()->user_id;
+            
         $this->loadCategories();
         $this->loadProducts();
     }
@@ -32,7 +39,7 @@ class Orders extends Component
     public function loadCategories()
     {
         $this->categories = Category::where('active', true)
-            ->where('user_id', Auth::user()->user_id)
+            ->where('user_id', $this->userId)
             ->orderBy('name')
             ->get();
     }
@@ -40,7 +47,7 @@ class Orders extends Component
     public function loadProducts()
     {
         $query = Product::where('active', true)
-            ->where('user_id', Auth::user()->user_id);
+            ->where('user_id', $this->userId);
 
         if ($this->selectedCategoryId) {
             $query->where('category_id', $this->selectedCategoryId);
@@ -197,6 +204,7 @@ class Orders extends Component
     public function render()
     {
         $tables = Table::where('active', true)
+            ->where('user_id', $this->userId)
             ->orderBy('number')
             ->get();
 
