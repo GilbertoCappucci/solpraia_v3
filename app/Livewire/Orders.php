@@ -14,7 +14,9 @@ use Livewire\Component;
 
 class Orders extends Component
 {
+    public $title = 'Pedidos';
     public $userId; // ID do usuário dono dos dados (admin ou device)
+    public $pollingInterval = 5000; // Intervalo de atualização em milissegundos (5 segundos)
     public $selectedTableId = null;
     public $selectedTable = null;
     public $currentCheck = null;
@@ -23,6 +25,9 @@ class Orders extends Component
     public $selectedCategoryId = null;
     public $cart = [];
     public $searchTerm = '';
+    public $showNewTableModal = false;
+    public $newTableName = '';
+    public $newTableNumber = '';
     
     public function mount()
     {
@@ -149,6 +154,42 @@ class Orders extends Component
         $this->cart = [];
     }
 
+    public function openNewTableModal()
+    {
+        $this->showNewTableModal = true;
+        $this->newTableName = '';
+        $this->newTableNumber = '';
+    }
+
+    public function closeNewTableModal()
+    {
+        $this->showNewTableModal = false;
+        $this->newTableName = '';
+        $this->newTableNumber = '';
+    }
+
+    public function createNewTable()
+    {
+        $this->validate([
+            'newTableName' => 'required|string|max:255',
+            'newTableNumber' => 'required|integer|min:1',
+        ], [
+            'newTableName.required' => 'O nome do local é obrigatório.',
+            'newTableNumber.required' => 'O número do local é obrigatório.',
+            'newTableNumber.integer' => 'O número deve ser um valor numérico.',
+        ]);
+
+        Table::create([
+            'user_id' => $this->userId,
+            'name' => $this->newTableName,
+            'number' => $this->newTableNumber,
+            'active' => true,
+        ]);
+
+        session()->flash('success', 'Local criado com sucesso!');
+        $this->closeNewTableModal();
+    }
+
     public function getCartTotalProperty()
     {
         $total = 0;
@@ -183,7 +224,7 @@ class Orders extends Component
             } else {
                 // Cria novo pedido
                 Order::create([
-                    'employee_id' => Auth::id(),
+                    'user_id' => $this->userId,
                     'check_id' => $this->currentCheck->id,
                     'product_id' => $productId,
                     'quantity' => $item['quantity'],
@@ -205,11 +246,79 @@ class Orders extends Component
     {
         $tables = Table::where('active', true)
             ->where('user_id', $this->userId)
+            ->with(['checks' => function($query) {
+                $query->with(['orders']);
+            }])
             ->orderBy('number')
-            ->get();
+            ->get()
+            ->map(function($table) {
+                // Busca o check mais recente
+                $currentCheck = $table->checks->sortByDesc('created_at')->first();
+                
+                // Define status do Check
+                if ($currentCheck) {
+                    $table->checkStatus = $currentCheck->status;
+                    $table->checkStatusLabel = match($currentCheck->status) {
+                        CheckStatusEnum::OPEN->value => 'Aberto',
+                        CheckStatusEnum::CLOSING->value => 'Fechando',
+                        CheckStatusEnum::CLOSED->value => 'Fechado',
+                        CheckStatusEnum::PAID->value => 'Pago',
+                        default => 'Livre'
+                    };
+                    $table->checkStatusColor = match($currentCheck->status) {
+                        CheckStatusEnum::OPEN->value => 'green',
+                        CheckStatusEnum::CLOSING->value => 'yellow',
+                        CheckStatusEnum::CLOSED->value => 'red',
+                        CheckStatusEnum::PAID->value => 'gray',
+                        default => 'gray'
+                    };
+                    
+                    // Conta orders por status e calcula tempo do mais antigo
+                    $orders = $currentCheck->orders;
+                    $now = now();
+                    
+                    // Pending
+                    $pendingOrders = $orders->whereIn('status', [OrderStatusEnum::PENDING->value, OrderStatusEnum::CONFIRMED->value]);
+                    $table->ordersPending = $pendingOrders->count();
+                    $oldestPending = $pendingOrders->sortBy('created_at')->first();
+                    $table->pendingMinutes = $oldestPending ? (int) ($now->diffInMinutes($oldestPending->created_at))*-1 : 0;
+                    
+                    // In Production
+                    $productionOrders = $orders->where('status', OrderStatusEnum::IN_PRODUCTION->value);
+                    $table->ordersInProduction = $productionOrders->count();
+                    $oldestProduction = $productionOrders->sortBy('created_at')->first();
+                    $table->productionMinutes = $oldestProduction ? (int) $now->diffInMinutes($oldestProduction->created_at) : 0;
+                    
+                    // Ready
+                    $readyOrders = $orders->where('status', OrderStatusEnum::IN_TRANSIT->value);
+                    $table->ordersReady = $readyOrders->count();
+                    $oldestReady = $readyOrders->sortBy('created_at')->first();
+                    $table->readyMinutes = $oldestReady ? (int) $now->diffInMinutes($oldestReady->created_at) : 0;
+                    
+                    $table->ordersCompleted = $orders->where('status', OrderStatusEnum::COMPLETED->value)->count();
+                    $table->hasReadyOrders = $table->ordersReady > 0;
+                    $table->checkTotal = $currentCheck->total ?? 0;
+                } else {
+                    $table->checkStatus = null;
+                    $table->checkStatusLabel = 'Livre';
+                    $table->checkStatusColor = 'gray';
+                    $table->ordersPending = 0;
+                    $table->ordersInProduction = 0;
+                    $table->ordersReady = 0;
+                    $table->ordersCompleted = 0;
+                    $table->hasReadyOrders = false;
+                    $table->checkTotal = 0;
+                    $table->pendingMinutes = 0;
+                    $table->productionMinutes = 0;
+                    $table->readyMinutes = 0;
+                }
+                
+                return $table;
+            });
 
         return view('livewire.orders', [
             'tables' => $tables,
+            'title' => $this->title,
         ]);
     }
 }

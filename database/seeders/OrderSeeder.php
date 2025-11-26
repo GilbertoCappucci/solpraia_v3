@@ -18,8 +18,8 @@ class OrderSeeder extends Seeder
      */
     public function run(): void
     {
-        /*
-        for ($i = 0; $i < 50; $i++) {
+        
+        for ($i = 0; $i < 10; $i++) {
 
             $user = User::where('role', RoleEnum::ADMIN->value)->inRandomOrder()->first();
             $deviceUser = $user->devices()->inRandomOrder()->first();
@@ -44,10 +44,20 @@ class OrderSeeder extends Seeder
             $this->updateCheckTotal($check, $product->price * $quantity);
 
             // Randomly decide to cancel or complete the order
-            if (rand(0, 1)) {
-                $this->cancelOrder($order, $check);
-            } else {
-                $this->completeOrder($order);
+            $val = rand(0, 9);
+
+            switch ($val) {
+                case 0:
+                case 1:
+                    $this->cancelOrder($order, $check);
+                    break;
+                case 2:
+                case 3:
+                    $this->completeOrder($order);
+                    break;
+                default:
+                    $this->pendingOrder($order);
+                    break;
             }
 
             // Randomly decide to close the check
@@ -55,8 +65,15 @@ class OrderSeeder extends Seeder
                 $this->closeCheck($check);
             }
         }
-        */
+        
     }
+
+    private function pendingOrder($order)
+    {
+        $order->update([
+            'status' => OrderStatusEnum::PENDING->value,
+        ]);
+    }   
 
     private function hasTableCheck($table): ?Check
     {

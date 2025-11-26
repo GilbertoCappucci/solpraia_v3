@@ -7,7 +7,7 @@
         <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
-            <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
+            <a href="{{ route('home') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
                 <x-app-logo />
             </a>
 
@@ -83,8 +83,12 @@
         <!-- Mobile User Menu -->
         <flux:header class="lg:hidden">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
-
-            <flux:spacer />
+            
+            <div class="flex-1 flex justify-center">
+                <h1 class="text-base font-semibold dark:text-white">
+                    {{ $title ?? ucfirst(str_replace(['.', '-', '_'], ' ', request()->route()->getName() ?? 'App')) }}
+                </h1>
+            </div>
 
             <flux:dropdown position="top" align="end">
                 <flux:profile

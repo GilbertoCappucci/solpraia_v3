@@ -1,23 +1,4 @@
-<div class="min-h-screen bg-gray-50">
-    {{-- Header Mobile --}}
-    <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 sticky top-0 z-50 shadow-lg">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-xl font-bold">Pedidos</h1>
-                @if($selectedTable)
-                    <p class="text-sm opacity-90">Mesa {{ $selectedTable->number }}</p>
-                @else
-                    <p class="text-sm opacity-90">Selecione uma mesa</p>
-                @endif
-            </div>
-            @if($selectedTable)
-                <button wire:click="selectTable(null)" class="bg-white/20 px-3 py-1 rounded-lg text-sm">
-                    Trocar Mesa
-                </button>
-            @endif
-        </div>
-    </div>
-
+<div wire:poll.{{ $pollingInterval }}ms>
     {{-- Flash Messages --}}
     @if (session()->has('success'))
         <div class="bg-green-500 text-white px-4 py-3 text-center">
@@ -30,24 +11,148 @@
         </div>
     @endif
 
-    {{-- Seleção de Mesa --}}
+    {{-- Seleção de Local --}}
     @if(!$selectedTable)
         <div class="p-4">
-            <h2 class="text-lg font-semibold mb-3">Selecione a Mesa</h2>
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-semibold">Selecione o Local</h2>
+                <button 
+                    wire:click="openNewTableModal"
+                    class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg text-sm font-medium hover:shadow-lg transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Criar Novo
+                </button>
+            </div>
             <div class="grid grid-cols-3 gap-3">
                 @foreach($tables as $table)
                     <button 
                         wire:click="selectTable({{ $table->id }})"
-                        class="aspect-square bg-white rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2 border-gray-200 hover:border-orange-500">
-                        <svg class="w-8 h-8 text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                        </svg>
-                        <span class="text-lg font-bold">{{ $table->number }}</span>
-                        <span class="text-xs text-gray-500">{{ $table->name }}</span>
+                        class="relative aspect-square bg-white rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2
+                            @if($table->checkStatusColor === 'green')
+                                border-green-400 hover:border-green-500
+                            @elseif($table->checkStatusColor === 'yellow')
+                                border-yellow-400 hover:border-yellow-500
+                            @elseif($table->checkStatusColor === 'red')
+                                border-red-400 hover:border-red-500
+                            @else
+                                border-gray-300 hover:border-gray-400
+                            @endif">
+                        
+                        {{-- Badge Check Status (topo esquerdo) --}}
+                        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-xs font-bold uppercase
+                            @if($table->checkStatusColor === 'green')
+                                bg-green-100 text-green-700
+                            @elseif($table->checkStatusColor === 'yellow')
+                                bg-yellow-100 text-yellow-700
+                            @elseif($table->checkStatusColor === 'red')
+                                bg-red-100 text-red-700
+                            @else
+                                bg-gray-100 text-gray-600
+                            @endif">
+                            {{ $table->checkStatusLabel }}
+                        </span>
+                        
+                        {{-- Badge Pedidos Prontos (topo direito) --}}
+                        @if($table->hasReadyOrders)
+                            <span class="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-green-500 text-white animate-pulse">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                                {{ $table->ordersReady }}
+                            </span>
+                        @endif
+                        
+                        <span class="text-3xl font-bold text-gray-900">{{ $table->number }}</span>
+                        
+                        {{-- Valor Total do Check --}}
+                        @if($table->checkTotal > 0)
+                            <div class="text-sm font-semibold text-orange-600">
+                                R$ {{ number_format($table->checkTotal, 2, ',', '.') }}
+                            </div>
+                        @endif
+                        
+                        <span class="text-xs text-gray-600 font-medium mt-1">{{ $table->name }}</span>
+                        
+                        {{-- Indicadores de Status dos Pedidos --}}
+                        @if($table->checkStatus)
+                            <div class="flex items-center justify-center gap-3 mt-2">
+                                @if($table->ordersPending > 0)
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-3 h-3 bg-yellow-500 rounded-full" title="{{ $table->ordersPending }} aguardando"></span>
+                                        <span class="text-xs font-semibold text-yellow-700">{{ $table->pendingMinutes }}m</span>
+                                    </div>
+                                @endif
+                                @if($table->ordersInProduction > 0)
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-3 h-3 bg-blue-500 rounded-full" title="{{ $table->ordersInProduction }} em preparo"></span>
+                                        <span class="text-xs font-semibold text-blue-700">{{ $table->productionMinutes }}m</span>
+                                    </div>
+                                @endif
+                                @if($table->ordersReady > 0)
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse" title="{{ $table->ordersReady }} pronto"></span>
+                                        <span class="text-xs font-semibold text-green-700">{{ $table->readyMinutes }}m</span>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
                     </button>
                 @endforeach
             </div>
         </div>
+
+        {{-- Modal Criar Novo Local --}}
+        @if($showNewTableModal)
+            <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeNewTableModal">
+                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" wire:click.stop>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-900">Criar Novo Local</h3>
+                        <button wire:click="closeNewTableModal" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                            <input 
+                                type="number" 
+                                wire:model="newTableNumber"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                placeholder="Ex: 1">
+                            @error('newTableNumber') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                            <input 
+                                type="text" 
+                                wire:model="newTableName"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                placeholder="Ex: Varanda">
+                            @error('newTableName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+                        
+                        <div class="flex gap-3 pt-2">
+                            <button 
+                                wire:click="closeNewTableModal"
+                                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                                Cancelar
+                            </button>
+                            <button 
+                                wire:click="createNewTable"
+                                class="flex-1 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:shadow-lg transition">
+                                Criar Local
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
     @else
         {{-- Barra de Busca --}}
         <div class="p-4 bg-white border-b">
