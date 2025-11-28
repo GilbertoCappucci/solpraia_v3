@@ -150,13 +150,19 @@ class OrderSeeder extends Seeder
 
     private function addOrder($deviceUser, $check, $product, $quantity)
     {
-        return Order::factory()->create([
+        //Criar pedido
+        $order = Order::factory()->create([
             'user_id' => $deviceUser->id,
             'check_id' => $check->id,
             'product_id' => $product->id,
             'quantity' => $quantity,
             'status' => 'pending',
         ]);
+
+        //Update Check total
+        $this->updateCheckTotal($check, $product->price * $quantity);
+
+        return $order;
     }
 
     private function updateCheckTotal($check, $amount)

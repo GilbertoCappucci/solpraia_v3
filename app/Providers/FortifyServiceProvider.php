@@ -106,7 +106,7 @@ class FortifyServiceProvider extends ServiceProvider
             
             // Device vai para orders
             if ($user->isDevice()) {
-                return route('orders');
+                return route('tables');
             }
             
             // Fallback para home

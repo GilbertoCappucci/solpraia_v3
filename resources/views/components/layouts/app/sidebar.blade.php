@@ -17,7 +17,7 @@
                         <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                     @endcan
                     @can('access-orders')
-                        <flux:navlist.item icon="shopping-cart" :href="route('orders')" :current="request()->routeIs('orders')" wire:navigate>{{ __('Pedidos') }}</flux:navlist.item>
+                        <flux:navlist.item icon="shopping-cart" :href="route('tables')" :current="request()->routeIs('tables')" wire:navigate>{{ __('Locais') }}</flux:navlist.item>
                     @endcan
                 </flux:navlist.group>
             </flux:navlist>
@@ -83,12 +83,8 @@
         <!-- Mobile User Menu -->
         <flux:header class="lg:hidden">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
-            
-            <div class="flex-1 flex justify-center">
-                <a href="{{ request()->route() ? route(request()->route()->getName()) : route('home') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
-                    {{ $title ?? ucfirst(str_replace(['.', '-', '_'], ' ', request()->route()->getName() ?? 'App')) }}
-                </a>
-            </div>
+
+            <flux:spacer />
 
             <flux:dropdown position="top" align="end">
                 <flux:profile

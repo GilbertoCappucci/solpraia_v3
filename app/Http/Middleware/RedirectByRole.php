@@ -23,9 +23,9 @@ class RedirectByRole
                 return redirect()->route('dashboard');
             }
             
-            // Device vai para orders
+            // Device vai para tables
             if ($user->isDevice()) {
-                return redirect()->route('orders');
+                return redirect()->route('tables');
             }
         }
 

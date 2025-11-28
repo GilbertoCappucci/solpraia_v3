@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\RedirectByRole;
 use App\Livewire\Orders;
+use App\Livewire\Tables;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
@@ -29,7 +30,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
 // ROTAS DEVICE - Mobile
 // =============================================
 Route::middleware(['auth', 'role:device'])->group(function () {
-    Route::get('orders', Orders::class)->name('orders');
+    Route::get('tables', Tables::class)->name('tables');
+    Route::get('orders/{tableId}', Orders::class)->name('orders');
 });
 
 // =============================================

@@ -18,7 +18,7 @@
                     </flux:navbar.item>
                 @endcan
                 @can('access-orders')
-                    <flux:navbar.item icon="shopping-cart" :href="route('orders')" :current="request()->routeIs('orders')" wire:navigate>
+                    <flux:navbar.item icon="shopping-cart" :href="route('tables')" :current="request()->routeIs('tables')" wire:navigate>
                         {{ __('Pedidos') }}
                     </flux:navbar.item>
                 @endcan
@@ -111,7 +111,7 @@
                         </flux:navlist.item>
                     @endcan
                     @can('access-orders')
-                        <flux:navlist.item icon="shopping-cart" :href="route('orders')" :current="request()->routeIs('orders')" wire:navigate>
+                        <flux:navlist.item icon="shopping-cart" :href="route('tables')" :current="request()->routeIs('tables')" wire:navigate>
                           {{ __('Pedidos') }}
                         </flux:navlist.item>
                     @endcan
