@@ -15,7 +15,90 @@
     @if(!$selectedTable)
         <div class="p-4">
             <div class="flex items-center justify-between mb-3">
-                <h2 class="text-lg font-semibold">Selecione o Local</h2>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-lg font-semibold">Selecione o Local</h2>
+                    
+                    {{-- Botão Filtros --}}
+                    <div class="relative">
+                        <button 
+                            wire:click="toggleFilters"
+                            class="flex items-center gap-1 px-3 py-1.5 border-2 rounded-lg text-sm font-medium transition
+                                {{ $filterCheckStatus || $filterOrderStatus ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400 text-gray-700' }}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                            </svg>
+                            Filtros
+                            @if($filterCheckStatus || $filterOrderStatus)
+                                <span class="ml-1 px-1.5 py-0.5 bg-orange-500 text-white rounded-full text-xs">!</span>
+                            @endif
+                        </button>
+                        
+                        {{-- Dropdown de Filtros --}}
+                        @if($showFilters)
+                            <div class="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border-2 border-gray-200 z-50 p-4">
+                                {{-- Filtro Status do Check --}}
+                                <div class="mb-4">
+                                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Status do Local</h3>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button wire:click="setCheckStatusFilter('Open')"
+                                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                                {{ $filterCheckStatus === 'Open' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                            Aberto
+                                        </button>
+                                        <button wire:click="setCheckStatusFilter('Closing')"
+                                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                                {{ $filterCheckStatus === 'Closing' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                            Fechando
+                                        </button>
+                                        <button wire:click="setCheckStatusFilter('Closed')"
+                                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                                {{ $filterCheckStatus === 'Closed' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                            Fechado
+                                        </button>
+                                        <button wire:click="setCheckStatusFilter('Paid')"
+                                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                                {{ $filterCheckStatus === 'Paid' ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                            Pago
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                {{-- Filtro Status dos Pedidos --}}
+                                <div class="mb-3">
+                                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Status dos Pedidos</h3>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button wire:click="setOrderStatusFilter('pending')"
+                                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                                {{ $filterOrderStatus === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                            Aguardando
+                                        </button>
+                                        <button wire:click="setOrderStatusFilter('in_production')"
+                                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                                {{ $filterOrderStatus === 'in_production' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                            Em Preparo
+                                        </button>
+                                        <button wire:click="setOrderStatusFilter('in_transit')"
+                                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                                {{ $filterOrderStatus === 'in_transit' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                            Pronto
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                {{-- Botões de Ação --}}
+                                <div class="flex gap-2 pt-3 border-t">
+                                    <button wire:click="clearFilters" class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition">
+                                        Limpar
+                                    </button>
+                                    <button wire:click="toggleFilters" class="flex-1 px-3 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition">
+                                        Aplicar
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                
                 <button 
                     wire:click="openNewTableModal"
                     class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg text-sm font-medium hover:shadow-lg transition">
@@ -40,41 +123,31 @@
                                 border-gray-300 hover:border-gray-400
                             @endif">
                         
-                        {{-- Badge Check Status (topo esquerdo) --}}
-                        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-xs font-bold uppercase
-                            @if($table->checkStatusColor === 'green')
-                                bg-green-100 text-green-700
-                            @elseif($table->checkStatusColor === 'yellow')
-                                bg-yellow-100 text-yellow-700
-                            @elseif($table->checkStatusColor === 'red')
-                                bg-red-100 text-red-700
-                            @else
-                                bg-gray-100 text-gray-600
-                            @endif">
-                            {{ $table->checkStatusLabel }}
-                        </span>
-                        
-                        {{-- Badge Pedidos Prontos (topo direito) --}}
-                        @if($table->hasReadyOrders)
-                            <span class="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-green-500 text-white animate-pulse">
-                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                                {{ $table->ordersReady }}
-                            </span>
-                        @endif
-                        
-                        <span class="text-3xl font-bold text-gray-900">{{ $table->number }}</span>
-                        
-                        {{-- Valor Total do Check --}}
-                        @if($table->checkTotal > 0)
-                            <div class="text-sm font-semibold text-orange-600">
-                                R$ {{ number_format($table->checkTotal, 2, ',', '.') }}
-                            </div>
-                        @endif
-                        
-                        <span class="text-xs text-gray-600 font-medium mt-1">{{ $table->name }}</span>
-                        
+                        {{-- Badge topo esquerdo (Numero e Status) --}}
+                        <div class="absolute top-2 left-2 px-1">
+                            {{-- Número da Table --}}
+                            <span class="p-1 text-3xl font-bold text-gray-900">{{ $table->number }}</span>
+                            
+                            {{-- Nome da Table --}}
+                            <span class="text-xs text-gray-600 font-medium mt-1">{{ $table->name }}</span>
+
+                            {{-- Status da Table --}}
+                            @if(false)
+                                <span class="rounded-md text-xs font-bold uppercase
+                                @if($table->checkStatusColor === 'green')
+                                    bg-green-100 text-green-700
+                                @elseif($table->checkStatusColor === 'yellow')
+                                    bg-yellow-100 text-yellow-700
+                                @elseif($table->checkStatusColor === 'red')
+                                    bg-red-100 text-red-700
+                                @else
+                                    bg-gray-100 text-gray-600
+                                @endif">
+                                {{ $table->checkStatusLabel }}
+                                </span>
+                            @endif
+                        </div>
+                                 
                         {{-- Indicadores de Status dos Pedidos --}}
                         @if($table->checkStatus)
                             <div class="flex items-center justify-center gap-3 mt-2">
@@ -96,6 +169,13 @@
                                         <span class="text-xs font-semibold text-green-700">{{ $table->readyMinutes }}m</span>
                                     </div>
                                 @endif
+                            </div>
+                        @endif
+
+                        {{-- Badge Valor Total (canto inferior direito) --}}
+                        @if($table->checkTotal > 0)
+                            <div class="absolute bottom-2 left-2 px-2 py-1">
+                                <span class="text-xl font-bold">R$ {{ number_format($table->checkTotal, 2, ',', '.') }}</span>
                             </div>
                         @endif
                     </button>

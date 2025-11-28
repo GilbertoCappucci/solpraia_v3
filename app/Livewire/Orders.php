@@ -28,6 +28,9 @@ class Orders extends Component
     public $showNewTableModal = false;
     public $newTableName = '';
     public $newTableNumber = '';
+    public $filterCheckStatus = null; // Filtro por status do Check
+    public $filterOrderStatus = null; // Filtro por status de Orders
+    public $showFilters = false; // Controla exibição do dropdown de filtros
     
     public function mount()
     {
@@ -168,6 +171,27 @@ class Orders extends Component
         $this->newTableNumber = '';
     }
 
+    public function toggleFilters()
+    {
+        $this->showFilters = !$this->showFilters;
+    }
+
+    public function setCheckStatusFilter($status)
+    {
+        $this->filterCheckStatus = $this->filterCheckStatus === $status ? null : $status;
+    }
+
+    public function setOrderStatusFilter($status)
+    {
+        $this->filterOrderStatus = $this->filterOrderStatus === $status ? null : $status;
+    }
+
+    public function clearFilters()
+    {
+        $this->filterCheckStatus = null;
+        $this->filterOrderStatus = null;
+    }
+
     public function createNewTable()
     {
         $this->validate([
@@ -251,6 +275,27 @@ class Orders extends Component
             }])
             ->orderBy('number')
             ->get()
+            ->filter(function($table) {
+                // Aplica filtros
+                $currentCheck = $table->checks->sortByDesc('created_at')->first();
+                
+                // Filtro por status do Check
+                if ($this->filterCheckStatus) {
+                    if (!$currentCheck || $currentCheck->status !== $this->filterCheckStatus) {
+                        return false;
+                    }
+                }
+                
+                // Filtro por status de Orders
+                if ($this->filterOrderStatus && $currentCheck) {
+                    $hasOrderWithStatus = $currentCheck->orders->contains('status', $this->filterOrderStatus);
+                    if (!$hasOrderWithStatus) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            })
             ->map(function($table) {
                 // Busca o check mais recente
                 $currentCheck = $table->checks->sortByDesc('created_at')->first();
