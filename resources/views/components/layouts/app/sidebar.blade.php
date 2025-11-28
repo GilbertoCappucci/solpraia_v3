@@ -85,9 +85,9 @@
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
             
             <div class="flex-1 flex justify-center">
-                <h1 class="text-base font-semibold dark:text-white">
+                <a href="{{ request()->route() ? route(request()->route()->getName()) : route('home') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
                     {{ $title ?? ucfirst(str_replace(['.', '-', '_'], ' ', request()->route()->getName() ?? 'App')) }}
-                </h1>
+                </a>
             </div>
 
             <flux:dropdown position="top" align="end">

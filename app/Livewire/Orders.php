@@ -190,6 +190,7 @@ class Orders extends Component
     {
         $this->filterCheckStatus = null;
         $this->filterOrderStatus = null;
+        $this->showFilters = false;
     }
 
     public function createNewTable()
