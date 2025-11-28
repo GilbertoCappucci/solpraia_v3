@@ -41,6 +41,45 @@ class OrderSeeder extends Seeder
             $quantity
         );
 
+        //Adicionar pedido em check 2 na mesa 2
+        $deviceUser = User::find(2)->devices()->first();
+        $check = Check::find(2);
+        $product = Product::find(2);
+        $quantity = 1;
+
+        if(!$check) {
+            $table = Table::find(2);
+            $check = $this->openCheck($table);
+        }
+
+        $this->addOrder(
+            $deviceUser,
+            $check,
+            $product,
+            $quantity
+        );
+
+        //Pedido 1 esta em producao
+        $order = Order::find(1);
+        $this->inProductionOrder($order);
+
+        //Adicionar pedido em check 1 na mesa 1
+        $deviceUser = User::find(2)->devices()->first();
+        $check = Check::find(1);
+        $product = Product::find(3);
+        $quantity = 3;
+
+        $this->addOrder(
+            $deviceUser,
+            $check,
+            $product,
+            $quantity
+        );
+
+        //Pedido 2 esta em transito
+        $order = Order::find(2);
+        $this->inTransitOrder($order);
+
         /*
             for ($i = 0; $i < 10; $i++) {
 

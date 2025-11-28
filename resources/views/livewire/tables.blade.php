@@ -85,9 +85,17 @@
                                 {{ $filterOrderStatus === 'in_production' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Em Preparo
                         </button>
+                        
+                        {{-- Em transito --}}
                         <button wire:click="setOrderStatusFilter('in_transit')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterOrderStatus === 'in_transit' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ $filterOrderStatus === 'in_transit' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Em Trânsito
+                        </button>
+
+                        <button wire:click="setOrderStatusFilter('completed')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ $filterOrderStatus === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Pronto
                         </button>
                     </div>
@@ -148,9 +156,17 @@
                                     <span class="text-[10px] font-semibold text-green-700">{{ $table->completedMinutes }}m</span>
                                 </div>
                             @endif
+                            @if($table->ordersInTransit > 0)
+                                <div class="flex items-center gap-0.5">
+                                    <span class="w-2 h-2 bg-purple-500 rounded-full" title="{{ $table->ordersInTransit }} em trânsito"></span>
+                                    <span class="text-[10px] font-semibold text-purple-700">{{ $table->transitMinutes }}m</span>     
+                                </div>
+                            @endif
                         </div>
+                    @else
+                        <div class="text-sm text-gray-400 italic">Sem pedidos</div>
                     @endif
-
+                    
                     {{-- Badge Valor Total --}}
                     @if($table->checkTotal > 0)
                         <div class="absolute bottom-1 left-1">
