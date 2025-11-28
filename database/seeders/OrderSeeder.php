@@ -7,7 +7,10 @@ use App\Enums\OrderStatusEnum;
 use App\Enums\RoleEnum;
 use App\Models\Check;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\Table;
 use App\Models\User;
+use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -18,54 +21,98 @@ class OrderSeeder extends Seeder
      */
     public function run(): void
     {
-        
-        for ($i = 0; $i < 10; $i++) {
 
-            $user = User::where('role', RoleEnum::ADMIN->value)->inRandomOrder()->first();
-            $deviceUser = $user->devices()->inRandomOrder()->first();
-            $tables = $user->tables()->where('active', true)->get();
 
-            if ($tables->isEmpty()) {
-                continue; // Skip if no active tables
-            }
+        //Adicionar pedido em check 1 na mesa 1
+        $deviceUser = User::find(2)->devices()->first();
+        $check = Check::find(1);
+        $product = Product::find(1);
+        $quantity = 2;
 
-            $table = $tables->random();
-
-            $check = $this->hasTableCheck($table);
-
-            if (!$check) {
-                $check = $this->openCheck($table);
-            }
-
-            $product = $user->products()->inRandomOrder()->first();
-            $quantity = rand(1, 5);
-
-            $order = $this->addOrder($deviceUser, $check, $product, $quantity);
-            $this->updateCheckTotal($check, $product->price * $quantity);
-
-            // Randomly decide to cancel or complete the order
-            $val = rand(0, 9);
-
-            switch ($val) {
-                case 0:
-                case 1:
-                    $this->cancelOrder($order, $check);
-                    break;
-                case 2:
-                case 3:
-                    $this->completeOrder($order);
-                    break;
-                default:
-                    $this->pendingOrder($order);
-                    break;
-            }
-
-            // Randomly decide to close the check
-            if (rand(0, 4) === 0) {
-                $this->closeCheck($check);
-            }
+        if(!$check) {
+            $table = Table::find(1);
+            $check = $this->openCheck($table);
         }
+
+        $this->addOrder(
+            $deviceUser,
+            $check,
+            $product,
+            $quantity
+        );
+
+        /*
+            for ($i = 0; $i < 10; $i++) {
+
+                $user = User::where('role', RoleEnum::ADMIN->value)->inRandomOrder()->first();
+                $deviceUser = $user->devices()->inRandomOrder()->first();
+                $tables = $user->tables()->where('active', true)->get();
+
+                if ($tables->isEmpty()) {
+                    continue; // Skip if no active tables
+                }
+
+                $table = $tables->random();
+
+                $check = $this->hasTableCheck($table);
+
+                if (!$check) {
+                    $check = $this->openCheck($table);
+                }
+
+                $product = $user->products()->inRandomOrder()->first();
+                $quantity = rand(1, 5);
+
+                $order = $this->addOrder($deviceUser, $check, $product, $quantity);
+                $this->updateCheckTotal($check, $product->price * $quantity);
+
+                // Randomly decide to cancel or complete the order
+                $val = rand(0, 9);
+
+                switch ($val) {
+                    case 0:
+                        $this->cancelOrder($order, $check);
+                        break;
+                    case 1:
+                    case 2:
+                    case 3:
+                        $this->completeOrder($order);
+                        break;
+                    case 4:
+                    case 5:
+                    case 6:
+                        $this->inTransitOrder($order);
+                        break;
+                    case 7:
+                    case 8:
+                        $this->inProductionOrder($order);
+                        break;  
+                    default:
+                        $this->pendingOrder($order);
+                        break;
+                }
+
+                // Randomly decide to close the check
+                if (rand(0, 4) === 0) {
+                    $this->closeCheck($check);
+                }
+            }
+        */
         
+    }
+
+    private function inProductionOrder($order)
+    {
+        $order->update([
+            'status' => OrderStatusEnum::IN_PRODUCTION->value,
+        ]);
+    }
+
+    private function inTransitOrder($order)
+    {
+        $order->update([
+            'status' => OrderStatusEnum::IN_TRANSIT->value,
+        ]);
     }
 
     private function pendingOrder($order)

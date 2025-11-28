@@ -5,7 +5,6 @@ namespace App\Enums;
 enum OrderStatusEnum: string
 {
     case PENDING = 'pending';
-    case CONFIRMED = 'confirmed';
     case IN_PRODUCTION = 'in_production';
     case IN_TRANSIT = 'in_transit';
     case COMPLETED = 'completed';
@@ -15,7 +14,6 @@ enum OrderStatusEnum: string
     {
         return match ($status) {
             self::PENDING => 'Pending',
-            self::CONFIRMED => 'Confirmed',
             self::IN_PRODUCTION => 'In Production',
             self::IN_TRANSIT => 'In Transit',
             self::COMPLETED => 'Completed',

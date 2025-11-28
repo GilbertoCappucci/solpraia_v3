@@ -324,7 +324,7 @@ class Orders extends Component
                     $now = now();
                     
                     // Pending
-                    $pendingOrders = $orders->whereIn('status', [OrderStatusEnum::PENDING->value, OrderStatusEnum::CONFIRMED->value]);
+                    $pendingOrders = $orders->where('status', OrderStatusEnum::PENDING->value);
                     $table->ordersPending = $pendingOrders->count();
                     $oldestPending = $pendingOrders->sortBy('created_at')->first();
                     $table->pendingMinutes = $oldestPending ? (int) ($now->diffInMinutes($oldestPending->created_at))*-1 : 0;
@@ -335,15 +335,17 @@ class Orders extends Component
                     $oldestProduction = $productionOrders->sortBy('created_at')->first();
                     $table->productionMinutes = $oldestProduction ? (int) $now->diffInMinutes($oldestProduction->created_at) : 0;
                     
-                    // Ready
-                    $readyOrders = $orders->where('status', OrderStatusEnum::IN_TRANSIT->value);
-                    $table->ordersReady = $readyOrders->count();
-                    $oldestReady = $readyOrders->sortBy('created_at')->first();
-                    $table->readyMinutes = $oldestReady ? (int) $now->diffInMinutes($oldestReady->created_at) : 0;
+                    // IN Transit
+                    $transitOrders = $orders->where('status', OrderStatusEnum::IN_TRANSIT->value);
+                    $table->ordersInTransit = $transitOrders->count();
+                    $oldestTransit = $transitOrders->sortBy('created_at')->first();
+                    $table->transitMinutes = $oldestTransit ? (int) $now->diffInMinutes($oldestTransit->created_at) : 0;
                     
-                    $table->ordersCompleted = $orders->where('status', OrderStatusEnum::COMPLETED->value)->count();
-                    $table->hasReadyOrders = $table->ordersReady > 0;
-                    $table->checkTotal = $currentCheck->total ?? 0;
+                    // Completed
+                    $completedOrders = $orders->where('status', OrderStatusEnum::COMPLETED->value);
+                    $table->ordersCompleted = $completedOrders->count();
+                    $oldestCompleted = $completedOrders->sortBy('created_at')->first();
+                    $table->completedMinutes = $oldestCompleted ? (int) $now->diffInMinutes($oldestCompleted->created_at) : 0;
                 } else {
                     $table->checkStatus = null;
                     $table->checkStatusLabel = 'Livre';

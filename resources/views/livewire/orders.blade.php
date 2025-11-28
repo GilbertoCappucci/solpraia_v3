@@ -107,6 +107,7 @@
                             </div>
             @endif
             <div class="grid grid-cols-3 gap-3">
+                
                 @foreach($tables as $table)
                     <button 
                         wire:click="selectTable({{ $table->id }})"
@@ -145,10 +146,10 @@
                                         <span class="text-[10px] font-semibold text-blue-700">{{ $table->productionMinutes }}m</span>
                                     </div>
                                 @endif
-                                @if($table->ordersReady > 0)
+                                @if($table->ordersCompleted > 0)
                                     <div class="flex items-center gap-0.5">
-                                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="{{ $table->ordersReady }} pronto"></span>
-                                        <span class="text-[10px] font-semibold text-green-700">{{ $table->readyMinutes }}m</span>
+                                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="{{ $table->ordersCompleted }} pronto"></span>
+                                        <span class="text-[10px] font-semibold text-green-700">{{ $table->completedMinutes }}m</span>
                                     </div>
                                 @endif
                             </div>

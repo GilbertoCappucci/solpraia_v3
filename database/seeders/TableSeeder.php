@@ -50,7 +50,7 @@ class TableSeeder extends Seeder
             ],
         ]);
 
-        
+        /*
         $users = User::where(['role' => RoleEnum::ADMIN->value, 'active' => true])->get();
 
         foreach ($users as $user) {
@@ -65,6 +65,7 @@ class TableSeeder extends Seeder
                 ]);
             }
         }
+        */
         
     }
 }
