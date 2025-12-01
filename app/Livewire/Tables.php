@@ -18,6 +18,7 @@ class Tables extends Component
     public $filterCheckStatus = null;
     public $filterOrderStatus = null;
     public $showFilters = false;
+    public $showFreeTables = true;
     public $showNewTableModal = false;
     public $newTableName = '';
     public $newTableNumber = '';
@@ -49,6 +50,11 @@ class Tables extends Component
         $this->filterCheckStatus = null;
         $this->filterOrderStatus = null;
         $this->showFilters = false;
+    }
+
+    public function toggleFreeTables()
+    {
+        $this->showFreeTables = !$this->showFreeTables;
     }
 
     public function openNewTableModal()
@@ -103,6 +109,11 @@ class Tables extends Component
             ->get()
             ->filter(function($table) {
                 $currentCheck = $table->checks->sortByDesc('created_at')->first();
+                
+                // Filtro para ocultar tables livres
+                if (!$this->showFreeTables && !$currentCheck) {
+                    return false;
+                }
                 
                 if ($this->filterCheckStatus) {
                     if (!$currentCheck || $currentCheck->status !== $this->filterCheckStatus) {

@@ -13,13 +13,13 @@
 
     <div class="p-4 relative">
         <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3">
-                <h2 class="text-lg font-semibold">Selecione o Local</h2>
-                
+            <h2 class="text-lg font-semibold">Local</h2>
+            
+            <div class="flex items-center gap-2">
                 {{-- Botão Filtros --}}
                 <button 
                     wire:click="toggleFilters"
-                    class="flex items-center gap-1 px-3 py-1.5 mr-3 border-2 rounded-lg text-sm font-medium transition
+                    class="flex items-center gap-1 px-3 py-1.5 border-2 rounded-lg text-sm font-medium transition
                         {{ $filterCheckStatus || $filterOrderStatus ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400 text-gray-700' }}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
@@ -29,16 +29,31 @@
                         <span class="ml-1 px-1.5 py-0.5 bg-orange-500 text-white rounded-full text-xs">!</span>
                     @endif
                 </button>
+                
+                {{-- Toggle Switch Tables Livres --}}
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-medium text-gray-700 hidden sm:inline">Livres</span>
+                    <button 
+                        wire:click="toggleFreeTables"
+                        type="button"
+                        class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2
+                            {{ $showFreeTables ? 'bg-orange-500' : 'bg-gray-200' }}"
+                        role="switch"
+                        aria-checked="{{ $showFreeTables ? 'true' : 'false' }}">
+                        <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
+                            {{ $showFreeTables ? 'translate-x-5' : 'translate-x-0' }}"></span>
+                    </button>
+                </div>
+                
+                <button 
+                    wire:click="openNewTableModal"
+                    class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg text-sm font-medium hover:shadow-lg transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Criar Novo
+                </button>
             </div>
-            
-            <button 
-                wire:click="openNewTableModal"
-                class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg text-sm font-medium hover:shadow-lg transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                Criar Novo
-            </button>
         </div>
         
         {{-- Dropdown de Filtros --}}
