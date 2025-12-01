@@ -198,6 +198,11 @@ class Orders extends Component
         $this->currentCheck->update([
             'total' => $this->cartTotal,
         ]);
+        
+        // Atualiza status da mesa para ocupada
+        $this->selectedTable->update([
+            'status' => \App\Enums\TableStatusEnum::OCCUPIED->value,
+        ]);
 
         session()->flash('success', 'Pedido confirmado com sucesso!');
         $this->loadCartFromCheck();

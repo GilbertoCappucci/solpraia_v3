@@ -170,6 +170,10 @@ class OrderSeeder extends Seeder
 
     private function openCheck($table)
     {
+        $table->update([
+            'status' => 'occupied',
+        ]);
+
         return Check::factory()->create([
             'table_id' => $table->id,
             'total' => 0,
@@ -181,6 +185,12 @@ class OrderSeeder extends Seeder
 
     private function closeCheck($check)
     {
+        $table = $check->table;
+
+        $table->update([
+            'status' => 'free',
+        ]);
+
         $check->update([
             'status' => CheckStatusEnum::CLOSED->value,
             'closed_at' => now(),

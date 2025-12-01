@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TableStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +17,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('name')->nullable();
             $table->integer('number');
-            $table->boolean('active')->default(true);
+            $table->enum('status', TableStatusEnum::cases())->default(TableStatusEnum::FREE->value);
             $table->timestamps();
             $table->softDeletes();
         });

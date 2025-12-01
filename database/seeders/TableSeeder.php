@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\RoleEnum;
+use App\Enums\TableStatusEnum;
 use App\Models\Table;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -21,31 +22,31 @@ class TableSeeder extends Seeder
             [
                 'user_id' => 2,
                 'number' => 1,
-                'active' => true,
+                'status' => TableStatusEnum::FREE->value,
                 'name' => 'GS-1',
             ],
             [
                 'user_id' => 2,
                 'number' => 2,
-                'active' => true,
+                'status' => TableStatusEnum::FREE->value,
                 'name' => 'GS-2',
             ],
             [
                 'user_id' => 2,
                 'number' => 3,
-                'active' => true,
+                'status' => TableStatusEnum::FREE->value,
                 'name' => 'Jangada-260',
             ],
             [
                 'user_id' => 2,
                 'number' => 4,
-                'active' => true,
+                'status' => TableStatusEnum::FREE->value,
                 'name' => 'GS-4',   
             ],
             [
                 'user_id' => 2,
                 'number' => 5,
-                'active' => true,
+                'status' => TableStatusEnum::FREE->value,
                 'name' => 'GS-5',
             ],
         ]);

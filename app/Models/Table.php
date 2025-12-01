@@ -15,7 +15,7 @@ class Table extends Model
         'user_id',
         'name',
         'number',
-        'active',
+        'status',
     ];
 
     public function checks()

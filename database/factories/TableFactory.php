@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\RoleEnum;
+use App\Enums\TableStatusEnum;
 use App\Models\Table;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -25,7 +26,7 @@ class TableFactory extends Factory
             'user_id' => $userId,
             'name' => $this->faker->optional()->word(),
             'number' => $this->getNextUmbrellaNumber($userId),
-            'active' => $this->faker->boolean(80),
+            'status' => $this->faker->randomElement(array_column(TableStatusEnum::cases(), 'value')),
         ];
     }
 

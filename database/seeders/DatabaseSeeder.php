@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             MenuItemSeeder::class,
             TableSeeder::class,
-            CheckSeeder::class,
+            //CheckSeeder::class,
             OrderSeeder::class,
         ]);
     }

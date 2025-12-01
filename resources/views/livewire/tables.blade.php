@@ -20,30 +20,15 @@
                 <button 
                     wire:click="toggleFilters"
                     class="flex items-center gap-1 px-3 py-1.5 border-2 rounded-lg text-sm font-medium transition
-                        {{ $filterCheckStatus || $filterOrderStatus ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400 text-gray-700' }}">
+                        {{ $filterTableStatus || $filterCheckStatus || !empty($filterOrderStatuses) ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400 text-gray-700' }}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
                     </svg>
                     Filtros
-                    @if($filterCheckStatus || $filterOrderStatus)
+                    @if($filterTableStatus || $filterCheckStatus || !empty($filterOrderStatuses))
                         <span class="ml-1 px-1.5 py-0.5 bg-orange-500 text-white rounded-full text-xs">!</span>
                     @endif
                 </button>
-                
-                {{-- Toggle Switch Tables Livres --}}
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-medium text-gray-700 hidden sm:inline">Livres</span>
-                    <button 
-                        wire:click="toggleFreeTables"
-                        type="button"
-                        class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2
-                            {{ $showFreeTables ? 'bg-orange-500' : 'bg-gray-200' }}"
-                        role="switch"
-                        aria-checked="{{ $showFreeTables ? 'true' : 'false' }}">
-                        <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-                            {{ $showFreeTables ? 'translate-x-5' : 'translate-x-0' }}"></span>
-                    </button>
-                </div>
                 
                 <button 
                     wire:click="openNewTableModal"
@@ -59,9 +44,31 @@
         {{-- Dropdown de Filtros --}}
         @if($showFilters)
             <div class="absolute top-16 left-4 right-4 lg:left-4 lg:right-auto lg:w-80 bg-white rounded-lg shadow-xl border-2 border-gray-200 z-50 p-4">
+                {{-- Filtro Status da Mesa --}}
+                <div class="mb-4">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Status da Mesa</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button wire:click="setTableStatusFilter('free')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ $filterTableStatus === 'free' ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Livre
+                        </button>
+                        <button wire:click="setTableStatusFilter('occupied')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ $filterTableStatus === 'occupied' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Ocupada
+                        </button>
+                        <button wire:click="setTableStatusFilter('reserved')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ $filterTableStatus === 'reserved' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Reservada
+                        </button>
+                    </div>
+                </div>
+                
                 {{-- Filtro Status do Check --}}
                 <div class="mb-4">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Status do Local</h3>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Status do Check</h3>
                     <div class="flex flex-wrap gap-2">
                         <button wire:click="setCheckStatusFilter('Open')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
@@ -90,27 +97,27 @@
                 <div class="mb-3">
                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Status dos Pedidos</h3>
                     <div class="flex flex-wrap gap-2">
-                        <button wire:click="setOrderStatusFilter('pending')"
+                        <button wire:click="toggleOrderStatusFilter('pending')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterOrderStatus === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ in_array('pending', $filterOrderStatuses) ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Aguardando
                         </button>
-                        <button wire:click="setOrderStatusFilter('in_production')"
+                        <button wire:click="toggleOrderStatusFilter('in_production')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterOrderStatus === 'in_production' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ in_array('in_production', $filterOrderStatuses) ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Em Preparo
                         </button>
                         
                         {{-- Em transito --}}
-                        <button wire:click="setOrderStatusFilter('in_transit')"
+                        <button wire:click="toggleOrderStatusFilter('in_transit')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterOrderStatus === 'in_transit' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ in_array('in_transit', $filterOrderStatuses) ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Em Trânsito
                         </button>
 
-                        <button wire:click="setOrderStatusFilter('completed')"
+                        <button wire:click="toggleOrderStatusFilter('completed')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterOrderStatus === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ in_array('completed', $filterOrderStatuses) ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Pronto
                         </button>
                     </div>
@@ -133,15 +140,17 @@
             @foreach($tables as $table)
                 <button 
                     wire:click="selectTable({{ $table->id }})"
-                    class="relative aspect-square bg-white rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2
-                        @if($table->checkStatusColor === 'green')
-                            border-green-400 hover:border-green-500
-                        @elseif($table->checkStatusColor === 'yellow')
-                            border-yellow-400 hover:border-yellow-500
-                        @elseif($table->checkStatusColor === 'red')
-                            border-red-400 hover:border-red-500
+                    class="relative aspect-square rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2
+                        @if($table->checkStatus === 'Open')
+                            bg-white border-green-400 hover:border-green-500
+                        @elseif($table->checkStatus === 'Closing')
+                            bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-400 hover:border-yellow-500
+                        @elseif($table->checkStatus === 'Closed')
+                            bg-gradient-to-br from-red-50 to-red-100 border-red-400 hover:border-red-500
+                        @elseif($table->checkStatus === 'Paid')
+                            bg-gradient-to-br from-gray-50 to-gray-100 border-gray-400 hover:border-gray-500
                         @else
-                            border-gray-300 hover:border-gray-400
+                            bg-white border-gray-300 hover:border-gray-400
                         @endif">
                     
                     {{-- Badge topo esquerdo (Numero e Nome) --}}

@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Enums\CheckStatusEnum;
 use App\Enums\OrderStatusEnum;
+use App\Enums\TableStatusEnum;
 use App\Models\Check;
 use App\Models\Order;
 use App\Models\Table;
@@ -15,10 +16,10 @@ class Tables extends Component
     public $title = 'Locais';
     public $userId;
     public $pollingInterval = 5000;
+    public $filterTableStatus = null;
     public $filterCheckStatus = null;
-    public $filterOrderStatus = null;
+    public $filterOrderStatuses = [];
     public $showFilters = false;
-    public $showFreeTables = true;
     public $showNewTableModal = false;
     public $newTableName = '';
     public $newTableNumber = '';
@@ -35,26 +36,31 @@ class Tables extends Component
         $this->showFilters = !$this->showFilters;
     }
 
+    public function setTableStatusFilter($status)
+    {
+        $this->filterTableStatus = $this->filterTableStatus === $status ? null : $status;
+    }
+
     public function setCheckStatusFilter($status)
     {
         $this->filterCheckStatus = $this->filterCheckStatus === $status ? null : $status;
     }
 
-    public function setOrderStatusFilter($status)
+    public function toggleOrderStatusFilter($status)
     {
-        $this->filterOrderStatus = $this->filterOrderStatus === $status ? null : $status;
+        if (in_array($status, $this->filterOrderStatuses)) {
+            $this->filterOrderStatuses = array_values(array_filter($this->filterOrderStatuses, fn($s) => $s !== $status));
+        } else {
+            $this->filterOrderStatuses[] = $status;
+        }
     }
 
     public function clearFilters()
     {
+        $this->filterTableStatus = null;
         $this->filterCheckStatus = null;
-        $this->filterOrderStatus = null;
+        $this->filterOrderStatuses = [];
         $this->showFilters = false;
-    }
-
-    public function toggleFreeTables()
-    {
-        $this->showFreeTables = !$this->showFreeTables;
     }
 
     public function openNewTableModal()
@@ -86,7 +92,7 @@ class Tables extends Component
             'user_id' => $this->userId,
             'name' => $this->newTableName,
             'number' => $this->newTableNumber,
-            'active' => true,
+            'status' => TableStatusEnum::FREE->value,
         ]);
 
         session()->flash('success', 'Local criado com sucesso!');
@@ -100,7 +106,7 @@ class Tables extends Component
 
     public function render()
     {
-        $tables = Table::where('active', true)
+        $tables = Table::where('status', '!=', TableStatusEnum::CLOSE->value)
             ->where('user_id', $this->userId)
             ->with(['checks' => function($query) {
                 $query->with(['orders']);
@@ -110,8 +116,8 @@ class Tables extends Component
             ->filter(function($table) {
                 $currentCheck = $table->checks->sortByDesc('created_at')->first();
                 
-                // Filtro para ocultar tables livres
-                if (!$this->showFreeTables && !$currentCheck) {
+                // Filtro de status da Table (mesa física)
+                if ($this->filterTableStatus && $table->status !== $this->filterTableStatus) {
                     return false;
                 }
                 
@@ -121,9 +127,9 @@ class Tables extends Component
                     }
                 }
                 
-                if ($this->filterOrderStatus && $currentCheck) {
-                    $hasOrderWithStatus = $currentCheck->orders->contains('status', $this->filterOrderStatus);
-                    if (!$hasOrderWithStatus) {
+                if (!empty($this->filterOrderStatuses) && $currentCheck) {
+                    $hasAnyFilteredStatus = $currentCheck->orders->whereIn('status', $this->filterOrderStatuses)->isNotEmpty();
+                    if (!$hasAnyFilteredStatus) {
                         return false;
                     }
                 }
