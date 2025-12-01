@@ -145,22 +145,22 @@ class Tables extends Component
                     $pendingOrders = $orders->where('status', OrderStatusEnum::PENDING->value);
                     $table->ordersPending = $pendingOrders->count();
                     $oldestPending = $pendingOrders->sortBy('created_at')->first();
-                    $table->pendingMinutes = $oldestPending ? (int) $now->diffInMinutes($oldestPending->created_at) : 0;
+                    $table->pendingMinutes = $oldestPending ? abs((int) $now->diffInMinutes($oldestPending->created_at)) : 0;
                     
                     $productionOrders = $orders->where('status', OrderStatusEnum::IN_PRODUCTION->value);
                     $table->ordersInProduction = $productionOrders->count();
                     $oldestProduction = $productionOrders->sortBy('created_at')->first();
-                    $table->productionMinutes = $oldestProduction ? (int) $now->diffInMinutes($oldestProduction->created_at) : 0;
+                    $table->productionMinutes = $oldestProduction ? abs((int) $now->diffInMinutes($oldestProduction->created_at)) : 0;
                     
                     $transitOrders = $orders->where('status', OrderStatusEnum::IN_TRANSIT->value);
                     $table->ordersInTransit = $transitOrders->count();
                     $oldestTransit = $transitOrders->sortBy('created_at')->first();
-                    $table->transitMinutes = $oldestTransit ? (int) $now->diffInMinutes($oldestTransit->created_at) : 0;
+                    $table->transitMinutes = $oldestTransit ? abs((int) $now->diffInMinutes($oldestTransit->created_at)) : 0;
                     
                     $completedOrders = $orders->where('status', OrderStatusEnum::COMPLETED->value);
                     $table->ordersCompleted = $completedOrders->count();
                     $oldestCompleted = $completedOrders->sortBy('created_at')->first();
-                    $table->completedMinutes = $oldestCompleted ? (int) $now->diffInMinutes($oldestCompleted->created_at) : 0;
+                    $table->completedMinutes = $oldestCompleted ? abs((int) $now->diffInMinutes($oldestCompleted->created_at)) : 0;
                     
                     $table->checkTotal = $currentCheck->total ?? 0;
                 } else {

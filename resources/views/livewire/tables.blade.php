@@ -113,8 +113,8 @@
             </div>
         @endif
         
-        {{-- Grid de Locais --}}
-        <div class="grid grid-cols-3 gap-3">
+        {{-- Grid de Locais - Responsivo --}}
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             @foreach($tables as $table)
                 <button 
                     wire:click="selectTable({{ $table->id }})"
@@ -130,47 +130,80 @@
                         @endif">
                     
                     {{-- Badge topo esquerdo (Numero e Nome) --}}
-                    <div class="absolute top-1 left-1 right-1 flex items-baseline justify-between">
-                        <span class="text-xl font-bold text-gray-900 leading-none">{{ $table->number }}</span>
-                        <span class="text-[10px] text-gray-600 font-medium leading-none">{{ $table->name }}</span>
+                    <div class="absolute top-2 left-2 right-2 flex items-baseline justify-between">
+                        <span class="text-3xl font-bold text-gray-900 leading-none">{{ $table->number }}</span>
+                        <span class="text-xs text-gray-600 font-medium leading-none">{{ $table->name }}</span>
                     </div>
                              
-                    {{-- Indicadores de Status dos Pedidos --}}
+                    {{-- Indicadores de Status dos Pedidos - Grid Dinâmico --}}
                     @if($table->checkStatus)
-                        <div class="flex items-center justify-center gap-2">
+                        @php
+                            $activeStatuses = 0;
+                            if($table->ordersPending > 0) $activeStatuses++;
+                            if($table->ordersInProduction > 0) $activeStatuses++;
+                            if($table->ordersInTransit > 0) $activeStatuses++;
+                            
+                            $gridClass = match($activeStatuses) {
+                                1 => 'grid-cols-1',
+                                2 => 'grid-cols-2',
+                                3 => 'grid-cols-3',
+                                default => 'grid-cols-1'
+                            };
+                            
+                            // Tamanhos dinâmicos baseados na quantidade de status (otimizado para 2 colunas)
+                            $dotSize = match($activeStatuses) {
+                                1 => 'w-6 h-6',
+                                2 => 'w-4 h-4',
+                                default => 'w-3 h-3'
+                            };
+                            
+                            $textSize = match($activeStatuses) {
+                                1 => 'text-2xl',
+                                2 => 'text-lg',
+                                default => 'text-sm'
+                            };
+                            
+                            $padding = match($activeStatuses) {
+                                1 => 'py-4',
+                                2 => 'py-3',
+                                default => 'py-2'
+                            };
+                            
+                            $spacing = match($activeStatuses) {
+                                1 => 'mb-2',
+                                2 => 'mb-1',
+                                default => 'mb-0.5'
+                            };
+                        @endphp
+                        
+                        <div class="grid {{ $gridClass }} gap-1 w-full px-2">
                             @if($table->ordersPending > 0)
-                                <div class="flex items-center gap-0.5">
-                                    <span class="w-2 h-2 bg-yellow-500 rounded-full" title="{{ $table->ordersPending }} aguardando"></span>
-                                    <span class="text-[10px] font-semibold text-yellow-700">{{ $table->pendingMinutes }}m</span>
+                                <div class="flex flex-col items-center justify-center {{ $padding }} ">
+                                    <span class="{{ $dotSize }} bg-yellow-500 rounded-full {{ $spacing }}" title="{{ $table->ordersPending }} aguardando"></span>
+                                    <span class="{{ $textSize }} font-semibold text-yellow-700">{{ $table->pendingMinutes }}m</span>
                                 </div>
                             @endif
                             @if($table->ordersInProduction > 0)
-                                <div class="flex items-center gap-0.5">
-                                    <span class="w-2 h-2 bg-blue-500 rounded-full" title="{{ $table->ordersInProduction }} em preparo"></span>
-                                    <span class="text-[10px] font-semibold text-blue-700">{{ $table->productionMinutes }}m</span>
-                                </div>
-                            @endif
-                            @if($table->ordersCompleted > 0)
-                                <div class="flex items-center gap-0.5">
-                                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="{{ $table->ordersCompleted }} pronto"></span>
-                                    <span class="text-[10px] font-semibold text-green-700">{{ $table->completedMinutes }}m</span>
+                                <div class="flex flex-col items-center justify-center {{ $padding }} ">
+                                    <span class="{{ $dotSize }} bg-blue-500 rounded-full {{ $spacing }}" title="{{ $table->ordersInProduction }} em preparo"></span>
+                                    <span class="{{ $textSize }} font-semibold text-blue-700">{{ $table->productionMinutes }}m</span>
                                 </div>
                             @endif
                             @if($table->ordersInTransit > 0)
-                                <div class="flex items-center gap-0.5">
-                                    <span class="w-2 h-2 bg-purple-500 rounded-full" title="{{ $table->ordersInTransit }} em trânsito"></span>
-                                    <span class="text-[10px] font-semibold text-purple-700">{{ $table->transitMinutes }}m</span>     
+                                <div class="flex flex-col items-center justify-center {{ $padding }} ">
+                                    <span class="{{ $dotSize }} bg-purple-500 rounded-full {{ $spacing }}" title="{{ $table->ordersInTransit }} em trânsito"></span>
+                                    <span class="{{ $textSize }} font-semibold text-purple-700">{{ $table->transitMinutes }}m</span>
                                 </div>
                             @endif
                         </div>
                     @else
-                        <div class="text-sm text-gray-400 italic">Sem pedidos</div>
+                        <div class="text-xs text-gray-400 italic">Livre</div>
                     @endif
                     
                     {{-- Badge Valor Total --}}
                     @if($table->checkTotal > 0)
-                        <div class="absolute bottom-1 left-1">
-                            <span class="text-sm font-bold text-orange-600">R$ {{ number_format($table->checkTotal, 2, ',', '.') }}</span>
+                        <div class="absolute bottom-2 left-2">
+                            <span class="text-base font-bold text-orange-600">R$ {{ number_format($table->checkTotal, 2, ',', '.') }}</span>
                         </div>
                     @endif
                 </button>

@@ -24,6 +24,7 @@ class Orders extends Component
     public $selectedCategoryId = null;
     public $cart = [];
     public $searchTerm = '';
+    public $showOrdersSection = true;
     
     public function mount($tableId)
     {
@@ -204,6 +205,43 @@ class Orders extends Component
 
     public function render()
     {
-        return view('livewire.orders');
+        // Carrega pedidos ativos agrupados por status
+        $activeOrders = Order::where('check_id', $this->currentCheck->id)
+            ->with('product')
+            ->whereIn('status', [
+                OrderStatusEnum::PENDING->value,
+                OrderStatusEnum::IN_PRODUCTION->value,
+                OrderStatusEnum::IN_TRANSIT->value
+            ])
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->groupBy('status');
+        
+        // Calcula tempo e totais por status
+        $now = now();
+        
+        $pendingOrders = $activeOrders->get(OrderStatusEnum::PENDING->value, collect());
+        $pendingTotal = $pendingOrders->sum(fn($order) => $order->product->price * $order->quantity);
+        $pendingTime = $pendingOrders->first() ? (int) $now->diffInMinutes($pendingOrders->first()->created_at) : 0;
+        
+        $inProductionOrders = $activeOrders->get(OrderStatusEnum::IN_PRODUCTION->value, collect());
+        $inProductionTotal = $inProductionOrders->sum(fn($order) => $order->product->price * $order->quantity);
+        $inProductionTime = $inProductionOrders->first() ? (int) $now->diffInMinutes($inProductionOrders->first()->created_at) : 0;
+        
+        $readyOrders = $activeOrders->get(OrderStatusEnum::IN_TRANSIT->value, collect());
+        $readyTotal = $readyOrders->sum(fn($order) => $order->product->price * $order->quantity);
+        $readyTime = $readyOrders->first() ? (int) $now->diffInMinutes($readyOrders->first()->created_at) : 0;
+
+        return view('livewire.orders', [
+            'pendingOrders' => $pendingOrders,
+            'pendingTotal' => $pendingTotal,
+            'pendingTime' => $pendingTime,
+            'inProductionOrders' => $inProductionOrders,
+            'inProductionTotal' => $inProductionTotal,
+            'inProductionTime' => $inProductionTime,
+            'readyOrders' => $readyOrders,
+            'readyTotal' => $readyTotal,
+            'readyTime' => $readyTime,
+        ]);
     }
 }
