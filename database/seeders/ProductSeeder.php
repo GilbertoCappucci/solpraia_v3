@@ -22,6 +22,8 @@ class ProductSeeder extends Seeder
             'name' => 'Coca-Cola',
             'description' => 'Refrigerante sabor cola',
             'price' => 5.00,
+            'favorite' => false,
+            'active' => true,
         ]);
 
         //category_id:6 - Suco de laranja
@@ -31,6 +33,8 @@ class ProductSeeder extends Seeder
             'name' => 'Suco de laranja',
             'description' => 'Suco natural de laranja',
             'price' => 7.00,
+            'favorite' => false,
+            'active' => true,
         ]);
 
         //category_id:7 - Agua mineral
@@ -40,6 +44,8 @@ class ProductSeeder extends Seeder
             'name' => 'Agua mineral sem gas',
             'description' => 'Agua mineral sem gas',
             'price' => 3.00,
+            'favorite' => true,
+            'active' => true,
         ]);
 
         //category_id:7 - Agua com gas
@@ -49,6 +55,8 @@ class ProductSeeder extends Seeder
             'name' => 'Agua mineral com gas',
             'description' => 'Agua mineral com gas',
             'price' => 3.50,
+            'favorite' => false,
+            'active' => true,
         ]);
 
         //category_id:3 - Batata frita tradicional
@@ -58,6 +66,8 @@ class ProductSeeder extends Seeder
             'name' => 'Batata frita tradicional',
             'description' => 'Batata frita tradicional crocante',
             'price' => 15.00,
+            'favorite' => true,
+            'active' => true,
         ]);
         
         //category_id:3 - Batata frita cheddar e bacon
@@ -67,6 +77,8 @@ class ProductSeeder extends Seeder
             'name' => 'Batata frita cheddar e bacon',
             'description' => 'Batata frita com cheddar e bacon crocante',
             'price' => 20.00,
+            'favorite' => false,
+            'active' => true,
         ]);
 
 

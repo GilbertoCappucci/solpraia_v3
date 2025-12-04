@@ -8,6 +8,7 @@ use App\Enums\TableStatusEnum;
 use App\Models\Category;
 use App\Models\Check;
 use App\Models\Order;
+use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Table;
 use Illuminate\Support\Collection;
@@ -15,26 +16,62 @@ use Illuminate\Support\Collection;
 class MenuService
 {
     /**
-     * Carrega categorias ativas do usuário
+     * Carrega categorias pai (category_id é null)
      */
-    public function getActiveCategories(int $userId): Collection
+    public function getParentCategories(int $userId): Collection
     {
         return Category::where('active', true)
             ->where('user_id', $userId)
+            ->whereNull('category_id')
             ->orderBy('name')
             ->get();
     }
 
     /**
-     * Carrega produtos filtrados
+     * Carrega categorias filhas de uma categoria pai
      */
-    public function getFilteredProducts(int $userId, ?int $categoryId = null, ?string $searchTerm = null): Collection
+    public function getChildCategories(int $userId, int $parentCategoryId): Collection
     {
+        return Category::where('active', true)
+            ->where('user_id', $userId)
+            ->where('category_id', $parentCategoryId)
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Carrega produtos filtrados por categoria pai/filha ou favoritos
+     */
+    public function getFilteredProducts(
+        int $userId, 
+        ?int $parentCategoryId = null, 
+        ?int $childCategoryId = null,
+        bool $showFavoritesOnly = false,
+        ?string $searchTerm = null
+    ): Collection {
         $query = Product::where('active', true)
             ->where('user_id', $userId);
 
-        if ($categoryId) {
-            $query->where('category_id', $categoryId);
+        // Se está mostrando apenas favoritos
+        if ($showFavoritesOnly) {
+            $query->where('favorite', true);
+        }
+        // Se tem categoria filha selecionada, filtra por ela
+        elseif ($childCategoryId) {
+            $query->where('category_id', $childCategoryId);
+        }
+        // Senão, se tem categoria pai selecionada, busca produtos de TODAS as categorias filhas
+        elseif ($parentCategoryId) {
+            $childCategoryIds = Category::where('category_id', $parentCategoryId)
+                ->where('active', true)
+                ->pluck('id');
+            
+            if ($childCategoryIds->isNotEmpty()) {
+                $query->whereIn('category_id', $childCategoryIds);
+            } else {
+                // Se não tem filhas, retorna vazio (produtos não devem estar em categoria pai)
+                return collect();
+            }
         }
 
         if ($searchTerm) {
@@ -91,12 +128,19 @@ class MenuService
 
         // Cria novos pedidos para todos os itens do carrinho
         foreach ($cart as $productId => $item) {
-            Order::create([
+            $order = Order::create([
                 'user_id' => $userId,
                 'check_id' => $check->id,
                 'product_id' => $productId,
                 'quantity' => $item['quantity'],
-                'status' => OrderStatusEnum::PENDING->value,
+            ]);
+            
+            // Registra o status inicial no histórico (PENDING)
+            OrderStatusHistory::create([
+                'order_id' => $order->id,
+                'from_status' => null,
+                'to_status' => OrderStatusEnum::PENDING->value,
+                'changed_at' => now(),
             ]);
         }
         

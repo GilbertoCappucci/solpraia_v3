@@ -7,6 +7,7 @@ use App\Enums\OrderStatusEnum;
 use App\Enums\TableStatusEnum;
 use App\Models\Check;
 use App\Models\Order;
+use App\Models\OrderStatusHistory;
 use App\Models\Table;
 use Illuminate\Support\Collection;
 
@@ -97,16 +98,21 @@ class OrderService
             ];
         }
 
+        // Busca pedidos com histórico de status
         $activeOrders = Order::where('check_id', $check->id)
-            ->with('product')
-            ->whereIn('status', [
-                OrderStatusEnum::PENDING->value,
-                OrderStatusEnum::IN_PRODUCTION->value,
-                OrderStatusEnum::IN_TRANSIT->value,
-                OrderStatusEnum::COMPLETED->value
-            ])
-            ->orderBy('created_at', 'asc')
+            ->with(['product', 'currentStatusHistory'])
             ->get()
+            ->filter(function($order) {
+                return in_array($order->status, [
+                    OrderStatusEnum::PENDING->value,
+                    OrderStatusEnum::IN_PRODUCTION->value,
+                    OrderStatusEnum::IN_TRANSIT->value,
+                    OrderStatusEnum::COMPLETED->value
+                ]);
+            })
+            ->sortBy(function($order) {
+                return $order->status_changed_at;
+            })
             ->groupBy('status');
         
         return [
@@ -118,13 +124,32 @@ class OrderService
     }
 
     /**
-     * Calcula totais e tempos para cada grupo de pedidos
+     * Calcula totais e tempos para cada grupo de pedidos usando histórico
      */
     public function calculateOrderStats(Collection $orders): array
     {
-        $now = now();
         $total = $orders->sum(fn($order) => $order->product->price * $order->quantity);
-        $time = $orders->first() ? (int) $now->diffInMinutes($orders->first()->created_at) : 0;
+        
+        if ($orders->isEmpty()) {
+            return ['total' => $total, 'time' => 0];
+        }
+        
+        // Pega o tempo mais antigo do histórico de status
+        $oldestTime = null;
+        
+        foreach ($orders as $order) {
+            // Usa o atributo virtual status_changed_at
+            $changedAt = $order->status_changed_at;
+            
+            if ($changedAt && (!$oldestTime || $changedAt < $oldestTime)) {
+                $oldestTime = $changedAt;
+            }
+        }
+        
+        $time = 0;
+        if ($oldestTime) {
+            $time = (int) now()->diffInMinutes($oldestTime);
+        }
         
         return [
             'total' => $total,
@@ -133,12 +158,19 @@ class OrderService
     }
 
     /**
-     * Atualiza status individual de um pedido
+     * Atualiza status individual de um pedido e registra no histórico
      */
     public function updateOrderStatus(int $orderId, string $newStatus): void
     {
-        Order::where('id', $orderId)->update([
-            'status' => $newStatus,
+        $order = Order::with('currentStatusHistory')->findOrFail($orderId);
+        $oldStatus = $order->status; // Busca do histórico via atributo virtual
+        
+        // Registra no histórico (não precisa mais atualizar coluna status)
+        OrderStatusHistory::create([
+            'order_id' => $orderId,
+            'from_status' => $oldStatus,
+            'to_status' => $newStatus,
+            'changed_at' => now(),
         ]);
     }
 }

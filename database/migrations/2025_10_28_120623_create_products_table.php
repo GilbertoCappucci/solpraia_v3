@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
+            $table->boolean('favorite')->default(false);
             $table->boolean('active')->default(false);
             $table->timestamps();
             $table->softDeletes();

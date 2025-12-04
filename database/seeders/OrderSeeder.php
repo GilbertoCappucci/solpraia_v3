@@ -2,242 +2,135 @@
 
 namespace Database\Seeders;
 
-use App\Enums\CheckStatusEnum;
 use App\Enums\OrderStatusEnum;
-use App\Enums\RoleEnum;
-use App\Models\Check;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Table;
 use App\Models\User;
-use Filament\Schemas\Components\Tabs\Tab;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Check;
 use Illuminate\Database\Seeder;
 
 class OrderSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     * 
+     * REFATORADO: Agora usa diretamente os Models de forma simples para seeders.
+     * Business logic complexa está nos Services (MenuService, OrderService).
+     * 
+     * Este seeder:
+     * - Cria checks manualmente (seeders não precisam da lógica completa de Services)
+     * - Cria orders manualmente
+     * - IMPORTANTE: Cria registros em order_status_history para tracking de tempo
+     * - Calcula totals manualmente (aceitável em seeders)
      */
     public function run(): void
     {
+        // Usuário para todos os pedidos
+        $user = User::find(2);
 
-
-        //Adicionar pedido em check 1 na mesa 1
-        $deviceUser = User::find(2)->devices()->first();
-        $check = Check::find(1);
-        $product = Product::find(1);
-        $quantity = 2;
-
-        if(!$check) {
-            $table = Table::find(1);
-            $check = $this->openCheck($table);
-        }
-
-        $this->addOrder(
-            $deviceUser,
-            $check,
-            $product,
-            $quantity
-        );
-
-        //Adicionar pedido em check 2 na mesa 2
-        $deviceUser = User::find(2)->devices()->first();
-        $check = Check::find(2);
-        $product = Product::find(2);
-        $quantity = 1;
-
-        if(!$check) {
-            $table = Table::find(2);
-            $check = $this->openCheck($table);
-        }
-
-        $this->addOrder(
-            $deviceUser,
-            $check,
-            $product,
-            $quantity
-        );
-
-        //Pedido 1 esta em producao
-        $order = Order::find(1);
-        $this->inProductionOrder($order);
-
-        //Adicionar pedido em check 1 na mesa 1
-        $deviceUser = User::find(2)->devices()->first();
-        $check = Check::find(1);
-        $product = Product::find(3);
-        $quantity = 3;
-
-        $this->addOrder(
-            $deviceUser,
-            $check,
-            $product,
-            $quantity
-        );
-
-        //Pedido 2 esta em transito
-        $order = Order::find(2);
-        $this->inTransitOrder($order);
-
-        /*
-            for ($i = 0; $i < 10; $i++) {
-
-                $user = User::where('role', RoleEnum::ADMIN->value)->inRandomOrder()->first();
-                $deviceUser = $user->devices()->inRandomOrder()->first();
-                $tables = $user->tables()->where('active', true)->get();
-
-                if ($tables->isEmpty()) {
-                    continue; // Skip if no active tables
-                }
-
-                $table = $tables->random();
-
-                $check = $this->hasTableCheck($table);
-
-                if (!$check) {
-                    $check = $this->openCheck($table);
-                }
-
-                $product = $user->products()->inRandomOrder()->first();
-                $quantity = rand(1, 5);
-
-                $order = $this->addOrder($deviceUser, $check, $product, $quantity);
-                $this->updateCheckTotal($check, $product->price * $quantity);
-
-                // Randomly decide to cancel or complete the order
-                $val = rand(0, 9);
-
-                switch ($val) {
-                    case 0:
-                        $this->cancelOrder($order, $check);
-                        break;
-                    case 1:
-                    case 2:
-                    case 3:
-                        $this->completeOrder($order);
-                        break;
-                    case 4:
-                    case 5:
-                    case 6:
-                        $this->inTransitOrder($order);
-                        break;
-                    case 7:
-                    case 8:
-                        $this->inProductionOrder($order);
-                        break;  
-                    default:
-                        $this->pendingOrder($order);
-                        break;
-                }
-
-                // Randomly decide to close the check
-                if (rand(0, 4) === 0) {
-                    $this->closeCheck($check);
-                }
-            }
-        */
+        // ==================================================================
+        // Cenário 1: Mesa 1 - Pedido em PRODUÇÃO
+        // ==================================================================
+        $table1 = Table::find(1);
         
-    }
-
-    private function inProductionOrder($order)
-    {
-        $order->update([
-            'status' => OrderStatusEnum::IN_PRODUCTION->value,
-        ]);
-    }
-
-    private function inTransitOrder($order)
-    {
-        $order->update([
-            'status' => OrderStatusEnum::IN_TRANSIT->value,
-        ]);
-    }
-
-    private function pendingOrder($order)
-    {
-        $order->update([
-            'status' => OrderStatusEnum::PENDING->value,
-        ]);
-    }   
-
-    private function hasTableCheck($table): ?Check
-    {
-        return Check::where('table_id', $table->id)
-                    ->where('status', CheckStatusEnum::OPEN->value)
-                    ->first();
-    }
-
-    private function openCheck($table)
-    {
-        $table->update([
-            'status' => 'occupied',
-        ]);
-
-        return Check::factory()->create([
-            'table_id' => $table->id,
+        // Cria check manualmente
+        $check1 = Check::create([
+            'table_id' => $table1->id,
             'total' => 0,
-            'status' => CheckStatusEnum::OPEN->value,
-            'opened_at' => now(),
-            'closed_at' => null,
+            'status' => 'open',
+            'opened_at' => now()->subMinutes(10),
         ]);
+        
+        $table1->update(['status' => 'occupied']);
+        
+        // Cria pedido
+        $product1 = Product::find(1);
+        $order1 = Order::create([
+            'user_id' => $user->id,
+            'check_id' => $check1->id,
+            'product_id' => $product1->id,
+            'quantity' => 2,
+        ]);
+        
+        // Cria histórico de status (PENDING) - 10 minutos atrás
+        $order1->statusHistory()->create([
+            'from_status' => null,
+            'to_status' => OrderStatusEnum::PENDING->value,
+            'changed_at' => now()->subMinutes(10),
+        ]);
+        
+        // Muda para EM PRODUÇÃO - 5 minutos atrás (apenas histórico)
+        $order1->statusHistory()->create([
+            'from_status' => OrderStatusEnum::PENDING->value,
+            'to_status' => OrderStatusEnum::IN_PRODUCTION->value,
+            'changed_at' => now()->subMinutes(5),
+        ]);
+        
+        // Atualiza total do check
+        $check1->update(['total' => $product1->price * 2]);
+
+        // ==================================================================
+        // Cenário 2: Mesa 2 - Pedido em TRÂNSITO
+        // ==================================================================
+        $table2 = Table::find(2);
+        
+        $check2 = Check::create([
+            'table_id' => $table2->id,
+            'total' => 0,
+            'status' => 'open',
+            'opened_at' => now()->subMinutes(8),
+        ]);
+        
+        $table2->update(['status' => 'occupied']);
+        
+        $product2 = Product::find(2);
+        $order2 = Order::create([
+            'user_id' => $user->id,
+            'check_id' => $check2->id,
+            'product_id' => $product2->id,
+            'quantity' => 1,
+        ]);
+        
+        // Histórico completo: PENDING -> PRODUCTION -> TRANSIT
+        $order2->statusHistory()->create([
+            'from_status' => null,
+            'to_status' => OrderStatusEnum::PENDING->value,
+            'changed_at' => now()->subMinutes(8),
+        ]);
+        
+        $order2->statusHistory()->create([
+            'from_status' => OrderStatusEnum::PENDING->value,
+            'to_status' => OrderStatusEnum::IN_PRODUCTION->value,
+            'changed_at' => now()->subMinutes(3),
+        ]);
+        
+        $order2->statusHistory()->create([
+            'from_status' => OrderStatusEnum::IN_PRODUCTION->value,
+            'to_status' => OrderStatusEnum::IN_TRANSIT->value,
+            'changed_at' => now()->subMinutes(1),
+        ]);
+        
+        $check2->update(['total' => $product2->price]);
+
+        // ==================================================================
+        // Cenário 3: Adicionar mais um pedido PENDENTE na Mesa 1
+        // ==================================================================
+        $product3 = Product::find(3);
+        $order3 = Order::create([
+            'user_id' => $user->id,
+            'check_id' => $check1->id,
+            'product_id' => $product3->id,
+            'quantity' => 3,
+        ]);
+        
+        $order3->statusHistory()->create([
+            'from_status' => null,
+            'to_status' => OrderStatusEnum::PENDING->value,
+            'changed_at' => now(),
+        ]);
+        
+        // Atualiza total do check1
+        $check1->update(['total' => $check1->total + ($product3->price * 3)]);
     }
-
-    private function closeCheck($check)
-    {
-        $table = $check->table;
-
-        $table->update([
-            'status' => 'free',
-        ]);
-
-        $check->update([
-            'status' => CheckStatusEnum::CLOSED->value,
-            'closed_at' => now(),
-        ]);
-    }
-
-    private function addOrder($deviceUser, $check, $product, $quantity)
-    {
-        //Criar pedido
-        $order = Order::factory()->create([
-            'user_id' => $deviceUser->id,
-            'check_id' => $check->id,
-            'product_id' => $product->id,
-            'quantity' => $quantity,
-            'status' => 'pending',
-        ]);
-
-        //Update Check total
-        $this->updateCheckTotal($check, $product->price * $quantity);
-
-        return $order;
-    }
-
-    private function updateCheckTotal($check, $amount)
-    {
-        $check->update([
-            'total' => $check->total + $amount,
-        ]);
-    }
-
-    private function cancelOrder($order, $check)
-    {
-        $order->update([
-            'status' => OrderStatusEnum::CANCELED->value,
-        ]);
-
-        $check->update([
-            'total' => $check->total - ($order->product->price * $order->quantity),
-        ]);
-    }
-
-    private function completeOrder($order)
-    {
-        $order->update([
-            'status' => OrderStatusEnum::COMPLETED->value,
-        ]);
-    }
-
-
 }

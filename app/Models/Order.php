@@ -16,8 +16,20 @@ class Order extends Model
         'check_id',
         'product_id',
         'quantity',
-        'status',
     ];
+
+    // Atributo virtual para status (busca do histórico)
+    protected $appends = ['status'];
+
+    /**
+     * Retorna o status atual do pedido baseado no histórico mais recente
+     */
+    public function getStatusAttribute()
+    {
+        return $this->statusHistory()
+            ->latest('changed_at')
+            ->value('to_status');
+    }
 
     public function user()
     {
@@ -32,5 +44,24 @@ class Order extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function statusHistory()
+    {
+        return $this->hasMany(OrderStatusHistory::class);
+    }
+
+    public function currentStatusHistory()
+    {
+        return $this->hasOne(OrderStatusHistory::class)
+            ->latest('changed_at');
+    }
+
+    /**
+     * Retorna o timestamp da última mudança de status
+     */
+    public function getStatusChangedAtAttribute()
+    {
+        return $this->currentStatusHistory?->changed_at;
     }
 }

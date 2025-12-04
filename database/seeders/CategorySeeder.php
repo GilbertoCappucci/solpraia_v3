@@ -20,6 +20,7 @@ class CategorySeeder extends Seeder
                 'user_id' => 2,
                 'category_id' => null,
                 'name' => 'Porções',
+                'active' => true,
                 'description' => 'Porções de alimentos e bebidas.'
             ],
         );
@@ -30,6 +31,7 @@ class CategorySeeder extends Seeder
                 'user_id' => 2,
                 'category_id' => null,
                 'name' => 'Bebidas',
+                'active' => true,
                 'description' => 'Bebidas alcoólicas e não alcoólicas.'
             ],
         );
@@ -40,6 +42,7 @@ class CategorySeeder extends Seeder
                 'user_id' => 2,
                 'category_id' => 1,
                 'name' => 'Batata frita',
+                'active' => true,
                 'description' => 'Bata frita'
             ],
         );
@@ -50,6 +53,7 @@ class CategorySeeder extends Seeder
                 'user_id' => 2,
                 'category_id' => 1,
                 'name' => 'Peixe frito',
+                'active' => true,
                 'description' => 'Peixe frito de temporada'
             ],
         );
@@ -60,6 +64,7 @@ class CategorySeeder extends Seeder
                 'user_id' => 2,
                 'category_id' => 1,
                 'name' => 'Calabresa acebolada',
+                'active' => true,
                 'description' => 'Calabresa frita acebolada'
             ],
         );
@@ -70,6 +75,7 @@ class CategorySeeder extends Seeder
                 'user_id' => 2,
                 'category_id' => 2,
                 'name' => 'Suco de Fruta',
+                'active' => true,
                 'description' => 'Suco de poupa de fruta natural'
             ],
         );
@@ -80,6 +86,7 @@ class CategorySeeder extends Seeder
                 'user_id' => 2,
                 'category_id' => 2,
                 'name' => 'Agua',
+                'active' => true,
                 'description' => 'Agua natural mineral'
             ],
         );
@@ -90,6 +97,7 @@ class CategorySeeder extends Seeder
                 'user_id' => 2,
                 'category_id' => 2,
                 'name' => 'Refrigerante',
+                'active' => true,
                 'description' => 'Refrigerante sabor cola'
             ],
         );

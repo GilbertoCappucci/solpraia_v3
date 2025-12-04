@@ -9,6 +9,8 @@ use App\Models\Table;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+use function Symfony\Component\Clock\now;
+
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Order>
  */
@@ -24,6 +26,7 @@ class OrderFactory extends Factory
 
         return [
             'status' => fake()->randomElement(OrderStatusEnum::cases())->value,
+            'status_changed_at' => now(),
         ];
     }
 }

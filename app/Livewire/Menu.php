@@ -15,9 +15,12 @@ class Menu extends Component
     public $tableId;
     public $selectedTable = null;
     public $currentCheck = null;
-    public $categories = [];
+    public $parentCategories = [];
+    public $childCategories = [];
     public $products = [];
-    public $selectedCategoryId = null;
+    public $selectedParentCategoryId = null;
+    public $selectedChildCategoryId = null;
+    public $showFavoritesOnly = false;
     public $cart = [];
     public $searchTerm = '';
     
@@ -40,27 +43,56 @@ class Menu extends Component
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
         
-        $this->loadCategories();
+        $this->loadParentCategories();
         $this->loadProducts();
     }
 
-    public function loadCategories()
+    public function loadParentCategories()
     {
-        $this->categories = $this->menuService->getActiveCategories($this->userId);
+        $this->parentCategories = $this->menuService->getParentCategories($this->userId);
+    }
+
+    public function loadChildCategories()
+    {
+        if ($this->selectedParentCategoryId) {
+            $this->childCategories = $this->menuService->getChildCategories($this->userId, $this->selectedParentCategoryId);
+        } else {
+            $this->childCategories = [];
+        }
     }
 
     public function loadProducts()
     {
         $this->products = $this->menuService->getFilteredProducts(
             $this->userId,
-            $this->selectedCategoryId,
+            $this->selectedParentCategoryId,
+            $this->selectedChildCategoryId,
+            $this->showFavoritesOnly,
             $this->searchTerm
         );
     }
 
-    public function selectCategory($categoryId)
+    public function selectParentCategory($categoryId)
     {
-        $this->selectedCategoryId = $categoryId === $this->selectedCategoryId ? null : $categoryId;
+        $this->selectedParentCategoryId = $categoryId === $this->selectedParentCategoryId ? null : $categoryId;
+        $this->selectedChildCategoryId = null; // Reset categoria filha
+        $this->showFavoritesOnly = false; // Reset favoritos
+        $this->loadChildCategories();
+        $this->loadProducts();
+    }
+
+    public function selectFavorites()
+    {
+        $this->showFavoritesOnly = !$this->showFavoritesOnly;
+        $this->selectedParentCategoryId = null;
+        $this->selectedChildCategoryId = null;
+        $this->childCategories = [];
+        $this->loadProducts();
+    }
+
+    public function selectChildCategory($categoryId)
+    {
+        $this->selectedChildCategoryId = $categoryId === $this->selectedChildCategoryId ? null : $categoryId;
         $this->loadProducts();
     }
 
