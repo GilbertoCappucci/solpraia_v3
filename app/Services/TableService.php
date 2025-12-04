@@ -1,0 +1,194 @@
+<?php
+
+namespace App\Services;
+
+use App\Enums\CheckStatusEnum;
+use App\Enums\OrderStatusEnum;
+use App\Enums\TableStatusEnum;
+use App\Models\Table;
+use Illuminate\Support\Collection;
+
+class TableService
+{
+    /**
+     * Busca e filtra tables com seus checks e orders
+     */
+    public function getFilteredTables(
+        int $userId,
+        ?string $filterTableStatus = null,
+        ?string $filterCheckStatus = null,
+        array $filterOrderStatuses = []
+    ): Collection {
+        return Table::where('status', '!=', TableStatusEnum::CLOSE->value)
+            ->where('user_id', $userId)
+            ->with(['checks' => function($query) {
+                $query->with(['orders']);
+            }])
+            ->orderBy('number')
+            ->get()
+            ->filter(function($table) use ($filterTableStatus, $filterCheckStatus, $filterOrderStatuses) {
+                return $this->applyFilters($table, $filterTableStatus, $filterCheckStatus, $filterOrderStatuses);
+            })
+            ->map(function($table) {
+                return $this->enrichTableData($table);
+            });
+    }
+
+    /**
+     * Aplica filtros na table
+     */
+    protected function applyFilters(
+        Table $table,
+        ?string $filterTableStatus,
+        ?string $filterCheckStatus,
+        array $filterOrderStatuses
+    ): bool {
+        $currentCheck = $table->checks->sortByDesc('created_at')->first();
+        
+        // Filtro de status da Table (mesa física)
+        if ($filterTableStatus && $table->status !== $filterTableStatus) {
+            return false;
+        }
+        
+        // Filtro de status do Check
+        if ($filterCheckStatus) {
+            if (!$currentCheck || $currentCheck->status !== $filterCheckStatus) {
+                return false;
+            }
+        }
+        
+        // Filtro de status dos Orders
+        if (!empty($filterOrderStatuses) && $currentCheck) {
+            $hasAnyFilteredStatus = $currentCheck->orders->whereIn('status', $filterOrderStatuses)->isNotEmpty();
+            if (!$hasAnyFilteredStatus) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * Enriquece os dados da table com informações de check e orders
+     */
+    protected function enrichTableData(Table $table): Table
+    {
+        $currentCheck = $table->checks->sortByDesc('created_at')->first();
+        
+        if ($currentCheck) {
+            $this->setCheckData($table, $currentCheck);
+            $this->setOrdersData($table, $currentCheck);
+        } else {
+            $this->setEmptyData($table);
+        }
+        
+        return $table;
+    }
+
+    /**
+     * Define dados do check na table
+     */
+    protected function setCheckData(Table $table, $currentCheck): void
+    {
+        $table->checkStatus = $currentCheck->status;
+        $table->checkStatusLabel = match($currentCheck->status) {
+            CheckStatusEnum::OPEN->value => 'Aberto',
+            CheckStatusEnum::CLOSING->value => 'Fechando',
+            CheckStatusEnum::CLOSED->value => 'Fechado',
+            CheckStatusEnum::PAID->value => 'Pago',
+            default => 'Livre'
+        };
+        $table->checkStatusColor = match($currentCheck->status) {
+            CheckStatusEnum::OPEN->value => 'green',
+            CheckStatusEnum::CLOSING->value => 'yellow',
+            CheckStatusEnum::CLOSED->value => 'red',
+            CheckStatusEnum::PAID->value => 'gray',
+            default => 'gray'
+        };
+        $table->checkTotal = $currentCheck->total ?? 0;
+    }
+
+    /**
+     * Define dados dos orders na table
+     */
+    protected function setOrdersData(Table $table, $currentCheck): void
+    {
+        $orders = $currentCheck->orders;
+        $now = now();
+        
+        // Pending orders
+        $pendingOrders = $orders->where('status', OrderStatusEnum::PENDING->value);
+        $table->ordersPending = $pendingOrders->count();
+        $oldestPending = $pendingOrders->sortBy('created_at')->first();
+        $table->pendingMinutes = $oldestPending ? abs((int) $now->diffInMinutes($oldestPending->created_at)) : 0;
+        
+        // In production orders
+        $productionOrders = $orders->where('status', OrderStatusEnum::IN_PRODUCTION->value);
+        $table->ordersInProduction = $productionOrders->count();
+        $oldestProduction = $productionOrders->sortBy('created_at')->first();
+        $table->productionMinutes = $oldestProduction ? abs((int) $now->diffInMinutes($oldestProduction->created_at)) : 0;
+        
+        // In transit orders
+        $transitOrders = $orders->where('status', OrderStatusEnum::IN_TRANSIT->value);
+        $table->ordersInTransit = $transitOrders->count();
+        $oldestTransit = $transitOrders->sortBy('created_at')->first();
+        $table->transitMinutes = $oldestTransit ? abs((int) $now->diffInMinutes($oldestTransit->created_at)) : 0;
+        
+        // Completed orders
+        $completedOrders = $orders->where('status', OrderStatusEnum::COMPLETED->value);
+        $table->ordersCompleted = $completedOrders->count();
+        $oldestCompleted = $completedOrders->sortBy('created_at')->first();
+        $table->completedMinutes = $oldestCompleted ? abs((int) $now->diffInMinutes($oldestCompleted->created_at)) : 0;
+    }
+
+    /**
+     * Define dados vazios quando não há check
+     */
+    protected function setEmptyData(Table $table): void
+    {
+        $table->checkStatus = null;
+        $table->checkStatusLabel = 'Livre';
+        $table->checkStatusColor = 'gray';
+        $table->ordersPending = 0;
+        $table->ordersInProduction = 0;
+        $table->ordersInTransit = 0;
+        $table->ordersCompleted = 0;
+        $table->checkTotal = 0;
+        $table->pendingMinutes = 0;
+        $table->productionMinutes = 0;
+        $table->transitMinutes = 0;
+        $table->completedMinutes = 0;
+    }
+
+    /**
+     * Cria uma nova table
+     */
+    public function createTable(int $userId, string $name, int $number): Table
+    {
+        return Table::create([
+            'user_id' => $userId,
+            'name' => $name,
+            'number' => $number,
+            'status' => TableStatusEnum::FREE->value,
+        ]);
+    }
+
+    /**
+     * Valida dados para criação de table
+     */
+    public function validateTableData(array $data): array
+    {
+        $rules = [
+            'newTableName' => 'required|string|max:255',
+            'newTableNumber' => 'required|integer|min:1',
+        ];
+
+        $messages = [
+            'newTableName.required' => 'O nome do local é obrigatório.',
+            'newTableNumber.required' => 'O número do local é obrigatório.',
+            'newTableNumber.integer' => 'O número deve ser um valor numérico.',
+        ];
+
+        return ['rules' => $rules, 'messages' => $messages];
+    }
+}

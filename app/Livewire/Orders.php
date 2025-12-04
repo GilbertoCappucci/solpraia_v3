@@ -25,6 +25,9 @@ class Orders extends Component
     public $cart = [];
     public $searchTerm = '';
     public $showOrdersSection = true;
+    public $showStatusModal = false;
+    public $newTableStatus = null;
+    public $newCheckStatus = null;
     
     public function mount($tableId)
     {
@@ -39,16 +42,6 @@ class Orders extends Component
         $this->currentCheck = Check::where('table_id', $tableId)
             ->where('status', CheckStatusEnum::OPEN->value)
             ->first();
-            
-        // Se não existe check aberto, cria um novo
-        if (!$this->currentCheck) {
-            $this->currentCheck = Check::create([
-                'table_id' => $tableId,
-                'total' => 0,
-                'status' => CheckStatusEnum::OPEN->value,
-                'opened_at' => now(),
-            ]);
-        }
         
         $this->loadCartFromCheck();
         $this->loadCategories();
@@ -151,6 +144,82 @@ class Orders extends Component
         return redirect()->route('tables');
     }
 
+    public function openStatusModal()
+    {
+        $this->showStatusModal = true;
+        $this->newTableStatus = $this->selectedTable->status;
+        $this->newCheckStatus = $this->currentCheck?->status;
+    }
+
+    public function closeStatusModal()
+    {
+        $this->showStatusModal = false;
+        $this->newTableStatus = null;
+        $this->newCheckStatus = null;
+    }
+
+    public function updateStatuses()
+    {
+        $errors = [];
+        
+        // Validação: Não pode mudar mesa para FREE se houver check com valor
+        if ($this->newTableStatus === \App\Enums\TableStatusEnum::FREE->value) {
+            if ($this->currentCheck && $this->currentCheck->total > 0) {
+                $errors[] = 'Não é possível liberar a mesa com conta em aberto.';
+            }
+        }
+        
+        // Validação: Não pode fechar conta sem pedidos
+        if ($this->newCheckStatus === CheckStatusEnum::CLOSING->value) {
+            if (!$this->currentCheck || $this->currentCheck->total <= 0) {
+                $errors[] = 'Não é possível fechar conta sem pedidos.';
+            }
+        }
+        
+        // Validação: Não pode marcar como CLOSED sem estar em CLOSING
+        if ($this->newCheckStatus === CheckStatusEnum::CLOSED->value) {
+            if (!$this->currentCheck || $this->currentCheck->status !== CheckStatusEnum::CLOSING->value) {
+                $errors[] = 'A conta precisa estar em "Fechando" antes de ser marcada como "Fechada".';
+            }
+        }
+        
+        // Validação: Não pode marcar como PAID sem estar CLOSED
+        if ($this->newCheckStatus === CheckStatusEnum::PAID->value) {
+            if (!$this->currentCheck || $this->currentCheck->status !== CheckStatusEnum::CLOSED->value) {
+                $errors[] = 'A conta precisa estar "Fechada" antes de ser marcada como "Paga".';
+            }
+        }
+        
+        if (!empty($errors)) {
+            session()->flash('error', implode(' ', $errors));
+            return;
+        }
+        
+        // Atualiza status da mesa
+        if ($this->newTableStatus && $this->newTableStatus !== $this->selectedTable->status) {
+            $this->selectedTable->update(['status' => $this->newTableStatus]);
+        }
+        
+        // Atualiza status do check
+        if ($this->newCheckStatus && $this->currentCheck && $this->newCheckStatus !== $this->currentCheck->status) {
+            $this->currentCheck->update(['status' => $this->newCheckStatus]);
+            
+            // Se marcou como PAID, libera a mesa
+            if ($this->newCheckStatus === CheckStatusEnum::PAID->value) {
+                $this->selectedTable->update(['status' => \App\Enums\TableStatusEnum::FREE->value]);
+            }
+        }
+        
+        session()->flash('success', 'Status atualizado com sucesso!');
+        $this->closeStatusModal();
+        
+        // Recarrega dados
+        $this->selectedTable = Table::findOrFail($this->tableId);
+        $this->currentCheck = Check::where('table_id', $this->tableId)
+            ->where('status', CheckStatusEnum::OPEN->value)
+            ->first();
+    }
+
     public function getCartTotalProperty()
     {
         $total = 0;
@@ -194,15 +263,27 @@ class Orders extends Component
             }
         }
 
-        // Atualiza total do check
-        $this->currentCheck->update([
-            'total' => $this->cartTotal,
-        ]);
+        // Cria check se não existir
+        if (!$this->currentCheck) {
+            $this->currentCheck = Check::create([
+                'table_id' => $this->tableId,
+                'total' => $this->cartTotal,
+                'status' => CheckStatusEnum::OPEN->value,
+                'opened_at' => now(),
+            ]);
+        } else {
+            // Atualiza total do check
+            $this->currentCheck->update([
+                'total' => $this->cartTotal,
+            ]);
+        }
         
-        // Atualiza status da mesa para ocupada
-        $this->selectedTable->update([
-            'status' => \App\Enums\TableStatusEnum::OCCUPIED->value,
-        ]);
+        // Atualiza status da mesa para ocupada apenas ao confirmar pedido
+        if ($this->selectedTable->status !== \App\Enums\TableStatusEnum::OCCUPIED->value) {
+            $this->selectedTable->update([
+                'status' => \App\Enums\TableStatusEnum::OCCUPIED->value,
+            ]);
+        }
 
         session()->flash('success', 'Pedido confirmado com sucesso!');
         $this->loadCartFromCheck();

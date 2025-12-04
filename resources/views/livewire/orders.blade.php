@@ -26,11 +26,21 @@
                 <span class="text-sm opacity-90">{{ $selectedTable->name }}</span>
             </div>
         </div>
-        @if($currentCheck && $currentCheck->total > 0)
-            <div class="text-right">
-                <p class="text-xl font-bold">R$ {{ number_format($currentCheck->total, 2, ',', '.') }}</p>
-            </div>
-        @endif
+        <div class="flex items-center gap-3">
+            @if($currentCheck && $currentCheck->total > 0)
+                <div class="text-right">
+                    <p class="text-xl font-bold">R$ {{ number_format($currentCheck->total, 2, ',', '.') }}</p>
+                </div>
+            @endif
+            <button 
+                wire:click="openStatusModal"
+                class="p-1.5 hover:bg-white/20 rounded-lg transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+            </button>
+        </div>
     </div>
 
     {{-- Seção de Pedidos Ativos --}}
@@ -259,9 +269,98 @@
             </div>
             <button 
                 wire:click="confirmOrder"
-                class="w-full bg-white text-orange-600 py-3 rounded-lg font-bold text-base shadow-lg hover:shadow-xl transition">
-                Confirmar Novos Pedidos
+                class="w-full bg-white text-orange-600 font-bold py-3 rounded-lg hover:bg-gray-100 transition">
+                Confirmar Pedido
             </button>
+        </div>
+    @endif
+
+    {{-- Modal Alterar Status --}}
+    @if($showStatusModal)
+        <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeStatusModal">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" wire:click.stop>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Alterar Status</h3>
+                    <button wire:click="closeStatusModal" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    {{-- Status da Mesa --}}
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Status da Mesa</label>
+                        <div class="flex flex-wrap gap-2">
+                            <button 
+                                wire:click="$set('newTableStatus', 'free')"
+                                class="px-3 py-2 rounded-lg text-sm font-medium transition
+                                    {{ $newTableStatus === 'free' ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                Livre
+                            </button>
+                            <button 
+                                wire:click="$set('newTableStatus', 'occupied')"
+                                class="px-3 py-2 rounded-lg text-sm font-medium transition
+                                    {{ $newTableStatus === 'occupied' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                Ocupada
+                            </button>
+                            <button 
+                                wire:click="$set('newTableStatus', 'reserved')"
+                                class="px-3 py-2 rounded-lg text-sm font-medium transition
+                                    {{ $newTableStatus === 'reserved' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                Reservada
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Status do Check --}}
+                    @if($currentCheck)
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Status do Check</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button 
+                                    wire:click="$set('newCheckStatus', 'Open')"
+                                    class="px-3 py-2 rounded-lg text-sm font-medium transition
+                                        {{ $newCheckStatus === 'Open' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                    Aberto
+                                </button>
+                                <button 
+                                    wire:click="$set('newCheckStatus', 'Closing')"
+                                    class="px-3 py-2 rounded-lg text-sm font-medium transition
+                                        {{ $newCheckStatus === 'Closing' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                    Fechando
+                                </button>
+                                <button 
+                                    wire:click="$set('newCheckStatus', 'Closed')"
+                                    class="px-3 py-2 rounded-lg text-sm font-medium transition
+                                        {{ $newCheckStatus === 'Closed' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                    Fechado
+                                </button>
+                                <button 
+                                    wire:click="$set('newCheckStatus', 'Paid')"
+                                    class="px-3 py-2 rounded-lg text-sm font-medium transition
+                                        {{ $newCheckStatus === 'Paid' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                    Pago
+                                </button>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="flex gap-2 mt-6">
+                    <button 
+                        wire:click="closeStatusModal"
+                        class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">
+                        Cancelar
+                    </button>
+                    <button 
+                        wire:click="updateStatuses"
+                        class="flex-1 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-medium hover:shadow-lg transition">
+                        Salvar
+                    </button>
+                </div>
+            </div>
         </div>
     @endif
 </div>
