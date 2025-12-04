@@ -22,7 +22,7 @@ class TableService
         return Table::where('status', '!=', TableStatusEnum::CLOSE->value)
             ->where('user_id', $userId)
             ->with(['checks' => function($query) {
-                $query->with(['orders']);
+                $query->with(['orders.currentStatusHistory']);
             }])
             ->orderBy('number')
             ->get()
@@ -59,7 +59,9 @@ class TableService
         
         // Filtro de status dos Orders
         if (!empty($filterOrderStatuses) && $currentCheck) {
-            $hasAnyFilteredStatus = $currentCheck->orders->whereIn('status', $filterOrderStatuses)->isNotEmpty();
+            $hasAnyFilteredStatus = $currentCheck->orders
+                ->filter(fn($order) => in_array($order->status, $filterOrderStatuses))
+                ->isNotEmpty();
             if (!$hasAnyFilteredStatus) {
                 return false;
             }
@@ -110,6 +112,7 @@ class TableService
 
     /**
      * Define dados dos orders na table
+     * Usa order_status_history para obter status e tempo corretos
      */
     protected function setOrdersData(Table $table, $currentCheck): void
     {
@@ -117,28 +120,36 @@ class TableService
         $now = now();
         
         // Pending orders
-        $pendingOrders = $orders->where('status', OrderStatusEnum::PENDING->value);
+        $pendingOrders = $orders->filter(fn($order) => $order->status === OrderStatusEnum::PENDING->value);
         $table->ordersPending = $pendingOrders->count();
-        $oldestPending = $pendingOrders->sortBy('created_at')->first();
-        $table->pendingMinutes = $oldestPending ? abs((int) $now->diffInMinutes($oldestPending->created_at)) : 0;
+        $oldestPending = $pendingOrders->sortBy('status_changed_at')->first();
+        $table->pendingMinutes = $oldestPending && $oldestPending->status_changed_at 
+            ? abs((int) $now->diffInMinutes($oldestPending->status_changed_at)) 
+            : 0;
         
         // In production orders
-        $productionOrders = $orders->where('status', OrderStatusEnum::IN_PRODUCTION->value);
+        $productionOrders = $orders->filter(fn($order) => $order->status === OrderStatusEnum::IN_PRODUCTION->value);
         $table->ordersInProduction = $productionOrders->count();
-        $oldestProduction = $productionOrders->sortBy('created_at')->first();
-        $table->productionMinutes = $oldestProduction ? abs((int) $now->diffInMinutes($oldestProduction->created_at)) : 0;
+        $oldestProduction = $productionOrders->sortBy('status_changed_at')->first();
+        $table->productionMinutes = $oldestProduction && $oldestProduction->status_changed_at 
+            ? abs((int) $now->diffInMinutes($oldestProduction->status_changed_at)) 
+            : 0;
         
         // In transit orders
-        $transitOrders = $orders->where('status', OrderStatusEnum::IN_TRANSIT->value);
+        $transitOrders = $orders->filter(fn($order) => $order->status === OrderStatusEnum::IN_TRANSIT->value);
         $table->ordersInTransit = $transitOrders->count();
-        $oldestTransit = $transitOrders->sortBy('created_at')->first();
-        $table->transitMinutes = $oldestTransit ? abs((int) $now->diffInMinutes($oldestTransit->created_at)) : 0;
+        $oldestTransit = $transitOrders->sortBy('status_changed_at')->first();
+        $table->transitMinutes = $oldestTransit && $oldestTransit->status_changed_at 
+            ? abs((int) $now->diffInMinutes($oldestTransit->status_changed_at)) 
+            : 0;
         
         // Completed orders
-        $completedOrders = $orders->where('status', OrderStatusEnum::COMPLETED->value);
+        $completedOrders = $orders->filter(fn($order) => $order->status === OrderStatusEnum::COMPLETED->value);
         $table->ordersCompleted = $completedOrders->count();
-        $oldestCompleted = $completedOrders->sortBy('created_at')->first();
-        $table->completedMinutes = $oldestCompleted ? abs((int) $now->diffInMinutes($oldestCompleted->created_at)) : 0;
+        $oldestCompleted = $completedOrders->sortBy('status_changed_at')->first();
+        $table->completedMinutes = $oldestCompleted && $oldestCompleted->status_changed_at 
+            ? abs((int) $now->diffInMinutes($oldestCompleted->status_changed_at)) 
+            : 0;
     }
 
     /**
