@@ -34,10 +34,25 @@ class OrderService
     ): array {
         $errors = [];
         
-        // Validação: Não pode mudar mesa para FREE se houver check com valor
-        if ($newTableStatus === TableStatusEnum::FREE->value) {
-            if ($check && $check->total > 0) {
-                $errors[] = 'Não é possível liberar a mesa com conta em aberto.';
+        // Validação: Não pode mudar status da mesa se houver check em aberto ou em pagamento
+        if ($newTableStatus && $newTableStatus !== $table->status) {
+            if ($check) {
+                $checkStatus = $check->status;
+                
+                // Bloqueia mudança de status se check está Open, Closing ou Closed
+                if (in_array($checkStatus, [
+                    CheckStatusEnum::OPEN->value,
+                    CheckStatusEnum::CLOSING->value,
+                    CheckStatusEnum::CLOSED->value
+                ])) {
+                    $statusLabel = match($checkStatus) {
+                        CheckStatusEnum::OPEN->value => 'aberto',
+                        CheckStatusEnum::CLOSING->value => 'em fechamento',
+                        CheckStatusEnum::CLOSED->value => 'fechado (aguardando pagamento)',
+                        default => 'em andamento'
+                    };
+                    $errors[] = "Não é possível alterar o status da mesa. Há um check {$statusLabel}.";
+                }
             }
         }
         
