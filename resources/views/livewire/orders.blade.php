@@ -171,14 +171,22 @@
                                 // Verifica se pode cancelar (total zero)
                                 $canCancelCheck = $currentCheck->total == 0;
                                 
-                                // Se o check está Open, bloqueia Fechando/Fechado/Pago se houver pedidos incompletos
-                                // Se já está em Closing ou superior, permite mudanças livres
-                                $blockAdvanceButtons = ($currentCheck->status === 'Open' && $hasIncompleteOrders);
+                                // Regras de bloqueio baseadas no status atual do check
+                                // Open: só pode ir para Fechando (bloqueia se há pedidos incompletos), não pode pular para Fechado/Pago
+                                // Closing: pode ir para Closed ou Paid livremente
+                                $blockClosingButton = ($currentCheck->status === 'Open' && $hasIncompleteOrders);
+                                $blockClosedAndPaidButtons = ($currentCheck->status === 'Open'); // Sempre bloqueado quando Open
                             @endphp
-                            @if($blockAdvanceButtons)
+                            @if($blockClosingButton)
                                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
                                     <p class="text-sm text-yellow-800">
-                                        <span class="font-semibold">⚠️ Atenção:</span> Só é possível avançar o status do check quando todos os pedidos estiverem entregues.
+                                        <span class="font-semibold">⚠️ Atenção:</span> Só é possível iniciar o fechamento quando todos os pedidos estiverem entregues.
+                                    </p>
+                                </div>
+                            @elseif($currentCheck->status === 'Open')
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                                    <p class="text-sm text-blue-800">
+                                        <span class="font-semibold">💡 Fluxo:</span> Primeiro mova para "Fechando", depois poderá escolher "Fechado" ou "Pago".
                                     </p>
                                 </div>
                             @endif
@@ -200,23 +208,23 @@
                                 </button>
                                 <button 
                                     wire:click="$set('newCheckStatus', 'Closing')"
-                                    @if($blockAdvanceButtons) disabled @endif
+                                    @if($blockClosingButton) disabled @endif
                                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $blockAdvanceButtons ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closing' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                        {{ $blockClosingButton ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closing' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                     Fechando
                                 </button>
                                 <button 
                                     wire:click="$set('newCheckStatus', 'Closed')"
-                                    @if($blockAdvanceButtons) disabled @endif
+                                    @if($blockClosedAndPaidButtons) disabled @endif
                                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $blockAdvanceButtons ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closed' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                        {{ $blockClosedAndPaidButtons ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closed' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                     Fechado
                                 </button>
                                 <button 
                                     wire:click="$set('newCheckStatus', 'Paid')"
-                                    @if($blockAdvanceButtons) disabled @endif
+                                    @if($blockClosedAndPaidButtons) disabled @endif
                                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $blockAdvanceButtons ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Paid' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                        {{ $blockClosedAndPaidButtons ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Paid' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                     Pago
                                 </button>
                                 <button 
