@@ -14,14 +14,14 @@ return [
     'timing' => [
         // Tempo médio de preparo na cozinha (em segundos)
         'preparation_time' => [
-            'min' => 30,  // Mínimo: 30 segundos
-            'max' => 120, // Máximo: 2 minutos
+            'min' => 120,  // Mínimo: 2 minutos
+            'max' => 600, // Máximo: 5 minutos
         ],
 
         // Tempo médio de entrega do garçom (em segundos)
         'delivery_time' => [
-            'min' => 10,  // Mínimo: 10 segundos
-            'max' => 30,  // Máximo: 30 segundos
+            'min' => 60,  // Mínimo: 60 segundos
+            'max' => 300,  // Máximo: 5 minutos
         ],
 
         // Tempo médio que um cliente fica na mesa (em minutos)
@@ -47,11 +47,11 @@ return [
     */
 
     'probabilities' => [
-        'new_customer' => 30,      // 30% chance de novo cliente chegar
-        'add_order' => 30,         // 30% chance de fazer mais pedidos
-        'advance_order' => 40,     // 40% chance de avançar status de pedido
-        'checkout' => 20,          // 20% chance de cliente pagar e sair
-        'auto_advance' => 40,      // 40% chance de avançar pedidos automaticamente
+        'new_customer' => 25,      // 25% chance de novo cliente chegar
+        'add_order' => 10,         // 10% chance de fazer mais pedidos
+        'advance_order' => 5,     // 5% chance de avançar status de pedido
+        'checkout' => 10,          // 10% chance de cliente pagar e sair
+        'auto_advance' => 50,      // 50% chance de avançar pedidos automaticamente
     ],
 
     /*
