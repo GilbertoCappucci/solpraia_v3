@@ -82,13 +82,20 @@ class Orders extends Component
         $this->currentCheck = $this->orderService->findOrCreateCheck($this->tableId);
     }
 
+    public function updateOrderStatus($orderId, $newStatus)
+    {
+        $this->orderService->updateOrderStatus($orderId, $newStatus);
+        session()->flash('success', 'Pedido atualizado com sucesso!');
+    }
+
     public function render()
     {
         $ordersGrouped = $this->orderService->getActiveOrdersGrouped($this->currentCheck);
         
         $pendingStats = $this->orderService->calculateOrderStats($ordersGrouped['pending']);
         $inProductionStats = $this->orderService->calculateOrderStats($ordersGrouped['inProduction']);
-        $readyStats = $this->orderService->calculateOrderStats($ordersGrouped['ready']);
+        $inTransitStats = $this->orderService->calculateOrderStats($ordersGrouped['inTransit']);
+        $completedStats = $this->orderService->calculateOrderStats($ordersGrouped['completed']);
 
         return view('livewire.orders', [
             'pendingOrders' => $ordersGrouped['pending'],
@@ -97,9 +104,12 @@ class Orders extends Component
             'inProductionOrders' => $ordersGrouped['inProduction'],
             'inProductionTotal' => $inProductionStats['total'],
             'inProductionTime' => $inProductionStats['time'],
-            'readyOrders' => $ordersGrouped['ready'],
-            'readyTotal' => $readyStats['total'],
-            'readyTime' => $readyStats['time'],
+            'inTransitOrders' => $ordersGrouped['inTransit'],
+            'inTransitTotal' => $inTransitStats['total'],
+            'inTransitTime' => $inTransitStats['time'],
+            'completedOrders' => $ordersGrouped['completed'],
+            'completedTotal' => $completedStats['total'],
+            'completedTime' => $completedStats['time'],
         ]);
     }
 }

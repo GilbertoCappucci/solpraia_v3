@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Services\MenuService;
 use App\Services\OrderService;
 use App\Models\Table;
 use Illuminate\Support\Facades\Auth;
@@ -20,10 +21,12 @@ class Menu extends Component
     public $cart = [];
     public $searchTerm = '';
     
+    protected $menuService;
     protected $orderService;
     
-    public function boot(OrderService $orderService)
+    public function boot(MenuService $menuService, OrderService $orderService)
     {
+        $this->menuService = $menuService;
         $this->orderService = $orderService;
     }
     
@@ -44,12 +47,12 @@ class Menu extends Component
 
     public function loadCategories()
     {
-        $this->categories = $this->orderService->getActiveCategories($this->userId);
+        $this->categories = $this->menuService->getActiveCategories($this->userId);
     }
 
     public function loadProducts()
     {
-        $this->products = $this->orderService->getFilteredProducts(
+        $this->products = $this->menuService->getFilteredProducts(
             $this->userId,
             $this->selectedCategoryId,
             $this->searchTerm
@@ -69,7 +72,7 @@ class Menu extends Component
 
     public function loadCartFromCheck()
     {
-        $this->cart = $this->orderService->loadCartFromCheck($this->currentCheck);
+        $this->cart = $this->menuService->loadCartFromCheck($this->currentCheck);
     }
 
     public function addToCart($productId)
@@ -110,12 +113,12 @@ class Menu extends Component
 
     public function getCartTotalProperty()
     {
-        return $this->orderService->calculateCartTotal($this->cart);
+        return $this->menuService->calculateCartTotal($this->cart);
     }
 
     public function getCartItemCountProperty()
     {
-        return $this->orderService->calculateCartItemCount($this->cart);
+        return $this->menuService->calculateCartItemCount($this->cart);
     }
 
     public function confirmOrder()
@@ -125,7 +128,7 @@ class Menu extends Component
             return;
         }
 
-        $this->orderService->confirmOrder(
+        $this->menuService->confirmOrder(
             $this->userId,
             $this->tableId,
             $this->selectedTable,

@@ -45,15 +45,6 @@
 
     {{-- Seção de Pedidos Ativos --}}
     <div class="bg-gray-50 p-4 space-y-3">
-        <div class="flex items-center justify-between mb-2">
-            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                PEDIDOS ATIVOS
-                <span class="text-sm font-normal text-gray-600">({{ $pendingOrders->count() + $inProductionOrders->count() + $readyOrders->count() }})</span>
-            </h2>
-        </div>
 
         {{-- Card Aguardando --}}
         <div class="bg-white rounded-xl shadow-sm border-l-4 border-yellow-400 overflow-hidden">
@@ -71,11 +62,17 @@
                 <div class="p-3 space-y-2">
                     @foreach($pendingOrders as $order)
                         <div class="flex items-center justify-between py-1 border-b border-gray-100 last:border-0">
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 flex-1">
                                 <span class="text-lg font-semibold text-gray-700">{{ $order->quantity }}x</span>
                                 <span class="text-sm text-gray-800">{{ $order->product->name }}</span>
                             </div>
-                            <span class="text-sm font-bold text-orange-600">R$ {{ number_format($order->product->price * $order->quantity, 2, ',', '.') }}</span>
+                            <button 
+                                wire:click="updateOrderStatus({{ $order->id }}, 'in_production')"
+                                class="p-1 hover:bg-yellow-100 rounded transition">
+                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
                         </div>
                     @endforeach
                     <div class="pt-2 flex justify-between items-center border-t-2 border-yellow-200">
@@ -106,11 +103,17 @@
                 <div class="p-3 space-y-2">
                     @foreach($inProductionOrders as $order)
                         <div class="flex items-center justify-between py-1 border-b border-gray-100 last:border-0">
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 flex-1">
                                 <span class="text-lg font-semibold text-gray-700">{{ $order->quantity }}x</span>
                                 <span class="text-sm text-gray-800">{{ $order->product->name }}</span>
                             </div>
-                            <span class="text-sm font-bold text-orange-600">R$ {{ number_format($order->product->price * $order->quantity, 2, ',', '.') }}</span>
+                            <button 
+                                wire:click="updateOrderStatus({{ $order->id }}, 'in_transit')"
+                                class="p-1 hover:bg-blue-100 rounded transition">
+                                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
                         </div>
                     @endforeach
                     <div class="pt-2 flex justify-between items-center border-t-2 border-blue-200">
@@ -125,23 +128,64 @@
             @endif
         </div>
 
-        {{-- Card Pronto --}}
+        {{-- Card Em Trânsito --}}
+        <div class="bg-white rounded-xl shadow-sm border-l-4 border-purple-400 overflow-hidden">
+            <div class="bg-purple-50 px-4 py-2 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></span>
+                    <span class="font-bold text-purple-800">EM TRÂNSITO</span>
+                    <span class="text-sm text-purple-700">({{ $inTransitOrders->count() }})</span>
+                </div>
+                @if($inTransitTime > 0)
+                    <span class="text-xs font-semibold text-purple-700">{{ $inTransitTime }}min</span>
+                @endif
+            </div>
+            @if($inTransitOrders->count() > 0)
+                <div class="p-3 space-y-2">
+                    @foreach($inTransitOrders as $order)
+                        <div class="flex items-center justify-between py-1 border-b border-gray-100 last:border-0">
+                            <div class="flex items-center gap-2 flex-1">
+                                <span class="text-lg font-semibold text-gray-700">{{ $order->quantity }}x</span>
+                                <span class="text-sm text-gray-800">{{ $order->product->name }}</span>
+                            </div>
+                            <button 
+                                wire:click="updateOrderStatus({{ $order->id }}, 'completed')"
+                                class="p-1 hover:bg-purple-100 rounded transition">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </button>
+                        </div>
+                    @endforeach
+                    <div class="pt-2 flex justify-between items-center border-t-2 border-purple-200">
+                        <span class="text-xs font-semibold text-gray-600">SUBTOTAL</span>
+                        <span class="text-base font-bold text-purple-700">R$ {{ number_format($inTransitTotal, 2, ',', '.') }}</span>
+                    </div>
+                </div>
+            @else
+                <div class="p-3 text-center text-sm text-gray-500">
+                    Nenhum pedido em trânsito
+                </div>
+            @endif
+        </div>
+
+        {{-- Card Entregue --}}
         <div class="bg-white rounded-xl shadow-sm border-l-4 border-green-400 overflow-hidden">
             <div class="bg-green-50 px-4 py-2 flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-                    <span class="font-bold text-green-800">PRONTO</span>
-                    <span class="text-sm text-green-700">({{ $readyOrders->count() }})</span>
+                    <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                    <span class="font-bold text-green-800">ENTREGUE</span>
+                    <span class="text-sm text-green-700">({{ $completedOrders->count() }})</span>
                 </div>
-                @if($readyTime > 0)
-                    <span class="text-xs font-semibold text-green-700">{{ $readyTime }}min</span>
+                @if($completedTime > 0)
+                    <span class="text-xs font-semibold text-green-700">{{ $completedTime }}min</span>
                 @endif
             </div>
-            @if($readyOrders->count() > 0)
+            @if($completedOrders->count() > 0)
                 <div class="p-3 space-y-2">
-                    @foreach($readyOrders as $order)
+                    @foreach($completedOrders as $order)
                         <div class="flex items-center justify-between py-1 border-b border-gray-100 last:border-0">
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 flex-1">
                                 <span class="text-lg font-semibold text-gray-700">{{ $order->quantity }}x</span>
                                 <span class="text-sm text-gray-800">{{ $order->product->name }}</span>
                             </div>
@@ -150,47 +194,12 @@
                     @endforeach
                     <div class="pt-2 flex justify-between items-center border-t-2 border-green-200">
                         <span class="text-xs font-semibold text-gray-600">SUBTOTAL</span>
-                        <span class="text-base font-bold text-green-700">R$ {{ number_format($readyTotal, 2, ',', '.') }}</span>
+                        <span class="text-base font-bold text-green-700">R$ {{ number_format($completedTotal, 2, ',', '.') }}</span>
                     </div>
                 </div>
             @else
                 <div class="p-3 text-center text-sm text-gray-500">
-                    Nenhum pedido pronto
-                </div>
-            @endif
-        </div>
-
-        {{-- Card Em Trânsito --}}
-        <div class="bg-white rounded-xl shadow-sm border-l-4 border-purple-400 overflow-hidden">
-            <div class="bg-purple-50 px-4 py-2 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></span>
-                    <span class="font-bold text-purple-800">EM TRÂNSITO</span>
-                    <span class="text-sm text-purple-700">({{ $readyOrders->count() }})</span>
-                </div>
-                @if($readyTime > 0)
-                    <span class="text-xs font-semibold text-purple-700">{{ $readyTime }}min</span>
-                @endif
-            </div>
-            @if($readyOrders->count() > 0)
-                <div class="p-3 space-y-2">
-                    @foreach($readyOrders as $order)
-                        <div class="flex items-center justify-between py-1 border-b border-gray-100 last:border-0">
-                            <div class="flex items-center gap-2">
-                                <span class="text-lg font-semibold text-gray-700">{{ $order->quantity }}x</span>
-                                <span class="text-sm text-gray-800">{{ $order->product->name }}</span>
-                            </div>
-                            <span class="text-sm font-bold text-orange-600">R$ {{ number_format($order->product->price * $order->quantity, 2, ',', '.') }}</span>
-                        </div>
-                    @endforeach
-                    <div class="pt-2 flex justify-between items-center border-t-2 border-purple-200">
-                        <span class="text-xs font-semibold text-gray-600">SUBTOTAL</span>
-                        <span class="text-base font-bold text-purple-700">R$ {{ number_format($readyTotal, 2, ',', '.') }}</span>
-                    </div>
-                </div>
-            @else
-                <div class="p-3 text-center text-sm text-gray-500">
-                    Nenhum pedido em trânsito
+                    Nenhum pedido entregue
                 </div>
             @endif
         </div>
