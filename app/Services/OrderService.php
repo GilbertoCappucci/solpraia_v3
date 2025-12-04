@@ -188,4 +188,53 @@ class OrderService
             'changed_at' => now(),
         ]);
     }
+
+    /**
+     * Cancela um pedido (apenas se estiver no status PENDING)
+     */
+    public function cancelOrder(int $orderId): array
+    {
+        $order = Order::with(['currentStatusHistory', 'check', 'product'])->findOrFail($orderId);
+        
+        // Valida se o pedido está em PENDING
+        if ($order->status !== OrderStatusEnum::PENDING->value) {
+            return [
+                'success' => false,
+                'message' => 'Apenas pedidos no status "Aguardando" podem ser cancelados.'
+            ];
+        }
+        
+        // Registra o cancelamento no histórico
+        OrderStatusHistory::create([
+            'order_id' => $orderId,
+            'from_status' => $order->status,
+            'to_status' => OrderStatusEnum::CANCELED->value,
+            'changed_at' => now(),
+        ]);
+        
+        // Recalcula o total do check
+        if ($order->check) {
+            $check = $order->check;
+            
+            // Busca todos os pedidos do check que NÃO foram cancelados
+            $activeOrders = $check->orders()
+                ->with('currentStatusHistory')
+                ->get()
+                ->filter(function($order) {
+                    return $order->status !== OrderStatusEnum::CANCELED->value;
+                });
+            
+            // Recalcula o total
+            $newTotal = $activeOrders->sum(function($order) {
+                return $order->quantity * $order->unit_price;
+            });
+            
+            $check->update(['total' => $newTotal]);
+        }
+        
+        return [
+            'success' => true,
+            'message' => 'Pedido cancelado com sucesso!'
+        ];
+    }
 }

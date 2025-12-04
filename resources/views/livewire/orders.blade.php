@@ -27,28 +27,54 @@
             </div>
         </div>
         <div class="flex items-center gap-3">
-            @if($currentCheck && $currentCheck->total > 0)
-                <div class="text-right">
-                    <p class="text-xl font-bold">R$ {{ number_format($currentCheck->total, 2, ',', '.') }}</p>
-                </div>
-            @endif
+            {{-- Status da Mesa --}}
             <button 
                 wire:click="openStatusModal"
                 class="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-lg px-3 py-1.5 transition-all">
                 @php
-                    $statusConfig = match($selectedTable->status) {
+                    $tableStatusConfig = match($selectedTable->status) {
                         'free' => ['label' => 'Livre', 'color' => 'bg-gray-400'],
                         'occupied' => ['label' => 'Ocupada', 'color' => 'bg-blue-400'],
                         'reserved' => ['label' => 'Reservada', 'color' => 'bg-purple-400'],
                         default => ['label' => 'Livre', 'color' => 'bg-gray-400']
                     };
                 @endphp
-                <span class="w-2 h-2 rounded-full {{ $statusConfig['color'] }}"></span>
-                <span class="text-sm font-medium">{{ $statusConfig['label'] }}</span>
-                <svg class="w-4 h-4 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
+                <div class="flex flex-col items-start">
+                    <span class="text-[10px] opacity-75 uppercase tracking-wider">Mesa</span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full {{ $tableStatusConfig['color'] }}"></span>
+                        <span class="text-sm font-medium">{{ $tableStatusConfig['label'] }}</span>
+                    </div>
+                </div>
             </button>
+            
+            {{-- Status do Check --}}
+            @if($currentCheck)
+                <button 
+                    wire:click="openStatusModal"
+                    class="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-lg px-3 py-1.5 transition-all">
+                    @php
+                        $checkStatusConfig = match($currentCheck->status) {
+                            'Open' => ['label' => 'Aberto', 'color' => 'bg-green-400'],
+                            'Closing' => ['label' => 'Fechando', 'color' => 'bg-yellow-400'],
+                            'Closed' => ['label' => 'Fechado', 'color' => 'bg-red-400'],
+                            'Paid' => ['label' => 'Pago', 'color' => 'bg-gray-400'],
+                            default => ['label' => 'Aberto', 'color' => 'bg-green-400']
+                        };
+                    @endphp
+                    <div class="flex flex-col items-start">
+                        <span class="text-[10px] opacity-75 uppercase tracking-wider">Check</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full {{ $checkStatusConfig['color'] }}"></span>
+                            <span class="text-sm font-medium">{{ $checkStatusConfig['label'] }}</span>
+                        </div>
+                    </div>
+                </button>
+            @endif
+            
+            <svg class="w-4 h-4 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
         </div>
     </div>
 
@@ -75,13 +101,25 @@
                                 <span class="text-lg font-semibold text-gray-700">{{ $order->quantity }}x</span>
                                 <span class="text-sm text-gray-800">{{ $order->product->name }}</span>
                             </div>
-                            <button 
-                                wire:click="updateOrderStatus({{ $order->id }}, 'in_production')"
-                                class="p-1 hover:bg-yellow-100 rounded transition">
-                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </button>
+                            <div class="flex items-center gap-1">
+                                <button 
+                                    wire:click="cancelOrder({{ $order->id }})"
+                                    wire:confirm="Tem certeza que deseja cancelar este pedido?"
+                                    class="p-1 hover:bg-red-100 rounded transition"
+                                    title="Cancelar pedido">
+                                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                                <button 
+                                    wire:click="updateOrderStatus({{ $order->id }}, 'in_production')"
+                                    class="p-1 hover:bg-yellow-100 rounded transition"
+                                    title="Mover para preparo">
+                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -202,8 +240,17 @@
         </div>
     </div>
 
-    {{-- Botão Adicionar Pedidos --}}
-    <div class="p-4 bg-white">
+    {{-- Total e Botão Adicionar Pedidos --}}
+    <div class="p-4 bg-white space-y-3">
+        @if($currentCheck && $currentCheck->total > 0)
+            <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-4 border-2 border-orange-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600 font-semibold">TOTAL</span>
+                    <span class="text-3xl font-bold text-orange-600">R$ {{ number_format($currentCheck->total, 2, ',', '.') }}</span>
+                </div>
+            </div>
+        @endif
+        
         <button 
             wire:click="goToMenu"
             class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:shadow-lg transition">
