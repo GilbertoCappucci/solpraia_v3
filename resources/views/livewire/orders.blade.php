@@ -171,14 +171,14 @@
                                 // Verifica se pode cancelar (total zero)
                                 $canCancelCheck = $currentCheck->total == 0;
                                 
-                                // Se o check está Open, bloqueia apenas o botão "Fechando" se houver pedidos incompletos
-                                // Se já está em Closing/Closed/Paid, permite mudanças livres
-                                $blockClosingButton = ($currentCheck->status === 'Open' && $hasIncompleteOrders);
+                                // Se o check está Open, bloqueia Fechando/Fechado/Pago se houver pedidos incompletos
+                                // Se já está em Closing ou superior, permite mudanças livres
+                                $blockAdvanceButtons = ($currentCheck->status === 'Open' && $hasIncompleteOrders);
                             @endphp
-                            @if($blockClosingButton)
+                            @if($blockAdvanceButtons)
                                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
                                     <p class="text-sm text-yellow-800">
-                                        <span class="font-semibold">⚠️ Atenção:</span> Só é possível iniciar o fechamento quando todos os pedidos estiverem entregues (Pronto).
+                                        <span class="font-semibold">⚠️ Atenção:</span> Só é possível avançar o status do check quando todos os pedidos estiverem entregues.
                                     </p>
                                 </div>
                             @endif
@@ -200,21 +200,23 @@
                                 </button>
                                 <button 
                                     wire:click="$set('newCheckStatus', 'Closing')"
-                                    @if($blockClosingButton) disabled @endif
+                                    @if($blockAdvanceButtons) disabled @endif
                                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $blockClosingButton ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closing' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                        {{ $blockAdvanceButtons ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closing' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                     Fechando
                                 </button>
                                 <button 
                                     wire:click="$set('newCheckStatus', 'Closed')"
+                                    @if($blockAdvanceButtons) disabled @endif
                                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $newCheckStatus === 'Closed' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                        {{ $blockAdvanceButtons ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closed' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                     Fechado
                                 </button>
                                 <button 
                                     wire:click="$set('newCheckStatus', 'Paid')"
+                                    @if($blockAdvanceButtons) disabled @endif
                                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $newCheckStatus === 'Paid' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                        {{ $blockAdvanceButtons ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Paid' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                     Pago
                                 </button>
                                 <button 
