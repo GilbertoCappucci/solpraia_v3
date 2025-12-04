@@ -2,12 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Enums\CheckStatusEnum;
-use App\Enums\OrderStatusEnum;
-use App\Models\Category;
-use App\Models\Check;
-use App\Models\Order;
-use App\Models\Product;
+use App\Services\OrderService;
 use App\Models\Table;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -29,6 +24,13 @@ class Orders extends Component
     public $newTableStatus = null;
     public $newCheckStatus = null;
     
+    protected $orderService;
+    
+    public function boot(OrderService $orderService)
+    {
+        $this->orderService = $orderService;
+    }
+    
     public function mount($tableId)
     {
         $this->userId = Auth::user()->isAdmin() 
@@ -37,11 +39,7 @@ class Orders extends Component
         
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
-        
-        // Busca check aberto para esta mesa
-        $this->currentCheck = Check::where('table_id', $tableId)
-            ->where('status', CheckStatusEnum::OPEN->value)
-            ->first();
+        $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
         
         $this->loadCartFromCheck();
         $this->loadCategories();
@@ -50,26 +48,16 @@ class Orders extends Component
 
     public function loadCategories()
     {
-        $this->categories = Category::where('active', true)
-            ->where('user_id', $this->userId)
-            ->orderBy('name')
-            ->get();
+        $this->categories = $this->orderService->getActiveCategories($this->userId);
     }
 
     public function loadProducts()
     {
-        $query = Product::where('active', true)
-            ->where('user_id', $this->userId);
-
-        if ($this->selectedCategoryId) {
-            $query->where('category_id', $this->selectedCategoryId);
-        }
-
-        if ($this->searchTerm) {
-            $query->where('name', 'like', '%' . $this->searchTerm . '%');
-        }
-
-        $this->products = $query->orderBy('name')->get();
+        $this->products = $this->orderService->getFilteredProducts(
+            $this->userId,
+            $this->selectedCategoryId,
+            $this->searchTerm
+        );
     }
 
     public function selectCategory($categoryId)
@@ -83,34 +71,14 @@ class Orders extends Component
         $this->loadProducts();
     }
 
-
-
     public function loadCartFromCheck()
     {
-        if ($this->currentCheck) {
-            $orders = Order::where('check_id', $this->currentCheck->id)
-                ->with('product')
-                ->get();
-                
-            $this->cart = [];
-            foreach ($orders as $order) {
-                $this->cart[$order->product_id] = [
-                    'product' => $order->product,
-                    'quantity' => $order->quantity,
-                    'order_id' => $order->id,
-                ];
-            }
-        }
+        $this->cart = $this->orderService->loadCartFromCheck($this->currentCheck);
     }
 
     public function addToCart($productId)
     {
-        if (!$this->currentCheck) {
-            session()->flash('error', 'Selecione uma mesa primeiro.');
-            return;
-        }
-
-        $product = Product::find($productId);
+        $product = \App\Models\Product::find($productId);
         
         if (isset($this->cart[$productId])) {
             $this->cart[$productId]['quantity']++;
@@ -160,54 +128,16 @@ class Orders extends Component
 
     public function updateStatuses()
     {
-        $errors = [];
+        $result = $this->orderService->updateStatuses(
+            $this->selectedTable,
+            $this->currentCheck,
+            $this->newTableStatus,
+            $this->newCheckStatus
+        );
         
-        // Validação: Não pode mudar mesa para FREE se houver check com valor
-        if ($this->newTableStatus === \App\Enums\TableStatusEnum::FREE->value) {
-            if ($this->currentCheck && $this->currentCheck->total > 0) {
-                $errors[] = 'Não é possível liberar a mesa com conta em aberto.';
-            }
-        }
-        
-        // Validação: Não pode fechar conta sem pedidos
-        if ($this->newCheckStatus === CheckStatusEnum::CLOSING->value) {
-            if (!$this->currentCheck || $this->currentCheck->total <= 0) {
-                $errors[] = 'Não é possível fechar conta sem pedidos.';
-            }
-        }
-        
-        // Validação: Não pode marcar como CLOSED sem estar em CLOSING
-        if ($this->newCheckStatus === CheckStatusEnum::CLOSED->value) {
-            if (!$this->currentCheck || $this->currentCheck->status !== CheckStatusEnum::CLOSING->value) {
-                $errors[] = 'A conta precisa estar em "Fechando" antes de ser marcada como "Fechada".';
-            }
-        }
-        
-        // Validação: Não pode marcar como PAID sem estar CLOSED
-        if ($this->newCheckStatus === CheckStatusEnum::PAID->value) {
-            if (!$this->currentCheck || $this->currentCheck->status !== CheckStatusEnum::CLOSED->value) {
-                $errors[] = 'A conta precisa estar "Fechada" antes de ser marcada como "Paga".';
-            }
-        }
-        
-        if (!empty($errors)) {
-            session()->flash('error', implode(' ', $errors));
+        if (!$result['success']) {
+            session()->flash('error', implode(' ', $result['errors']));
             return;
-        }
-        
-        // Atualiza status da mesa
-        if ($this->newTableStatus && $this->newTableStatus !== $this->selectedTable->status) {
-            $this->selectedTable->update(['status' => $this->newTableStatus]);
-        }
-        
-        // Atualiza status do check
-        if ($this->newCheckStatus && $this->currentCheck && $this->newCheckStatus !== $this->currentCheck->status) {
-            $this->currentCheck->update(['status' => $this->newCheckStatus]);
-            
-            // Se marcou como PAID, libera a mesa
-            if ($this->newCheckStatus === CheckStatusEnum::PAID->value) {
-                $this->selectedTable->update(['status' => \App\Enums\TableStatusEnum::FREE->value]);
-            }
         }
         
         session()->flash('success', 'Status atualizado com sucesso!');
@@ -215,75 +145,34 @@ class Orders extends Component
         
         // Recarrega dados
         $this->selectedTable = Table::findOrFail($this->tableId);
-        $this->currentCheck = Check::where('table_id', $this->tableId)
-            ->where('status', CheckStatusEnum::OPEN->value)
-            ->first();
+        $this->currentCheck = $this->orderService->findOrCreateCheck($this->tableId);
     }
 
     public function getCartTotalProperty()
     {
-        $total = 0;
-        foreach ($this->cart as $item) {
-            $total += $item['product']->price * $item['quantity'];
-        }
-        return $total;
+        return $this->orderService->calculateCartTotal($this->cart);
     }
 
     public function getCartItemCountProperty()
     {
-        $count = 0;
-        foreach ($this->cart as $item) {
-            $count += $item['quantity'];
-        }
-        return $count;
+        return $this->orderService->calculateCartItemCount($this->cart);
     }
 
     public function confirmOrder()
     {
-        if (!$this->currentCheck || empty($this->cart)) {
+        if (empty($this->cart)) {
             session()->flash('error', 'Carrinho vazio.');
             return;
         }
 
-        foreach ($this->cart as $productId => $item) {
-            if ($item['order_id']) {
-                // Atualiza pedido existente
-                Order::where('id', $item['order_id'])->update([
-                    'quantity' => $item['quantity'],
-                ]);
-            } else {
-                // Cria novo pedido
-                Order::create([
-                    'user_id' => $this->userId,
-                    'check_id' => $this->currentCheck->id,
-                    'product_id' => $productId,
-                    'quantity' => $item['quantity'],
-                    'status' => OrderStatusEnum::PENDING->value,
-                ]);
-            }
-        }
-
-        // Cria check se não existir
-        if (!$this->currentCheck) {
-            $this->currentCheck = Check::create([
-                'table_id' => $this->tableId,
-                'total' => $this->cartTotal,
-                'status' => CheckStatusEnum::OPEN->value,
-                'opened_at' => now(),
-            ]);
-        } else {
-            // Atualiza total do check
-            $this->currentCheck->update([
-                'total' => $this->cartTotal,
-            ]);
-        }
-        
-        // Atualiza status da mesa para ocupada apenas ao confirmar pedido
-        if ($this->selectedTable->status !== \App\Enums\TableStatusEnum::OCCUPIED->value) {
-            $this->selectedTable->update([
-                'status' => \App\Enums\TableStatusEnum::OCCUPIED->value,
-            ]);
-        }
+        $this->orderService->confirmOrder(
+            $this->userId,
+            $this->tableId,
+            $this->selectedTable,
+            $this->currentCheck,
+            $this->cart,
+            $this->cartTotal
+        );
 
         session()->flash('success', 'Pedido confirmado com sucesso!');
         $this->loadCartFromCheck();
@@ -291,43 +180,22 @@ class Orders extends Component
 
     public function render()
     {
-        // Carrega pedidos ativos agrupados por status
-        $activeOrders = Order::where('check_id', $this->currentCheck->id)
-            ->with('product')
-            ->whereIn('status', [
-                OrderStatusEnum::PENDING->value,
-                OrderStatusEnum::IN_PRODUCTION->value,
-                OrderStatusEnum::IN_TRANSIT->value
-            ])
-            ->orderBy('created_at', 'asc')
-            ->get()
-            ->groupBy('status');
+        $ordersGrouped = $this->orderService->getActiveOrdersGrouped($this->currentCheck);
         
-        // Calcula tempo e totais por status
-        $now = now();
-        
-        $pendingOrders = $activeOrders->get(OrderStatusEnum::PENDING->value, collect());
-        $pendingTotal = $pendingOrders->sum(fn($order) => $order->product->price * $order->quantity);
-        $pendingTime = $pendingOrders->first() ? (int) $now->diffInMinutes($pendingOrders->first()->created_at) : 0;
-        
-        $inProductionOrders = $activeOrders->get(OrderStatusEnum::IN_PRODUCTION->value, collect());
-        $inProductionTotal = $inProductionOrders->sum(fn($order) => $order->product->price * $order->quantity);
-        $inProductionTime = $inProductionOrders->first() ? (int) $now->diffInMinutes($inProductionOrders->first()->created_at) : 0;
-        
-        $readyOrders = $activeOrders->get(OrderStatusEnum::IN_TRANSIT->value, collect());
-        $readyTotal = $readyOrders->sum(fn($order) => $order->product->price * $order->quantity);
-        $readyTime = $readyOrders->first() ? (int) $now->diffInMinutes($readyOrders->first()->created_at) : 0;
+        $pendingStats = $this->orderService->calculateOrderStats($ordersGrouped['pending']);
+        $inProductionStats = $this->orderService->calculateOrderStats($ordersGrouped['inProduction']);
+        $readyStats = $this->orderService->calculateOrderStats($ordersGrouped['ready']);
 
         return view('livewire.orders', [
-            'pendingOrders' => $pendingOrders,
-            'pendingTotal' => $pendingTotal,
-            'pendingTime' => $pendingTime,
-            'inProductionOrders' => $inProductionOrders,
-            'inProductionTotal' => $inProductionTotal,
-            'inProductionTime' => $inProductionTime,
-            'readyOrders' => $readyOrders,
-            'readyTotal' => $readyTotal,
-            'readyTime' => $readyTime,
+            'pendingOrders' => $ordersGrouped['pending'],
+            'pendingTotal' => $pendingStats['total'],
+            'pendingTime' => $pendingStats['time'],
+            'inProductionOrders' => $ordersGrouped['inProduction'],
+            'inProductionTotal' => $inProductionStats['total'],
+            'inProductionTime' => $inProductionStats['time'],
+            'readyOrders' => $ordersGrouped['ready'],
+            'readyTotal' => $readyStats['total'],
+            'readyTime' => $readyStats['time'],
         ]);
     }
 }
