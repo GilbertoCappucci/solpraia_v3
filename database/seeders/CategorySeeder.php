@@ -64,25 +64,36 @@ class CategorySeeder extends Seeder
             ],
         );
 
-        //Id:6 - Suco de abacaxi
+        //Id:6 - Suco de fruta
         Category::factory()->create(
             [
                 'user_id' => 2,
                 'category_id' => 2,
-                'name' => 'Suco de Abacaxi',
-                'description' => 'Suco de poupa de abacaxi natural'
+                'name' => 'Suco de Fruta',
+                'description' => 'Suco de poupa de fruta natural'
             ],
         );
 
-        //Id:7 - Agua de coco
+        //Id:7 - Agua
         Category::factory()->create(
             [
                 'user_id' => 2,
                 'category_id' => 2,
-                'name' => 'Agua de coco',
-                'description' => 'Agua de coco gelada'
+                'name' => 'Agua',
+                'description' => 'Agua natural mineral'
             ],
         );
+
+        //Id:8 - Refrigerante
+        Category::factory()->create(
+            [
+                'user_id' => 2,
+                'category_id' => 2,
+                'name' => 'Refrigerante',
+                'description' => 'Refrigerante sabor cola'
+            ],
+        );
+
         /*
         for ($i = 0; $i < 30; $i++) {
             Category::factory()->create();
