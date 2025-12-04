@@ -54,8 +54,8 @@
                     <span class="font-bold text-yellow-800">AGUARDANDO</span>
                     <span class="text-sm text-yellow-700">({{ $pendingOrders->count() }})</span>
                 </div>
-                @if($pendingTime > 0)
-                    <span class="text-xs font-semibold text-yellow-700">{{ $pendingTime }}min</span>
+                @if($pendingOrders->count() > 0)
+                    <span class="text-sm font-bold text-yellow-800 bg-yellow-200 px-2 py-1 rounded">{{ $pendingTime }}m</span>
                 @endif
             </div>
             @if($pendingOrders->count() > 0)
@@ -91,8 +91,8 @@
                     <span class="font-bold text-blue-800">EM PREPARO</span>
                     <span class="text-sm text-blue-700">({{ $inProductionOrders->count() }})</span>
                 </div>
-                @if($inProductionTime > 0)
-                    <span class="text-xs font-semibold text-blue-700">{{ $inProductionTime }}min</span>
+                @if($inProductionOrders->count() > 0)
+                    <span class="text-sm font-bold text-blue-800 bg-blue-200 px-2 py-1 rounded">{{ $inProductionTime }}m</span>
                 @endif
             </div>
             @if($inProductionOrders->count() > 0)
@@ -128,8 +128,8 @@
                     <span class="font-bold text-purple-800">EM TRÂNSITO</span>
                     <span class="text-sm text-purple-700">({{ $inTransitOrders->count() }})</span>
                 </div>
-                @if($inTransitTime > 0)
-                    <span class="text-xs font-semibold text-purple-700">{{ $inTransitTime }}min</span>
+                @if($inTransitOrders->count() > 0)
+                    <span class="text-sm font-bold text-purple-800 bg-purple-200 px-2 py-1 rounded">{{ $inTransitTime }}m</span>
                 @endif
             </div>
             @if($inTransitOrders->count() > 0)
@@ -165,8 +165,8 @@
                     <span class="font-bold text-green-800">ENTREGUE</span>
                     <span class="text-sm text-green-700">({{ $completedOrders->count() }})</span>
                 </div>
-                @if($completedTime > 0)
-                    <span class="text-xs font-semibold text-green-700">{{ $completedTime }}min</span>
+                @if($completedOrders->count() > 0)
+                    <span class="text-sm font-bold text-green-800 bg-green-200 px-2 py-1 rounded">{{ $completedTime }}m</span>
                 @endif
             </div>
             @if($completedOrders->count() > 0)

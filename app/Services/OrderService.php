@@ -148,7 +148,7 @@ class OrderService
         
         $time = 0;
         if ($oldestTime) {
-            $time = (int) now()->diffInMinutes($oldestTime);
+            $time = abs((int) now()->diffInMinutes($oldestTime));
         }
         
         return [
