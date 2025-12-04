@@ -1,4 +1,4 @@
-<div>
+<div x-data x-init="window.addEventListener('focus', () => { $wire.call('refreshData') })">
     <x-flash-message />
 
     {{-- Header Compacto com Info do Local --}}
@@ -172,10 +172,17 @@
                                 $canCancelCheck = $currentCheck->total == 0;
                                 
                                 // Regras de bloqueio baseadas no status atual do check
-                                // Open: só pode ir para Fechando (bloqueia se há pedidos incompletos), não pode pular para Fechado/Pago
-                                // Closing: pode ir para Closed ou Paid livremente
-                                $blockClosingButton = ($currentCheck->status === 'Open' && $hasIncompleteOrders);
-                                $blockClosedAndPaidButtons = ($currentCheck->status === 'Open'); // Sempre bloqueado quando Open
+                                // Open: só pode ir para Fechando (se pedidos entregues), não pode pular para Fechado/Pago
+                                // Closing: só pode ir para Closed (próximo passo lógico) ou voltar para Open
+                                // Closed: pode ir para Paid ou voltar para Open (NÃO pode voltar para Closing)
+                                // Paid: livre navegação
+                                $blockClosingButton = match($currentCheck->status) {
+                                    'Open' => $hasIncompleteOrders,
+                                    'Closed' => true, // Bloqueado quando Closed - não pode voltar
+                                    default => false
+                                };
+                                $blockClosedButton = ($currentCheck->status === 'Open'); // Bloqueado quando Open
+                                $blockPaidButton = in_array($currentCheck->status, ['Open', 'Closing']); // Bloqueado em Open e Closing, liberado em Closed
                             @endphp
                             @if($blockClosingButton)
                                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
@@ -186,7 +193,19 @@
                             @elseif($currentCheck->status === 'Open')
                                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
                                     <p class="text-sm text-blue-800">
-                                        <span class="font-semibold">💡 Fluxo:</span> Primeiro mova para "Fechando", depois poderá escolher "Fechado" ou "Pago".
+                                        <span class="font-semibold">💡 Fluxo:</span> Open → Fechando → Fechado → Pago
+                                    </p>
+                                </div>
+                            @elseif($currentCheck->status === 'Closing')
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                                    <p class="text-sm text-blue-800">
+                                        <span class="font-semibold">💡 Próximo passo:</span> Mova para "Fechado" para depois poder marcar como "Pago".
+                                    </p>
+                                </div>
+                            @elseif($currentCheck->status === 'Closed')
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                                    <p class="text-sm text-blue-800">
+                                        <span class="font-semibold">💡 Opções:</span> Marque como "Pago" para finalizar ou volte para "Aberto" para reabrir.
                                     </p>
                                 </div>
                             @endif
@@ -215,16 +234,16 @@
                                 </button>
                                 <button 
                                     wire:click="$set('newCheckStatus', 'Closed')"
-                                    @if($blockClosedAndPaidButtons) disabled @endif
+                                    @if($blockClosedButton) disabled @endif
                                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $blockClosedAndPaidButtons ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closed' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                        {{ $blockClosedButton ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closed' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                     Fechado
                                 </button>
                                 <button 
                                     wire:click="$set('newCheckStatus', 'Paid')"
-                                    @if($blockClosedAndPaidButtons) disabled @endif
+                                    @if($blockPaidButton) disabled @endif
                                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $blockClosedAndPaidButtons ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Paid' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                        {{ $blockPaidButton ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Paid' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                     Pago
                                 </button>
                                 <button 

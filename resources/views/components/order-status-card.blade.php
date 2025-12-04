@@ -106,16 +106,25 @@
                                 </button>
                             @endif
                             @if($nextStatus)
+                                @php
+                                    // Define cores do botão de avançar baseado no próximo status
+                                    $buttonConfig = match($nextStatus) {
+                                        'in_production' => ['bg' => 'bg-blue-50', 'hover' => 'hover:bg-blue-100', 'icon' => 'text-blue-600'],
+                                        'in_transit' => ['bg' => 'bg-purple-50', 'hover' => 'hover:bg-purple-100', 'icon' => 'text-purple-600'],
+                                        'completed' => ['bg' => 'bg-green-50', 'hover' => 'hover:bg-green-100', 'icon' => 'text-green-600'],
+                                        default => ['bg' => 'bg-gray-50', 'hover' => 'hover:bg-gray-100', 'icon' => 'text-gray-600']
+                                    };
+                                @endphp
                                 <button 
                                     wire:click="updateOrderStatus({{ $order->id }}, '{{ $nextStatus }}')"
-                                    class="p-1 hover:bg-{{ $color }}-100 rounded transition"
+                                    class="p-1.5 {{ $buttonConfig['bg'] }} {{ $buttonConfig['hover'] }} rounded transition"
                                     title="Avançar status">
                                     @if($nextStatus === 'completed')
-                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                         </svg>
                                     @else
-                                        <svg class="w-4 h-4 text-{{ $color === 'yellow' ? 'blue' : 'purple' }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                         </svg>
                                     @endif

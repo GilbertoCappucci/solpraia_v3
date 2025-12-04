@@ -20,6 +20,8 @@ class Orders extends Component
     
     protected $orderService;
     
+    protected $listeners = ['table-updated' => 'refreshData'];
+    
     public function boot(OrderService $orderService)
     {
         $this->orderService = $orderService;
@@ -48,6 +50,9 @@ class Orders extends Component
 
     public function openStatusModal()
     {
+        // Recarrega dados do banco antes de abrir modal
+        $this->refreshData();
+        
         $this->showStatusModal = true;
         $this->newTableStatus = $this->selectedTable->status;
         $this->newCheckStatus = $this->currentCheck?->status;
@@ -58,6 +63,13 @@ class Orders extends Component
         $this->showStatusModal = false;
         $this->newTableStatus = null;
         $this->newCheckStatus = null;
+    }
+    
+    public function refreshData()
+    {
+        // Recarrega dados atualizados do banco
+        $this->selectedTable->refresh();
+        $this->currentCheck = $this->orderService->findOrCreateCheck($this->tableId);
     }
 
     public function updateStatuses()
@@ -77,16 +89,14 @@ class Orders extends Component
         session()->flash('success', 'Status atualizado com sucesso!');
         $this->dispatch('table-updated'); // Dispara evento para outros componentes
         $this->closeStatusModal();
-        
-        // Recarrega dados diretamente do banco
-        $this->selectedTable = Table::findOrFail($this->tableId);
-        $this->currentCheck = $this->orderService->findOrCreateCheck($this->tableId);
+        $this->refreshData();
     }
 
     public function updateOrderStatus($orderId, $newStatus)
     {
         $this->orderService->updateOrderStatus($orderId, $newStatus);
         session()->flash('success', 'Pedido atualizado com sucesso!');
+        $this->refreshData();
     }
 
     public function cancelOrder($orderId)
@@ -99,7 +109,7 @@ class Orders extends Component
         }
         
         session()->flash('success', $result['message']);
-        $this->currentCheck = $this->orderService->findOrCreateCheck($this->tableId);
+        $this->refreshData();
     }
 
     public function render()
