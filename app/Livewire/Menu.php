@@ -40,7 +40,6 @@ class Menu extends Component
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
         
-        $this->loadCartFromCheck();
         $this->loadCategories();
         $this->loadProducts();
     }
@@ -70,11 +69,6 @@ class Menu extends Component
         $this->loadProducts();
     }
 
-    public function loadCartFromCheck()
-    {
-        $this->cart = $this->menuService->loadCartFromCheck($this->currentCheck);
-    }
-
     public function addToCart($productId)
     {
         $product = \App\Models\Product::find($productId);
@@ -85,7 +79,6 @@ class Menu extends Component
             $this->cart[$productId] = [
                 'product' => $product,
                 'quantity' => 1,
-                'order_id' => null,
             ];
         }
     }

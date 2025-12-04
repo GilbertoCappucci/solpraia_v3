@@ -45,31 +45,6 @@ class MenuService
     }
 
     /**
-     * Carrega carrinho a partir dos orders do check
-     */
-    public function loadCartFromCheck(?Check $check): array
-    {
-        if (!$check) {
-            return [];
-        }
-
-        $orders = Order::where('check_id', $check->id)
-            ->with('product')
-            ->get();
-            
-        $cart = [];
-        foreach ($orders as $order) {
-            $cart[$order->product_id] = [
-                'product' => $order->product,
-                'quantity' => $order->quantity,
-                'order_id' => $order->id,
-            ];
-        }
-
-        return $cart;
-    }
-
-    /**
      * Calcula total do carrinho
      */
     public function calculateCartTotal(array $cart): float
@@ -108,60 +83,33 @@ class MenuService
         if (!$check) {
             $check = Check::create([
                 'table_id' => $tableId,
-                'total' => $cartTotal,
+                'total' => 0,
                 'status' => CheckStatusEnum::OPEN->value,
                 'opened_at' => now(),
             ]);
-        } else {
-            // Calcula o total real de todos os pedidos do check
-            $existingTotal = Order::where('check_id', $check->id)
-                ->join('products', 'orders.product_id', '=', 'products.id')
-                ->selectRaw('SUM(orders.quantity * products.price) as total')
-                ->value('total') ?? 0;
-            
-            // Processa items do carrinho
-            foreach ($cart as $productId => $item) {
-                if ($item['order_id']) {
-                    // Atualiza pedido existente
-                    Order::where('id', $item['order_id'])->update([
-                        'quantity' => $item['quantity'],
-                    ]);
-                } else {
-                    // Cria novo pedido
-                    Order::create([
-                        'user_id' => $userId,
-                        'check_id' => $check->id,
-                        'product_id' => $productId,
-                        'quantity' => $item['quantity'],
-                        'status' => OrderStatusEnum::PENDING->value,
-                    ]);
-                }
-            }
-            
-            // Recalcula o total após as modificações
-            $newTotal = Order::where('check_id', $check->id)
-                ->join('products', 'orders.product_id', '=', 'products.id')
-                ->selectRaw('SUM(orders.quantity * products.price) as total')
-                ->value('total') ?? 0;
-            
-            // Atualiza o total do check com o valor recalculado
-            $check->update([
-                'total' => $newTotal,
-            ]);
         }
 
-        // Se é um check novo, processa os items do carrinho
-        if ($check->wasRecentlyCreated) {
-            foreach ($cart as $productId => $item) {
-                Order::create([
-                    'user_id' => $userId,
-                    'check_id' => $check->id,
-                    'product_id' => $productId,
-                    'quantity' => $item['quantity'],
-                    'status' => OrderStatusEnum::PENDING->value,
-                ]);
-            }
+        // Cria novos pedidos para todos os itens do carrinho
+        foreach ($cart as $productId => $item) {
+            Order::create([
+                'user_id' => $userId,
+                'check_id' => $check->id,
+                'product_id' => $productId,
+                'quantity' => $item['quantity'],
+                'status' => OrderStatusEnum::PENDING->value,
+            ]);
         }
+        
+        // Recalcula o total do check com base em TODOS os pedidos
+        $newTotal = Order::where('check_id', $check->id)
+            ->join('products', 'orders.product_id', '=', 'products.id')
+            ->selectRaw('SUM(orders.quantity * products.price) as total')
+            ->value('total') ?? 0;
+        
+        // Atualiza o total do check
+        $check->update([
+            'total' => $newTotal,
+        ]);
         
         // Atualiza status da mesa para ocupada
         if ($table->status !== TableStatusEnum::OCCUPIED->value) {

@@ -75,10 +75,6 @@
                             </button>
                         </div>
                     @endforeach
-                    <div class="pt-2 flex justify-between items-center border-t-2 border-yellow-200">
-                        <span class="text-xs font-semibold text-gray-600">SUBTOTAL</span>
-                        <span class="text-base font-bold text-yellow-700">R$ {{ number_format($pendingTotal, 2, ',', '.') }}</span>
-                    </div>
                 </div>
             @else
                 <div class="p-3 text-center text-sm text-gray-500">
@@ -116,10 +112,6 @@
                             </button>
                         </div>
                     @endforeach
-                    <div class="pt-2 flex justify-between items-center border-t-2 border-blue-200">
-                        <span class="text-xs font-semibold text-gray-600">SUBTOTAL</span>
-                        <span class="text-base font-bold text-blue-700">R$ {{ number_format($inProductionTotal, 2, ',', '.') }}</span>
-                    </div>
                 </div>
             @else
                 <div class="p-3 text-center text-sm text-gray-500">
@@ -157,10 +149,6 @@
                             </button>
                         </div>
                     @endforeach
-                    <div class="pt-2 flex justify-between items-center border-t-2 border-purple-200">
-                        <span class="text-xs font-semibold text-gray-600">SUBTOTAL</span>
-                        <span class="text-base font-bold text-purple-700">R$ {{ number_format($inTransitTotal, 2, ',', '.') }}</span>
-                    </div>
                 </div>
             @else
                 <div class="p-3 text-center text-sm text-gray-500">
