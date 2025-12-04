@@ -18,8 +18,13 @@ class OrderService
      */
     public function findOrCreateCheck(int $tableId): ?Check
     {
+        // Busca check ativo (não Paid nem Canceled)
         return Check::where('table_id', $tableId)
-            ->where('status', CheckStatusEnum::OPEN->value)
+            ->whereNotIn('status', [
+                CheckStatusEnum::PAID->value,
+                CheckStatusEnum::CANCELED->value
+            ])
+            ->orderBy('created_at', 'desc')
             ->first();
     }
 
@@ -56,7 +61,38 @@ class OrderService
             }
         }
         
-        // Validação: Não pode fechar conta sem pedidos
+        // Validação: Só pode INICIAR fechamento (Open → Closing) se todos os pedidos estiverem entregues
+        if ($newCheckStatus && $check && $newCheckStatus !== $check->status) {
+            // Se está tentando cancelar, valida se o total é zero
+            if ($newCheckStatus === CheckStatusEnum::CANCELED->value) {
+                if ($check->total > 0) {
+                    $errors[] = 'Não é possível cancelar o check com valor pendente. Cancele todos os pedidos primeiro.';
+                }
+            } 
+            // Valida pedidos completos apenas ao iniciar fechamento (Open → Closing)
+            // Após estar em Closing, pode avançar livremente (Closing → Closed → Paid)
+            elseif ($newCheckStatus === CheckStatusEnum::CLOSING->value && 
+                    $check->status === CheckStatusEnum::OPEN->value) {
+                
+                $orders = $check->orders()->with('currentStatusHistory')->get();
+                
+                // Filtra pedidos ativos (não cancelados)
+                $activeOrders = $orders->filter(function($order) {
+                    return $order->status !== OrderStatusEnum::CANCELED->value;
+                });
+                
+                // Verifica se todos os pedidos ativos estão completos
+                $hasIncompleteOrders = $activeOrders->filter(function($order) {
+                    return $order->status !== OrderStatusEnum::COMPLETED->value;
+                })->isNotEmpty();
+                
+                if ($hasIncompleteOrders) {
+                    $errors[] = 'Não é possível iniciar fechamento. Todos os pedidos precisam estar entregues (Pronto).';
+                }
+            }
+        }
+        
+        // Validação: Não pode fechar conta sem pedidos (exceto Canceled)
         if ($newCheckStatus === CheckStatusEnum::CLOSING->value) {
             if (!$check || $check->total <= 0) {
                 $errors[] = 'Não é possível fechar conta sem pedidos.';
@@ -90,8 +126,8 @@ class OrderService
         if ($newCheckStatus && $check && $newCheckStatus !== $check->status) {
             $check->update(['status' => $newCheckStatus]);
             
-            // Se marcou como PAID, libera a mesa
-            if ($newCheckStatus === CheckStatusEnum::PAID->value) {
+            // Se marcou como PAID ou CANCELED, libera a mesa
+            if (in_array($newCheckStatus, [CheckStatusEnum::PAID->value, CheckStatusEnum::CANCELED->value])) {
                 $table->update(['status' => TableStatusEnum::FREE->value]);
             }
         }

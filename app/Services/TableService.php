@@ -77,7 +77,14 @@ class TableService
     {
         $currentCheck = $table->checks->sortByDesc('created_at')->first();
         
-        if ($currentCheck) {
+        // Checks pagos ou cancelados são considerados inativos
+        $checkIsActive = $currentCheck && 
+                        !in_array($currentCheck->status, [
+                            CheckStatusEnum::PAID->value,
+                            CheckStatusEnum::CANCELED->value
+                        ]);
+        
+        if ($checkIsActive) {
             $this->setCheckData($table, $currentCheck);
             $this->setOrdersData($table, $currentCheck);
         } else {
@@ -98,6 +105,7 @@ class TableService
             CheckStatusEnum::CLOSING->value => 'Fechando',
             CheckStatusEnum::CLOSED->value => 'Fechado',
             CheckStatusEnum::PAID->value => 'Pago',
+            CheckStatusEnum::CANCELED->value => 'Cancelado',
             default => 'Livre'
         };
         $table->checkStatusColor = match($currentCheck->status) {
@@ -105,6 +113,7 @@ class TableService
             CheckStatusEnum::CLOSING->value => 'yellow',
             CheckStatusEnum::CLOSED->value => 'red',
             CheckStatusEnum::PAID->value => 'gray',
+            CheckStatusEnum::CANCELED->value => 'orange',
             default => 'gray'
         };
         $table->checkTotal = $currentCheck->total ?? 0;

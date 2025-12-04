@@ -26,8 +26,7 @@
                 <span class="text-sm opacity-90">{{ $selectedTable->name }}</span>
             </div>
         </div>
-        <div class="flex items-center gap-3">
-            {{-- Status da Mesa --}}
+        <div class="flex items-center gap-2">
             <button 
                 wire:click="openStatusModal"
                 class="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-lg px-3 py-1.5 transition-all">
@@ -39,6 +38,7 @@
                         default => ['label' => 'Livre', 'color' => 'bg-gray-400']
                     };
                 @endphp
+                {{-- Status da Mesa --}}
                 <div class="flex flex-col items-start">
                     <span class="text-[10px] opacity-75 uppercase tracking-wider">Mesa</span>
                     <div class="flex items-center gap-1.5">
@@ -46,35 +46,32 @@
                         <span class="text-sm font-medium">{{ $tableStatusConfig['label'] }}</span>
                     </div>
                 </div>
-            </button>
-            
-            {{-- Status do Check --}}
-            @if($currentCheck)
-                <button 
-                    wire:click="openStatusModal"
-                    class="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-lg px-3 py-1.5 transition-all">
+                
+                {{-- Status do Check --}}
+                @if($currentCheck)
                     @php
                         $checkStatusConfig = match($currentCheck->status) {
                             'Open' => ['label' => 'Aberto', 'color' => 'bg-green-400'],
                             'Closing' => ['label' => 'Fechando', 'color' => 'bg-yellow-400'],
                             'Closed' => ['label' => 'Fechado', 'color' => 'bg-red-400'],
                             'Paid' => ['label' => 'Pago', 'color' => 'bg-gray-400'],
+                            'Canceled' => ['label' => 'Cancelado', 'color' => 'bg-orange-400'],
                             default => ['label' => 'Aberto', 'color' => 'bg-green-400']
                         };
                     @endphp
-                    <div class="flex flex-col items-start">
+                    <div class="border-l border-white/30 pl-2 ml-2 flex flex-col items-start">
                         <span class="text-[10px] opacity-75 uppercase tracking-wider">Check</span>
                         <div class="flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full {{ $checkStatusConfig['color'] }}"></span>
                             <span class="text-sm font-medium">{{ $checkStatusConfig['label'] }}</span>
                         </div>
                     </div>
-                </button>
-            @endif
-            
-            <svg class="w-4 h-4 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
+                @endif
+                
+                <svg class="w-4 h-4 opacity-75 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
         </div>
     </div>
 
@@ -317,6 +314,35 @@
                     @if($currentCheck)
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Status do Check</label>
+                            @php
+                                // Verifica se há pedidos não entregues (excluindo cancelados)
+                                $hasIncompleteOrders = ($pendingOrders->count() > 0 || 
+                                                       $inProductionOrders->count() > 0 || 
+                                                       $inTransitOrders->count() > 0);
+                                
+                                // Verifica se pode cancelar (total zero)
+                                $canCancelCheck = $currentCheck->total == 0;
+                                
+                                // Se o check está Open, bloqueia apenas o botão "Fechando" se houver pedidos incompletos
+                                // Se já está em Closing/Closed/Paid, permite mudanças livres
+                                $blockClosingButton = ($currentCheck->status === 'Open' && $hasIncompleteOrders);
+                            @endphp
+                            @if($blockClosingButton)
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
+                                    <p class="text-sm text-yellow-800">
+                                        <span class="font-semibold">⚠️ Atenção:</span> Só é possível iniciar o fechamento quando todos os pedidos estiverem entregues (Pronto).
+                                    </p>
+                                </div>
+                            @endif
+                            
+                            @if($canCancelCheck)
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                                    <p class="text-sm text-blue-800">
+                                        <span class="font-semibold">💡 Dica:</span> Este check está sem valor. Você pode cancelá-lo para liberar a mesa.
+                                    </p>
+                                </div>
+                            @endif
+                            
                             <div class="flex flex-wrap gap-2">
                                 <button 
                                     wire:click="$set('newCheckStatus', 'Open')"
@@ -326,8 +352,9 @@
                                 </button>
                                 <button 
                                     wire:click="$set('newCheckStatus', 'Closing')"
+                                    @if($blockClosingButton) disabled @endif
                                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $newCheckStatus === 'Closing' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                        {{ $blockClosingButton ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closing' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                     Fechando
                                 </button>
                                 <button 
@@ -341,6 +368,13 @@
                                     class="px-3 py-2 rounded-lg text-sm font-medium transition
                                         {{ $newCheckStatus === 'Paid' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                                     Pago
+                                </button>
+                                <button 
+                                    wire:click="$set('newCheckStatus', 'Canceled')"
+                                    @if(!$canCancelCheck) disabled @endif
+                                    class="px-3 py-2 rounded-lg text-sm font-medium transition
+                                        {{ !$canCancelCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Canceled' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                    Cancelar
                                 </button>
                             </div>
                         </div>
