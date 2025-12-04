@@ -75,10 +75,11 @@ class Orders extends Component
         }
         
         session()->flash('success', 'Status atualizado com sucesso!');
+        $this->dispatch('table-updated'); // Dispara evento para outros componentes
         $this->closeStatusModal();
         
-        // Recarrega dados
-        $this->selectedTable = Table::findOrFail($this->tableId);
+        // Recarrega dados - fresh() força recarregamento do banco
+        $this->selectedTable->refresh();
         $this->currentCheck = $this->orderService->findOrCreateCheck($this->tableId);
     }
 

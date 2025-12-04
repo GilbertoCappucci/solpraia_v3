@@ -21,9 +21,25 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
             </button>
-            <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-bold">{{ $selectedTable->number }}</span>
-                <span class="text-sm opacity-90">{{ $selectedTable->name }}</span>
+            <div class="flex items-center gap-2">
+                <div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-2xl font-bold">{{ $selectedTable->number }}</span>
+                        <span class="text-sm opacity-90">{{ $selectedTable->name }}</span>
+                    </div>
+                    <div class="flex items-center gap-1 mt-0.5">
+                        @php
+                            $statusConfig = match($selectedTable->status) {
+                                'free' => ['label' => 'Livre', 'color' => 'bg-gray-400'],
+                                'occupied' => ['label' => 'Ocupada', 'color' => 'bg-blue-500'],
+                                'reserved' => ['label' => 'Reservada', 'color' => 'bg-purple-500'],
+                                default => ['label' => 'Livre', 'color' => 'bg-gray-400']
+                            };
+                        @endphp
+                        <span class="w-2 h-2 rounded-full {{ $statusConfig['color'] }}"></span>
+                        <span class="text-xs opacity-75">{{ $statusConfig['label'] }}</span>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="flex items-center gap-3">

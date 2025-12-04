@@ -19,6 +19,8 @@ class Tables extends Component
     public $newTableName = '';
     public $newTableNumber = '';
     
+    protected $listeners = ['table-updated' => '$refresh'];
+    
     protected $tableService;
     
     public function boot(TableService $tableService)

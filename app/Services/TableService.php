@@ -158,8 +158,20 @@ class TableService
     protected function setEmptyData(Table $table): void
     {
         $table->checkStatus = null;
-        $table->checkStatusLabel = 'Livre';
-        $table->checkStatusColor = 'gray';
+        
+        // Define label baseado no status da mesa (não apenas "Livre")
+        $table->checkStatusLabel = match($table->status) {
+            'occupied' => 'Ocupada',
+            'reserved' => 'Reservada',
+            default => 'Livre'
+        };
+        
+        $table->checkStatusColor = match($table->status) {
+            'occupied' => 'green',
+            'reserved' => 'purple',
+            default => 'gray'
+        };
+        
         $table->ordersPending = 0;
         $table->ordersInProduction = 0;
         $table->ordersInTransit = 0;

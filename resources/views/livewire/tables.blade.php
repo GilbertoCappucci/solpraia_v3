@@ -149,6 +149,10 @@
                             bg-gradient-to-br from-red-50 to-red-100 border-red-400 hover:border-red-500
                         @elseif($table->checkStatus === 'Paid')
                             bg-gradient-to-br from-gray-50 to-gray-100 border-gray-400 hover:border-gray-500
+                        @elseif($table->status === 'occupied')
+                            bg-white border-green-400 hover:border-green-500
+                        @elseif($table->status === 'reserved')
+                            bg-gradient-to-br from-purple-50 to-purple-100 border-purple-400 hover:border-purple-500
                         @else
                             bg-white border-gray-300 hover:border-gray-400
                         @endif">
@@ -221,7 +225,16 @@
                             @endif
                         </div>
                     @else
-                        <div class="text-xs text-gray-400 italic">Livre</div>
+                        <div class="text-xs font-medium italic
+                            @if($table->checkStatusColor === 'green')
+                                text-green-600
+                            @elseif($table->checkStatusColor === 'purple')
+                                text-purple-600
+                            @else
+                                text-gray-400
+                            @endif">
+                            {{ $table->checkStatusLabel }}
+                        </div>
                     @endif
                     
                     {{-- Badge Valor Total --}}
