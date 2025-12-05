@@ -59,6 +59,11 @@ class OrderService
                     $errors[] = "Não é possível alterar o status da mesa. Há um check {$statusLabel}.";
                 }
             }
+            
+            // Validação específica para status CLOSE: só pode fechar mesa sem check ativo
+            if ($newTableStatus === TableStatusEnum::CLOSE->value && $check) {
+                $errors[] = "Não é possível fechar a mesa. Finalize ou cancele o check antes de fechar a mesa fisicamente.";
+            }
         }
         
         // Validação: Só pode INICIAR fechamento (Open → Closing) se todos os pedidos estiverem entregues

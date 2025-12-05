@@ -20,8 +20,6 @@ class Orders extends Component
     
     protected $orderService;
     
-    protected $listeners = ['table-updated' => 'refreshData'];
-    
     public function boot(OrderService $orderService)
     {
         $this->orderService = $orderService;

@@ -1,4 +1,14 @@
-<div x-data x-init="window.addEventListener('focus', () => { $wire.call('refreshData') })">
+<div x-data="{ 
+    lastRefresh: Date.now(),
+    handleFocus() {
+        // Só atualiza se passou mais de 2 segundos desde o último refresh
+        if (Date.now() - this.lastRefresh > 2000) {
+            this.lastRefresh = Date.now();
+            $wire.call('refreshData');
+        }
+    }
+}" x-init="window.addEventListener('focus', () => handleFocus())">
+    
     <x-flash-message />
 
     {{-- Header Compacto com Info do Local --}}
@@ -130,7 +140,7 @@
                         @if($hasActiveCheck)
                             <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
                                 <p class="text-sm text-yellow-800">
-                                    <span class="font-semibold">⚠️ Atenção:</span> Não é possível alterar o status da mesa enquanto houver um check em andamento.
+                                    <span class="font-semibold">⚠️ Atenção:</span> Não é possível alterar o status da mesa enquanto houver um check em andamento. Para fechar a mesa fisicamente, finalize ou cancele o check primeiro.
                                 </p>
                             </div>
                         @endif
