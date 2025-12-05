@@ -110,6 +110,37 @@ class Orders extends Component
         $this->refreshData();
     }
 
+    public function incrementQuantity($orderId)
+    {
+        $result = $this->orderService->updateOrderQuantity($orderId, 1);
+        
+        if (!$result['success']) {
+            session()->flash('error', $result['message']);
+            return;
+        }
+        
+        session()->flash('success', 'Quantidade atualizada!');
+        $this->refreshData();
+    }
+
+    public function decrementQuantity($orderId)
+    {
+        $result = $this->orderService->updateOrderQuantity($orderId, -1);
+        
+        if (!$result['success']) {
+            session()->flash('error', $result['message']);
+            return;
+        }
+        
+        if ($result['canceled']) {
+            session()->flash('success', 'Pedido cancelado!');
+        } else {
+            session()->flash('success', 'Quantidade atualizada!');
+        }
+        
+        $this->refreshData();
+    }
+
     public function render()
     {
         $ordersGrouped = $this->orderService->getActiveOrdersGrouped($this->currentCheck);

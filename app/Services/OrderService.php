@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\Table;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
@@ -277,5 +278,67 @@ class OrderService
             'success' => true,
             'message' => 'Pedido cancelado com sucesso!'
         ];
+    }
+
+    /**
+     * Atualiza a quantidade de um pedido (apenas se estiver PENDING)
+     */
+    public function updateOrderQuantity(int $orderId, int $change): array
+    {
+        return DB::transaction(function() use ($orderId, $change) {
+            // Busca o pedido com lock para evitar race condition
+            $order = Order::with(['currentStatusHistory', 'check', 'product'])
+                ->lockForUpdate()
+                ->findOrFail($orderId);
+            
+            // Recarrega o status mais recente do histórico
+            $order->load('currentStatusHistory');
+            
+            // Valida se o pedido AINDA está em PENDING (verifica de novo após o lock)
+            if ($order->status !== OrderStatusEnum::PENDING->value) {
+                return [
+                    'success' => false,
+                    'message' => 'Este pedido já começou a ser preparado e não pode mais ter a quantidade alterada.',
+                    'canceled' => false
+                ];
+            }
+            
+            $newQuantity = $order->quantity + $change;
+            
+            // Se a quantidade chegar a zero, cancela o pedido
+            if ($newQuantity <= 0) {
+                $result = $this->cancelOrder($orderId);
+                $result['canceled'] = true;
+                return $result;
+            }
+            
+            // Atualiza a quantidade
+            $order->update(['quantity' => $newQuantity]);
+            
+            // Recalcula o total do check
+            if ($order->check) {
+                $check = $order->check;
+                
+                // Busca todos os pedidos do check que NÃO foram cancelados
+                $activeOrders = $check->orders()
+                    ->with('currentStatusHistory')
+                    ->get()
+                    ->filter(function($order) {
+                        return $order->status !== OrderStatusEnum::CANCELED->value;
+                    });
+                
+                // Recalcula o total
+                $newTotal = $activeOrders->sum(function($order) {
+                    return $order->quantity * $order->unit_price;
+                });
+                
+                $check->update(['total' => $newTotal]);
+            }
+            
+            return [
+                'success' => true,
+                'canceled' => false
+            ];
+        });
     }
 }

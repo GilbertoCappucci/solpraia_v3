@@ -95,13 +95,23 @@
                     @else
                         <div class="flex items-center gap-1">
                             @if($showCancel)
+                                {{-- Botão Decrementar --}}
                                 <button 
-                                    wire:click="cancelOrder({{ $order->id }})"
-                                    wire:confirm="Tem certeza que deseja cancelar este pedido?"
-                                    class="p-1 hover:bg-red-100 rounded transition"
-                                    title="Cancelar pedido">
+                                    wire:click="decrementQuantity({{ $order->id }})"
+                                    class="p-1.5 hover:bg-red-100 rounded transition group"
+                                    title="Diminuir quantidade">
                                     <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                    </svg>
+                                </button>
+                                
+                                {{-- Botão Incrementar --}}
+                                <button 
+                                    wire:click="incrementQuantity({{ $order->id }})"
+                                    class="p-1.5 hover:bg-green-100 rounded transition group"
+                                    title="Aumentar quantidade">
+                                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                     </svg>
                                 </button>
                             @endif
