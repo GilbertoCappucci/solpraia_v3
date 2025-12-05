@@ -19,9 +19,14 @@ class TableService
         ?string $filterCheckStatus = null,
         array $filterOrderStatuses = []
     ): Collection {
-        return Table::where('status', '!=', TableStatusEnum::CLOSE->value)
-            ->where('user_id', $userId)
-            ->with(['checks' => function($query) {
+        $query = Table::where('user_id', $userId);
+        
+        // Só exclui mesas fechadas se não está filtrando especificamente por elas
+        if ($filterTableStatus !== 'close') {
+            $query->where('status', '!=', TableStatusEnum::CLOSE->value);
+        }
+        
+        return $query->with(['checks' => function($query) {
                 $query->with(['orders.currentStatusHistory']);
             }])
             ->orderBy('number')
@@ -172,12 +177,14 @@ class TableService
         $table->checkStatusLabel = match($table->status) {
             'occupied' => 'Ocupada',
             'reserved' => 'Reservada',
+            'close' => 'Fechada',
             default => 'Livre'
         };
         
         $table->checkStatusColor = match($table->status) {
             'occupied' => 'green',
             'reserved' => 'purple',
+            'close' => 'red',
             default => 'gray'
         };
         

@@ -53,6 +53,11 @@
                                 {{ $filterTableStatus === 'reserved' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Reservada
                         </button>
+                        <button wire:click="setTableStatusFilter('close')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ $filterTableStatus === 'close' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Fechada
+                        </button>
                     </div>
                 </div>
                 

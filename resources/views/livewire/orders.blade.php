@@ -25,6 +25,7 @@
                         'free' => ['label' => 'Livre', 'color' => 'gray'],
                         'occupied' => ['label' => 'Ocupada', 'color' => 'blue'],
                         'reserved' => ['label' => 'Reservada', 'color' => 'purple'],
+                        'close' => ['label' => 'Fechada', 'color' => 'red'],
                         default => ['label' => 'Livre', 'color' => 'gray']
                     };
                     $checkStatusConfig = $currentCheck ? match($currentCheck->status) {
@@ -154,6 +155,13 @@
                                 class="px-3 py-2 rounded-lg text-sm font-medium transition
                                     {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'reserved' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                 Reservada
+                            </button>
+                            <button 
+                                wire:click="$set('newTableStatus', 'close')"
+                                @if($hasActiveCheck) disabled @endif
+                                class="px-3 py-2 rounded-lg text-sm font-medium transition
+                                    {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'close' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                Fechada
                             </button>
                         </div>
                     </div>
