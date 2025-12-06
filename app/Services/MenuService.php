@@ -116,6 +116,11 @@ class MenuService
         array $cart,
         float $cartTotal
     ): void {
+        // Valida se a mesa não está fechada
+        if ($table->status === \App\Enums\TableStatusEnum::CLOSE->value) {
+            throw new \Exception('Não é possível adicionar pedidos em uma mesa fechada!');
+        }
+        
         // Cria check se não existir
         if (!$check) {
             $check = Check::create([
@@ -127,21 +132,27 @@ class MenuService
         }
 
         // Cria novos pedidos para todos os itens do carrinho
+        // Se quantidade > 1, cria pedidos individuais para facilitar gestão de produção
         foreach ($cart as $productId => $item) {
-            $order = Order::create([
-                'user_id' => $userId,
-                'check_id' => $check->id,
-                'product_id' => $productId,
-                'quantity' => $item['quantity'],
-            ]);
+            $quantity = $item['quantity'];
             
-            // Registra o status inicial no histórico (PENDING)
-            OrderStatusHistory::create([
-                'order_id' => $order->id,
-                'from_status' => null,
-                'to_status' => OrderStatusEnum::PENDING->value,
-                'changed_at' => now(),
-            ]);
+            // Cria pedidos individuais (1 unidade cada)
+            for ($i = 0; $i < $quantity; $i++) {
+                $order = Order::create([
+                    'user_id' => $userId,
+                    'check_id' => $check->id,
+                    'product_id' => $productId,
+                    'quantity' => 1,  // Sempre 1 unidade por pedido
+                ]);
+                
+                // Registra o status inicial no histórico (PENDING)
+                OrderStatusHistory::create([
+                    'order_id' => $order->id,
+                    'from_status' => null,
+                    'to_status' => OrderStatusEnum::PENDING->value,
+                    'changed_at' => now(),
+                ]);
+            }
         }
         
         // Recalcula o total do check com base em TODOS os pedidos

@@ -107,14 +107,20 @@
             <x-total-display :total="$currentCheck->total" />
         @endif
         
-        <button 
-            wire:click="goToMenu"
-            class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:shadow-lg transition">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Adicionar Pedidos
-        </button>
+        @if($selectedTable->status !== 'close')
+            <button 
+                wire:click="goToMenu"
+                class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:shadow-lg transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Adicionar Pedidos
+            </button>
+        @else
+            <div class="w-full bg-red-100 border-2 border-red-300 text-red-700 py-4 rounded-xl font-bold text-center">
+                Mesa Fechada - Não é possível adicionar pedidos
+            </div>
+        @endif
     </div>
 
     {{-- Modal Alterar Status --}}
@@ -287,6 +293,63 @@
                         class="flex-1 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-medium hover:shadow-lg transition">
                         Salvar
                     </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Modal Confirmar Cancelamento --}}
+    @if($showCancelModal)
+        <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeCancelModal">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden" wire:click.stop>
+                {{-- Header com icone --}}
+                <div class="bg-gradient-to-r from-red-500 to-red-600 p-6 text-white">
+                    <div class="flex items-center justify-center mb-3">
+                        <div class="bg-white/20 p-3 rounded-full">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-center">Cancelar Pedido?</h3>
+                </div>
+                
+                {{-- Corpo do modal --}}
+                <div class="p-6">
+                    @if($orderToCancelData)
+                        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-gray-600 text-sm">Produto</span>
+                                <span class="font-bold text-gray-900">{{ $orderToCancelData['product_name'] }}</span>
+                            </div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-gray-600 text-sm">Quantidade</span>
+                                <span class="font-bold text-gray-900">{{ $orderToCancelData['quantity'] }}x</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600 text-sm">Valor</span>
+                                <span class="font-bold text-red-600">R$ {{ number_format($orderToCancelData['price'] * $orderToCancelData['quantity'], 2, ',', '.') }}</span>
+                            </div>
+                        </div>
+                    @endif
+                    
+                    <p class="text-gray-600 text-center mb-6">
+                        Esta ação não pode ser desfeita. O pedido será removido permanentemente.
+                    </p>
+                    
+                    {{-- Botões de ação --}}
+                    <div class="flex gap-3">
+                        <button 
+                            wire:click="closeCancelModal"
+                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg transition">
+                            Voltar
+                        </button>
+                        <button 
+                            wire:click="confirmCancelOrder"
+                            class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-4 rounded-lg transition shadow-lg">
+                            Sim, Cancelar
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

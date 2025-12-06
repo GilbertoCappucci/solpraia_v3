@@ -17,6 +17,9 @@ class Orders extends Component
     public $showStatusModal = false;
     public $newTableStatus = null;
     public $newCheckStatus = null;
+    public $showCancelModal = false;
+    public $orderToCancel = null;
+    public $orderToCancelData = null;
     
     protected $orderService;
     
@@ -43,6 +46,12 @@ class Orders extends Component
 
     public function goToMenu()
     {
+        // Verifica se a mesa está fechada
+        if ($this->selectedTable->status === \App\Enums\TableStatusEnum::CLOSE->value) {
+            session()->flash('error', 'Não é possível adicionar pedidos em uma mesa fechada!');
+            return;
+        }
+        
         return redirect()->route('menu', ['tableId' => $this->tableId]);
     }
 
@@ -97,47 +106,59 @@ class Orders extends Component
         $this->refreshData();
     }
 
-    public function cancelOrder($orderId)
+    public function openCancelModal($orderId)
     {
-        $result = $this->orderService->cancelOrder($orderId);
+        $this->orderToCancel = $orderId;
+        
+        // Busca dados do pedido para exibir no modal
+        $order = \App\Models\Order::with('product')->find($orderId);
+        if ($order) {
+            $this->orderToCancelData = [
+                'product_name' => $order->product->name,
+                'quantity' => $order->quantity,
+                'price' => $order->product->price,
+            ];
+        }
+        
+        $this->showCancelModal = true;
+    }
+    
+    public function closeCancelModal()
+    {
+        $this->showCancelModal = false;
+        $this->orderToCancel = null;
+        $this->orderToCancelData = null;
+    }
+    
+    public function confirmCancelOrder()
+    {
+        if (!$this->orderToCancel) {
+            return;
+        }
+        
+        $result = $this->orderService->cancelOrder($this->orderToCancel);
         
         if (!$result['success']) {
             session()->flash('error', $result['message']);
+            $this->closeCancelModal();
             return;
         }
         
         session()->flash('success', $result['message']);
+        $this->closeCancelModal();
         $this->refreshData();
     }
 
-    public function incrementQuantity($orderId)
+    public function addOneMore($orderId)
     {
-        $result = $this->orderService->updateOrderQuantity($orderId, 1);
+        $result = $this->orderService->duplicatePendingOrder($orderId);
         
         if (!$result['success']) {
             session()->flash('error', $result['message']);
             return;
         }
         
-        session()->flash('success', 'Quantidade atualizada!');
-        $this->refreshData();
-    }
-
-    public function decrementQuantity($orderId)
-    {
-        $result = $this->orderService->updateOrderQuantity($orderId, -1);
-        
-        if (!$result['success']) {
-            session()->flash('error', $result['message']);
-            return;
-        }
-        
-        if ($result['canceled']) {
-            session()->flash('success', 'Pedido cancelado!');
-        } else {
-            session()->flash('success', 'Quantidade atualizada!');
-        }
-        
+        session()->flash('success', 'Quantidade aumentada!');
         $this->refreshData();
     }
 

@@ -15,6 +15,48 @@ use Illuminate\Support\Facades\DB;
 class OrderService
 {
     /**
+     * Recalcula o total de todos os checks ativos
+     */
+    public function recalculateAllActiveChecks(): void
+    {
+        // Busca todos os checks ativos (não Paid nem Canceled)
+        $activeChecks = Check::whereNotIn('status', [
+                CheckStatusEnum::PAID->value,
+                CheckStatusEnum::CANCELED->value
+            ])
+            ->get();
+        
+        foreach ($activeChecks as $check) {
+            $this->recalculateCheckTotal($check);
+        }
+    }
+    
+    /**
+     * Recalcula o total de um check específico
+     */
+    protected function recalculateCheckTotal(Check $check): void
+    {
+        // Busca todos os pedidos do check que NÃO foram cancelados nem estão aguardando
+        $activeOrders = $check->orders()
+            ->with(['currentStatusHistory', 'product'])
+            ->get()
+            ->filter(function($order) {
+                return $order->status !== OrderStatusEnum::CANCELED->value
+                    && $order->status !== OrderStatusEnum::PENDING->value;
+            });
+        
+        // Recalcula o total baseado em quantidade * preço do produto
+        $newTotal = $activeOrders->sum(function($order) {
+            return $order->quantity * $order->product->price;
+        });
+        
+        // Atualiza o total do check se mudou
+        if ($check->total != $newTotal) {
+            $check->update(['total' => $newTotal]);
+        }
+    }
+    
+    /**
      * Busca ou cria check aberto para a mesa
      */
     public function findOrCreateCheck(int $tableId): ?Check
@@ -173,11 +215,36 @@ class OrderService
             ->groupBy('status');
         
         return [
-            'pending' => $activeOrders->get(OrderStatusEnum::PENDING->value, collect()),
-            'inProduction' => $activeOrders->get(OrderStatusEnum::IN_PRODUCTION->value, collect()),
-            'inTransit' => $activeOrders->get(OrderStatusEnum::IN_TRANSIT->value, collect()),
-            'completed' => $activeOrders->get(OrderStatusEnum::COMPLETED->value, collect()),
+            'pending' => $this->groupOrdersByProduct($activeOrders->get(OrderStatusEnum::PENDING->value, collect())),
+            'inProduction' => $this->groupOrdersByProduct($activeOrders->get(OrderStatusEnum::IN_PRODUCTION->value, collect())),
+            'inTransit' => $this->groupOrdersByProduct($activeOrders->get(OrderStatusEnum::IN_TRANSIT->value, collect())),
+            'completed' => $this->groupOrdersByProduct($activeOrders->get(OrderStatusEnum::COMPLETED->value, collect())),
         ];
+    }
+    
+    /**
+     * Agrupa pedidos individuais do mesmo produto
+     */
+    protected function groupOrdersByProduct(Collection $orders): Collection
+    {
+        return $orders->groupBy('product_id')->map(function($groupedOrders) {
+            // Se houver apenas 1 pedido, retorna como está
+            if ($groupedOrders->count() === 1) {
+                return $groupedOrders->first();
+            }
+            
+            // Se houver múltiplos, cria um objeto "virtual" agrupado
+            $firstOrder = $groupedOrders->first();
+            $totalQuantity = $groupedOrders->sum('quantity'); // Soma sempre será igual ao count já que cada um tem qty 1
+            
+            // Cria um objeto com as informações agrupadas
+            $grouped = clone $firstOrder;
+            $grouped->quantity = $totalQuantity;
+            $grouped->individual_orders = $groupedOrders; // Mantém referência aos pedidos individuais
+            $grouped->is_grouped = true;
+            
+            return $grouped;
+        })->values();
     }
 
     /**
@@ -258,17 +325,18 @@ class OrderService
         if ($order->check) {
             $check = $order->check;
             
-            // Busca todos os pedidos do check que NÃO foram cancelados
+            // Busca todos os pedidos do check que NÃO foram cancelados nem estão aguardando
             $activeOrders = $check->orders()
-                ->with('currentStatusHistory')
+                ->with(['currentStatusHistory', 'product'])
                 ->get()
                 ->filter(function($order) {
-                    return $order->status !== OrderStatusEnum::CANCELED->value;
+                    return $order->status !== OrderStatusEnum::CANCELED->value
+                        && $order->status !== OrderStatusEnum::PENDING->value;
                 });
             
             // Recalcula o total
             $newTotal = $activeOrders->sum(function($order) {
-                return $order->quantity * $order->unit_price;
+                return $order->quantity * $order->product->price;
             });
             
             $check->update(['total' => $newTotal]);
@@ -281,64 +349,68 @@ class OrderService
     }
 
     /**
-     * Atualiza a quantidade de um pedido (apenas se estiver PENDING)
+     * Duplica um pedido PENDING (adiciona mais uma unidade)
      */
-    public function updateOrderQuantity(int $orderId, int $change): array
+    public function duplicatePendingOrder(int $orderId): array
     {
-        return DB::transaction(function() use ($orderId, $change) {
-            // Busca o pedido com lock para evitar race condition
+        return DB::transaction(function() use ($orderId) {
+            // Busca o pedido com lock
             $order = Order::with(['currentStatusHistory', 'check', 'product'])
                 ->lockForUpdate()
                 ->findOrFail($orderId);
             
-            // Recarrega o status mais recente do histórico
+            // Recarrega o status mais recente
             $order->load('currentStatusHistory');
             
-            // Valida se o pedido AINDA está em PENDING (verifica de novo após o lock)
+            // Valida se o pedido AINDA está em PENDING
             if ($order->status !== OrderStatusEnum::PENDING->value) {
                 return [
                     'success' => false,
-                    'message' => 'Este pedido já começou a ser preparado e não pode mais ter a quantidade alterada.',
-                    'canceled' => false
+                    'message' => 'Apenas pedidos no status "Aguardando" podem ter a quantidade aumentada.'
                 ];
             }
             
-            $newQuantity = $order->quantity + $change;
+            // Cria um novo pedido idêntico
+            $newOrder = Order::create([
+                'user_id' => $order->user_id,
+                'check_id' => $order->check_id,
+                'product_id' => $order->product_id,
+                'quantity' => 1,  // Sempre 1 unidade
+            ]);
             
-            // Se a quantidade chegar a zero, cancela o pedido
-            if ($newQuantity <= 0) {
-                $result = $this->cancelOrder($orderId);
-                $result['canceled'] = true;
-                return $result;
-            }
-            
-            // Atualiza a quantidade
-            $order->update(['quantity' => $newQuantity]);
+            // Registra o status inicial no histórico (PENDING)
+            OrderStatusHistory::create([
+                'order_id' => $newOrder->id,
+                'from_status' => null,
+                'to_status' => OrderStatusEnum::PENDING->value,
+                'changed_at' => now(),
+            ]);
             
             // Recalcula o total do check
             if ($order->check) {
                 $check = $order->check;
                 
-                // Busca todos os pedidos do check que NÃO foram cancelados
+                // Busca todos os pedidos do check que NÃO foram cancelados nem estão aguardando
                 $activeOrders = $check->orders()
-                    ->with('currentStatusHistory')
+                    ->with(['currentStatusHistory', 'product'])
                     ->get()
                     ->filter(function($order) {
-                        return $order->status !== OrderStatusEnum::CANCELED->value;
+                        return $order->status !== OrderStatusEnum::CANCELED->value
+                            && $order->status !== OrderStatusEnum::PENDING->value;
                     });
                 
                 // Recalcula o total
                 $newTotal = $activeOrders->sum(function($order) {
-                    return $order->quantity * $order->unit_price;
+                    return $order->quantity * $order->product->price;
                 });
                 
                 $check->update(['total' => $newTotal]);
             }
             
             return [
-                'success' => true,
-                'canceled' => false
+                'success' => true
             ];
         });
     }
+
 }

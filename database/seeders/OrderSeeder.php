@@ -50,7 +50,7 @@ class OrderSeeder extends Seeder
             'user_id' => $user->id,
             'check_id' => $check1->id,
             'product_id' => $product1->id,
-            'quantity' => 2,
+            'quantity' => 1,
         ]);
         
         // Cria histórico de status (PENDING) - 10 minutos atrás
@@ -121,7 +121,7 @@ class OrderSeeder extends Seeder
             'user_id' => $user->id,
             'check_id' => $check1->id,
             'product_id' => $product3->id,
-            'quantity' => 3,
+            'quantity' => 1,
         ]);
         
         $order3->statusHistory()->create([

@@ -95,21 +95,40 @@
                     @else
                         <div class="flex items-center gap-1">
                             @if($showCancel)
-                                {{-- Botão Decrementar --}}
-                                <button 
-                                    wire:click="decrementQuantity({{ $order->id }})"
-                                    class="p-1.5 hover:bg-red-100 rounded transition group"
-                                    title="Diminuir quantidade">
-                                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
-                                    </svg>
-                                </button>
+                                {{-- Botão Decrementar (-) --}}
+                                @if($order->is_grouped ?? false)
+                                    {{-- Para pedidos agrupados: cancela o último pedido individual --}}
+                                    <button 
+                                        wire:click="openCancelModal({{ $order->individual_orders->last()->id }})"
+                                        class="p-1.5 hover:bg-red-100 rounded transition group"
+                                        title="Remover 1 unidade">
+                                        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                        </svg>
+                                    </button>
+                                @else
+                                    {{-- Para pedido único: cancela normalmente --}}
+                                    <button 
+                                        wire:click="openCancelModal({{ $order->id }})"
+                                        class="p-1.5 hover:bg-red-100 rounded transition group"
+                                        title="Cancelar pedido">
+                                        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                @endif
                                 
-                                {{-- Botão Incrementar --}}
+                                {{-- Botão Incrementar (+) --}}
+                                @php
+                                    // Para adicionar, usa o primeiro pedido (tanto agrupado quanto único)
+                                    $orderIdToAdd = ($order->is_grouped ?? false) 
+                                        ? $order->individual_orders->first()->id 
+                                        : $order->id;
+                                @endphp
                                 <button 
-                                    wire:click="incrementQuantity({{ $order->id }})"
+                                    wire:click="addOneMore({{ $orderIdToAdd }})"
                                     class="p-1.5 hover:bg-green-100 rounded transition group"
-                                    title="Aumentar quantidade">
+                                    title="Adicionar 1 unidade">
                                     <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                     </svg>
@@ -124,11 +143,16 @@
                                         'completed' => ['bg' => 'bg-green-50', 'hover' => 'hover:bg-green-100', 'icon' => 'text-green-600'],
                                         default => ['bg' => 'bg-gray-50', 'hover' => 'hover:bg-gray-100', 'icon' => 'text-gray-600']
                                     };
+                                    
+                                    // Para pedidos agrupados, avança apenas o primeiro pedido individual
+                                    $orderIdToAdvance = ($order->is_grouped ?? false) 
+                                        ? $order->individual_orders->first()->id 
+                                        : $order->id;
                                 @endphp
                                 <button 
-                                    wire:click="updateOrderStatus({{ $order->id }}, '{{ $nextStatus }}')"
+                                    wire:click="updateOrderStatus({{ $orderIdToAdvance }}, '{{ $nextStatus }}')"
                                     class="p-1.5 {{ $buttonConfig['bg'] }} {{ $buttonConfig['hover'] }} rounded transition"
-                                    title="Avançar status">
+                                    title="{{ ($order->is_grouped ?? false) ? 'Avançar 1 unidade' : 'Avançar status' }}">
                                     @if($nextStatus === 'completed')
                                         <svg class="w-4 h-4 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>

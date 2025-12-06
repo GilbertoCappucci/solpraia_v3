@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Services\OrderService;
 use App\Services\TableService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -22,10 +23,12 @@ class Tables extends Component
     protected $listeners = ['table-updated' => '$refresh'];
     
     protected $tableService;
+    protected $orderService;
     
-    public function boot(TableService $tableService)
+    public function boot(TableService $tableService, OrderService $orderService)
     {
         $this->tableService = $tableService;
+        $this->orderService = $orderService;
     }
     
     public function mount()
@@ -107,6 +110,9 @@ class Tables extends Component
 
     public function render()
     {
+        // Recalcula todos os checks ativos antes de carregar a view
+        $this->orderService->recalculateAllActiveChecks();
+        
         $tables = $this->tableService->getFilteredTables(
             $this->userId,
             $this->filterTableStatus,
