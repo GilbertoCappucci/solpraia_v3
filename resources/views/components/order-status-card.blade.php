@@ -110,14 +110,53 @@
                                         ? $order->individual_orders->first()->id 
                                         : $order->id;
                                 @endphp
-                                <button 
-                                    wire:click="updateOrderStatus({{ $orderIdToGoBack }}, '{{ $previousStatus }}')"
-                                    class="p-3 {{ $backButtonConfig['bg'] }} {{ $backButtonConfig['hover'] }} rounded-lg transition active:scale-95"
-                                    title="{{ ($order->is_grouped ?? false) ? 'Voltar 1 unidade ao status anterior' : 'Voltar ao status anterior' }}">
-                                    <svg class="w-6 h-6 {{ $backButtonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                                    </svg>
-                                </button>
+                                @if($order->is_grouped ?? false)
+                                    {{-- Botão com lógica de segurar para pedidos agrupados --}}
+                                    <div x-data="{ 
+                                        pressTimer: null, 
+                                        longPress: false,
+                                        startPress() {
+                                            this.longPress = false;
+                                            this.pressTimer = setTimeout(() => {
+                                                this.longPress = true;
+                                                @this.call('updateAllOrderStatus', {{ json_encode($order->individual_orders->pluck('id')->toArray()) }}, '{{ $previousStatus }}');
+                                            }, 500);
+                                        },
+                                        endPress() {
+                                            clearTimeout(this.pressTimer);
+                                            if (!this.longPress) {
+                                                @this.call('updateOrderStatus', {{ $orderIdToGoBack }}, '{{ $previousStatus }}');
+                                            }
+                                        },
+                                        cancelPress() {
+                                            clearTimeout(this.pressTimer);
+                                            this.longPress = false;
+                                        }
+                                    }">
+                                        <button 
+                                            @mousedown="startPress()"
+                                            @mouseup="endPress()"
+                                            @mouseleave="cancelPress()"
+                                            @touchstart="startPress()"
+                                            @touchend="endPress()"
+                                            class="p-3 {{ $backButtonConfig['bg'] }} {{ $backButtonConfig['hover'] }} rounded-lg transition active:scale-95"
+                                            title="Clique: voltar 1 unidade | Segurar: voltar todas">
+                                            <svg class="w-6 h-6 {{ $backButtonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                @else
+                                    {{-- Botão simples para pedido único --}}
+                                    <button 
+                                        wire:click="updateOrderStatus({{ $orderIdToGoBack }}, '{{ $previousStatus }}')"
+                                        class="p-3 {{ $backButtonConfig['bg'] }} {{ $backButtonConfig['hover'] }} rounded-lg transition active:scale-95"
+                                        title="Voltar ao status anterior">
+                                        <svg class="w-6 h-6 {{ $backButtonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                        </svg>
+                                    </button>
+                                @endif
                             @endif
                             @if($showCancel)
                                 {{-- Botão Decrementar (-) --}}
@@ -174,20 +213,65 @@
                                         ? $order->individual_orders->first()->id 
                                         : $order->id;
                                 @endphp
-                                <button 
-                                    wire:click="updateOrderStatus({{ $orderIdToAdvance }}, '{{ $nextStatus }}')"
-                                    class="p-3 {{ $buttonConfig['bg'] }} {{ $buttonConfig['hover'] }} rounded-lg transition active:scale-95"
-                                    title="{{ ($order->is_grouped ?? false) ? 'Avançar 1 unidade' : 'Avançar status' }}">
-                                    @if($nextStatus === 'completed')
-                                        <svg class="w-6 h-6 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                    @else
-                                        <svg class="w-6 h-6 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                        </svg>
-                                    @endif
-                                </button>
+                                @if($order->is_grouped ?? false)
+                                    {{-- Botão com lógica de segurar para pedidos agrupados --}}
+                                    <div x-data="{ 
+                                        pressTimer: null, 
+                                        longPress: false,
+                                        startPress() {
+                                            this.longPress = false;
+                                            this.pressTimer = setTimeout(() => {
+                                                this.longPress = true;
+                                                @this.call('updateAllOrderStatus', {{ json_encode($order->individual_orders->pluck('id')->toArray()) }}, '{{ $nextStatus }}');
+                                            }, 500);
+                                        },
+                                        endPress() {
+                                            clearTimeout(this.pressTimer);
+                                            if (!this.longPress) {
+                                                @this.call('updateOrderStatus', {{ $orderIdToAdvance }}, '{{ $nextStatus }}');
+                                            }
+                                        },
+                                        cancelPress() {
+                                            clearTimeout(this.pressTimer);
+                                            this.longPress = false;
+                                        }
+                                    }">
+                                        <button 
+                                            @mousedown="startPress()"
+                                            @mouseup="endPress()"
+                                            @mouseleave="cancelPress()"
+                                            @touchstart="startPress()"
+                                            @touchend="endPress()"
+                                            class="p-3 {{ $buttonConfig['bg'] }} {{ $buttonConfig['hover'] }} rounded-lg transition active:scale-95"
+                                            title="Clique: avançar 1 unidade | Segurar: avançar todas">
+                                            @if($nextStatus === 'completed')
+                                                <svg class="w-6 h-6 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                            @else
+                                                <svg class="w-6 h-6 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                </svg>
+                                            @endif
+                                        </button>
+                                    </div>
+                                @else
+                                    {{-- Botão simples para pedido único --}}
+                                    <button 
+                                        wire:click="updateOrderStatus({{ $orderIdToAdvance }}, '{{ $nextStatus }}')"
+                                        class="p-3 {{ $buttonConfig['bg'] }} {{ $buttonConfig['hover'] }} rounded-lg transition active:scale-95"
+                                        title="Avançar status">
+                                        @if($nextStatus === 'completed')
+                                            <svg class="w-6 h-6 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        @else
+                                            <svg class="w-6 h-6 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        @endif
+                                    </button>
+                                @endif
                             @endif
                         @endif
                         

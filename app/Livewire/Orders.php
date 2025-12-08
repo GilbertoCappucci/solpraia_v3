@@ -122,6 +122,24 @@ class Orders extends Component
         $this->refreshData();
     }
 
+    public function updateAllOrderStatus($orderIds, $newStatus)
+    {
+        // Verifica se o check está aberto (se houver check, precisa estar Open)
+        if ($this->currentCheck && $this->currentCheck->status !== 'Open') {
+            session()->flash('error', 'Para alterar o status de pedidos, o check precisa estar no status "Aberto". Altere o status do check primeiro.');
+            return;
+        }
+        
+        // Atualiza todos os pedidos do array
+        foreach ($orderIds as $orderId) {
+            $this->orderService->updateOrderStatus($orderId, $newStatus);
+        }
+        
+        $count = count($orderIds);
+        session()->flash('success', "{$count} " . ($count === 1 ? 'pedido atualizado' : 'pedidos atualizados') . " com sucesso!");
+        $this->refreshData();
+    }
+
     public function openCancelModal($orderId)
     {
         // Verifica se o check está aberto (se houver check, precisa estar Open)
