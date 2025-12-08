@@ -75,11 +75,6 @@
                                 {{ $filterCheckStatus === 'Open' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Aberto
                         </button>
-                        <button wire:click="setCheckStatusFilter('Closing')"
-                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterCheckStatus === 'Closing' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                            Fechando
-                        </button>
                         <button wire:click="setCheckStatusFilter('Closed')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
                                 {{ $filterCheckStatus === 'Closed' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">

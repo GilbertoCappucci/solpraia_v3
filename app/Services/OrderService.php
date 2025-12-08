@@ -69,15 +69,13 @@ class OrderService
             if ($check) {
                 $checkStatus = $check->status;
                 
-                // Bloqueia mudança de status se check está Open, Closing ou Closed
+                // Bloqueia mudança de status se check está Open ou Closed
                 if (in_array($checkStatus, [
                     CheckStatusEnum::OPEN->value,
-                    CheckStatusEnum::CLOSING->value,
                     CheckStatusEnum::CLOSED->value
                 ])) {
                     $statusLabel = match($checkStatus) {
                         CheckStatusEnum::OPEN->value => 'aberto',
-                        CheckStatusEnum::CLOSING->value => 'em fechamento',
                         CheckStatusEnum::CLOSED->value => 'fechado (aguardando pagamento)',
                         default => 'em andamento'
                     };

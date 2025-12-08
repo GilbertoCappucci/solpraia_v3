@@ -48,9 +48,8 @@ class CheckService
                 $errors[] = 'Não é possível cancelar o check com valor pendente. Cancele todos os pedidos primeiro.';
             }
         } 
-        // Valida pedidos completos apenas ao iniciar fechamento (Open → Closing)
-        // Após estar em Closing, pode avançar livremente (Closing → Closed → Paid)
-        elseif ($newStatus === CheckStatusEnum::CLOSING->value && 
+        // Valida pedidos completos ao fechar (Open → Closed)
+        elseif ($newStatus === CheckStatusEnum::CLOSED->value && 
                 $check->status === CheckStatusEnum::OPEN->value) {
             
             $orders = $check->orders()->with('currentStatusHistory')->get();
@@ -66,21 +65,12 @@ class CheckService
             })->isNotEmpty();
             
             if ($hasIncompleteOrders) {
-                $errors[] = 'Não é possível iniciar fechamento. Todos os pedidos precisam estar entregues (Pronto).';
+                $errors[] = 'Não é possível fechar o check. Todos os pedidos precisam estar entregues (Pronto).';
             }
-        }
-        
-        // Validação: Não pode fechar conta sem pedidos (exceto Canceled)
-        if ($newStatus === CheckStatusEnum::CLOSING->value) {
+            
+            // Validação: Não pode fechar conta sem pedidos
             if ($check->total <= 0) {
                 $errors[] = 'Não é possível fechar conta sem pedidos.';
-            }
-        }
-        
-        // Validação: Não pode marcar como CLOSED sem estar em CLOSING
-        if ($newStatus === CheckStatusEnum::CLOSED->value) {
-            if ($check->status !== CheckStatusEnum::CLOSING->value) {
-                $errors[] = 'A conta precisa estar em "Fechando" antes de ser marcada como "Fechada".';
             }
         }
         

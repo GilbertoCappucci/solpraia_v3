@@ -41,7 +41,6 @@
                     };
                     $checkStatusConfig = $currentCheck ? match($currentCheck->status) {
                         'Open' => ['label' => 'Aberto', 'color' => 'green'],
-                        'Closing' => ['label' => 'Fechando', 'color' => 'yellow'],
                         'Closed' => ['label' => 'Fechado', 'color' => 'red'],
                         'Paid' => ['label' => 'Pago', 'color' => 'gray'],
                         'Canceled' => ['label' => 'Cancelado', 'color' => 'orange'],

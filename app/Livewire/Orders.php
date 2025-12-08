@@ -67,8 +67,8 @@ class Orders extends Component
         // Recarrega dados do banco antes de abrir modal
         $this->refreshData();
         
-        // Verifica se há check ativo (Open, Closing ou Closed)
-        $this->hasActiveCheck = $this->currentCheck && in_array($this->currentCheck->status, ['Open', 'Closing', 'Closed']);
+        // Verifica se há check ativo (Open ou Closed)
+        $this->hasActiveCheck = $this->currentCheck && in_array($this->currentCheck->status, ['Open', 'Closed']);
         
         $this->showStatusModal = true;
         $this->newTableStatus = $this->selectedTable->status;

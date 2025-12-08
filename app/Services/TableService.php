@@ -108,7 +108,6 @@ class TableService
         $table->checkStatus = $currentCheck->status;
         $table->checkStatusLabel = match($currentCheck->status) {
             CheckStatusEnum::OPEN->value => 'Aberto',
-            CheckStatusEnum::CLOSING->value => 'Fechando',
             CheckStatusEnum::CLOSED->value => 'Fechado',
             CheckStatusEnum::PAID->value => 'Pago',
             CheckStatusEnum::CANCELED->value => 'Cancelado',
@@ -116,7 +115,6 @@ class TableService
         };
         $table->checkStatusColor = match($currentCheck->status) {
             CheckStatusEnum::OPEN->value => 'green',
-            CheckStatusEnum::CLOSING->value => 'yellow',
             CheckStatusEnum::CLOSED->value => 'red',
             CheckStatusEnum::PAID->value => 'gray',
             CheckStatusEnum::CANCELED->value => 'orange',

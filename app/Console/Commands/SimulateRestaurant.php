@@ -264,7 +264,7 @@ class SimulateRestaurant extends Command
         $table = $tableData['table'];
         $check = $this->orderService->findOrCreateCheck($table->id);
         
-        if ($check && in_array($check->status, [CheckStatusEnum::OPEN->value, CheckStatusEnum::CLOSING->value])) {
+        if ($check && $check->status === CheckStatusEnum::OPEN->value) {
             $additionalOrders = rand(
                 $this->config['orders']['additional_order']['min'],
                 $this->config['orders']['additional_order']['max']
@@ -372,10 +372,8 @@ class SimulateRestaurant extends Command
             return; // Ainda há pedidos não entregues
         }
         
-        // Processo de pagamento: Open -> Closing -> Closed -> Paid
+        // Processo de pagamento: Open -> Closed -> Paid
         if ($check->status === CheckStatusEnum::OPEN->value) {
-            $this->orderService->updateStatuses($table, $check, 'occupied', CheckStatusEnum::CLOSING->value);
-        } elseif ($check->status === CheckStatusEnum::CLOSING->value) {
             $this->orderService->updateStatuses($table, $check, 'occupied', CheckStatusEnum::CLOSED->value);
         } elseif ($check->status === CheckStatusEnum::CLOSED->value) {
             $this->orderService->updateStatuses($table, $check, 'free', CheckStatusEnum::PAID->value);

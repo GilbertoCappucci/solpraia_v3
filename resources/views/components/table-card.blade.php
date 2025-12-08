@@ -45,7 +45,6 @@
     // Determina as classes de cor e estilo baseado no status
     $cardClasses = match(true) {
         $table->checkStatus === 'Open' => 'bg-white border-green-400 hover:border-green-500',
-        $table->checkStatus === 'Closing' => 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-400 hover:border-yellow-500',
         $table->checkStatus === 'Closed' => 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-400 hover:border-orange-500',
         $table->checkStatus === 'Paid' => 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-400 hover:border-gray-500',
         $table->status === 'occupied' => 'bg-white border-green-400 hover:border-green-500',
@@ -58,7 +57,6 @@
     // Background da barra inferior (sem transparência, cor sólida correspondente)
     $bottomBarBg = match(true) {
         $table->checkStatus === 'Open' => 'bg-white',
-        $table->checkStatus === 'Closing' => 'bg-orange-50',
         $table->checkStatus === 'Closed' => 'bg-orange-100',
         $table->checkStatus === 'Paid' => 'bg-gray-100',
         $table->status === 'occupied' => 'bg-white',
@@ -69,11 +67,10 @@
     };
     
     // Determina se deve mostrar label central (checks sem pedidos ativos)
-    $showCenterLabel = in_array($table->checkStatus, ['Closing', 'Closed', 'Paid']) && $activeStatuses === 0;
+    $showCenterLabel = in_array($table->checkStatus, ['Closed', 'Paid']) && $activeStatuses === 0;
     
     // Define cor do label central baseado no status do check
     $labelColor = match($table->checkStatus) {
-        'Closing' => 'text-yellow-700',
         'Closed' => 'text-orange-700',
         'Paid' => 'text-gray-600',
         default => 'text-gray-400'

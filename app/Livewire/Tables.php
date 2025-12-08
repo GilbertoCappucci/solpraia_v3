@@ -120,7 +120,7 @@ class Tables extends Component
         
         // Verifica se há check ativo (não Paid nem Canceled)
         $activeCheck = $this->orderService->findOrCreateCheck($tableId);
-        $this->hasActiveCheck = $activeCheck && in_array($activeCheck->status, ['Open', 'Closing', 'Closed']);
+        $this->hasActiveCheck = $activeCheck && in_array($activeCheck->status, ['Open', 'Closed']);
         
         $this->showTableStatusModal = true;
     }
