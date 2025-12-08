@@ -369,4 +369,21 @@ class OrderService
         });
     }
 
+    /**
+     * Atualiza apenas o status do check
+     */
+    public function updateCheckStatus(Check $check, string $newStatus): void
+    {
+        $check->status = $newStatus;
+        
+        // Atualiza closed_at quando o check for fechado ou pago
+        if (in_array($newStatus, [CheckStatusEnum::CLOSED->value, CheckStatusEnum::PAID->value])) {
+            if (!$check->closed_at) {
+                $check->closed_at = now();
+            }
+        }
+        
+        $check->save();
+    }
+
 }

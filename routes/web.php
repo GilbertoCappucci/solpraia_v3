@@ -33,6 +33,7 @@ Route::middleware(['auth', 'role:device'])->group(function () {
     Route::get('tables', Tables::class)->name('tables');
     Route::get('orders/{tableId}', Orders::class)->name('orders');
     Route::get('menu/{tableId}', \App\Livewire\Menu::class)->name('menu');
+    Route::get('check/{checkId}', \App\Livewire\CheckComponent::class)->name('check');
 });
 
 // =============================================

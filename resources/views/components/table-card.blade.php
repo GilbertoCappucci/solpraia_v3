@@ -1,5 +1,6 @@
 @props([
-    'table'
+    'table',
+    'onStatusClick' => null
 ])
 
 @php
@@ -65,10 +66,17 @@
     };
 @endphp
 
-<button {{ $attributes->merge(['class' => "relative aspect-square rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2 {$cardClasses}"]) }}>
+<div {{ $attributes->merge(['class' => "relative aspect-square rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2 {$cardClasses}"]) }}>
     
+    {{-- Área Principal Clicável - Vai para Orders --}}
+    <a href="{{ route('orders', $table->id) }}" 
+       class="absolute inset-0 z-0"
+       wire:navigate
+       title="Ver pedidos">
+    </a>
+
     {{-- Badge topo esquerdo (Numero e Nome) --}}
-    <div class="absolute top-2 left-2 right-2 flex items-baseline justify-between">
+    <div class="absolute top-2 left-2 right-2 flex items-baseline justify-between z-10 pointer-events-none">
         <span class="text-3xl font-bold text-gray-900 leading-none">{{ $table->number }}</span>
         <span class="text-xs text-gray-600 font-medium leading-none">{{ $table->name }}</span>
     </div>
@@ -76,7 +84,7 @@
     {{-- Indicadores de Status dos Pedidos ou Label Central --}}
     @if($table->checkStatus && $activeStatuses > 0)
         {{-- Grid Dinâmico com indicadores de pedidos --}}
-        <div class="grid {{ $gridClass }} gap-1 w-full px-2">
+        <div class="grid {{ $gridClass }} gap-1 w-full px-2 z-10 pointer-events-none">
             <x-order-status-indicator 
                 status="pending"
                 :count="$table->ordersPending ?? 0"
@@ -103,15 +111,43 @@
         </div>
     @else
         {{-- Label central (mesas sem check ou checks sem pedidos ativos) --}}
-        <div class="text-xs font-medium italic {{ $showCenterLabel ? $labelColor : ($table->status === 'close' ? 'text-red-700 font-semibold' : ($table->checkStatusColor === 'green' ? 'text-green-600' : ($table->checkStatusColor === 'purple' ? 'text-purple-600' : 'text-gray-400'))) }}">
+        <div class="text-xs font-medium italic z-10 pointer-events-none {{ $showCenterLabel ? $labelColor : ($table->status === 'close' ? 'text-red-700 font-semibold' : ($table->checkStatusColor === 'green' ? 'text-green-600' : ($table->checkStatusColor === 'purple' ? 'text-purple-600' : 'text-gray-400'))) }}">
             {{ $table->checkStatusLabel }}
         </div>
     @endif
     
-    {{-- Badge Valor Total --}}
+    {{-- Barra Inferior: Reservada para interações específicas --}}
     @if(isset($table->checkTotal) && $table->checkTotal > 0)
-        <div class="absolute bottom-2 left-2">
-            <span class="text-base font-bold text-orange-600">R$ {{ number_format($table->checkTotal, 2, ',', '.') }}</span>
+        <div class="absolute bottom-0 left-0 right-0 flex items-center justify-between px-2 pb-2 z-20">
+            {{-- Link para Check (Esquerda) --}}
+            <a href="{{ route('check', $table->checkId) }}" 
+               class="text-base font-bold text-orange-600 hover:text-orange-700 transition-colors pointer-events-auto"
+               wire:navigate
+               title="Ver comanda">
+                R$ {{ number_format($table->checkTotal, 2, ',', '.') }}
+            </a>
+            
+            {{-- Botão Alterar Status da Mesa (Direita) --}}
+            <button 
+                wire:click.stop="openTableStatusModal({{ $table->id }})"
+                class="p-1.5 bg-white/90 hover:bg-white rounded-lg shadow-sm transition-all active:scale-95 pointer-events-auto"
+                title="Alterar status da mesa">
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                </svg>
+            </button>
+        </div>
+    @else
+        {{-- Quando não há valor, mostrar apenas o botão de status --}}
+        <div class="absolute bottom-2 right-2 z-20">
+            <button 
+                wire:click.stop="openTableStatusModal({{ $table->id }})"
+                class="p-1.5 bg-white/90 hover:bg-white rounded-lg shadow-sm transition-all active:scale-95 pointer-events-auto"
+                title="Alterar status da mesa">
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                </svg>
+            </button>
         </div>
     @endif
-</button>
+</div>

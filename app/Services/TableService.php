@@ -104,6 +104,7 @@ class TableService
      */
     protected function setCheckData(Table $table, $currentCheck): void
     {
+        $table->checkId = $currentCheck->id;
         $table->checkStatus = $currentCheck->status;
         $table->checkStatusLabel = match($currentCheck->status) {
             CheckStatusEnum::OPEN->value => 'Aberto',
@@ -229,5 +230,28 @@ class TableService
         ];
 
         return ['rules' => $rules, 'messages' => $messages];
+    }
+
+    /**
+     * Busca uma table por ID
+     */
+    public function getTableById(int $tableId): ?Table
+    {
+        return Table::find($tableId);
+    }
+
+    /**
+     * Atualiza o status de uma table
+     */
+    public function updateTableStatus(int $tableId, string $newStatus): bool
+    {
+        $table = $this->getTableById($tableId);
+        
+        if (!$table) {
+            return false;
+        }
+
+        $table->status = $newStatus;
+        return $table->save();
     }
 }

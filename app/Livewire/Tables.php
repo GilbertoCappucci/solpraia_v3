@@ -19,6 +19,9 @@ class Tables extends Component
     public $showNewTableModal = false;
     public $newTableName = '';
     public $newTableNumber = '';
+    public $showTableStatusModal = false;
+    public $selectedTableId = null;
+    public $newTableStatus = null;
     
     protected $listeners = ['table-updated' => '$refresh'];
     
@@ -106,6 +109,34 @@ class Tables extends Component
     public function selectTable($tableId)
     {
         return redirect()->route('orders', ['tableId' => $tableId]);
+    }
+
+    public function openTableStatusModal($tableId)
+    {
+        $table = $this->tableService->getTableById($tableId);
+        $this->selectedTableId = $tableId;
+        $this->newTableStatus = $table->status;
+        $this->showTableStatusModal = true;
+    }
+
+    public function closeTableStatusModal()
+    {
+        $this->showTableStatusModal = false;
+        $this->selectedTableId = null;
+        $this->newTableStatus = null;
+    }
+
+    public function updateTableStatus()
+    {
+        if (!$this->selectedTableId || !$this->newTableStatus) {
+            return;
+        }
+
+        $this->tableService->updateTableStatus($this->selectedTableId, $this->newTableStatus);
+        
+        session()->flash('success', 'Status da mesa atualizado com sucesso!');
+        $this->closeTableStatusModal();
+        $this->dispatch('table-updated');
     }
 
     public function render()
