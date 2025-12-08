@@ -9,6 +9,7 @@
         'yellow' => 'bg-yellow-400',
         'red' => 'bg-red-400',
         'orange' => 'bg-orange-400',
+        'teal' => 'bg-teal-400',
         default => 'bg-gray-400'
     };
 @endphp

@@ -22,6 +22,7 @@ class Tables extends Component
     public $showTableStatusModal = false;
     public $selectedTableId = null;
     public $newTableStatus = null;
+    public $hasActiveCheck = false;
     
     protected $listeners = ['table-updated' => '$refresh'];
     
@@ -116,6 +117,11 @@ class Tables extends Component
         $table = $this->tableService->getTableById($tableId);
         $this->selectedTableId = $tableId;
         $this->newTableStatus = $table->status;
+        
+        // Verifica se há check ativo (não Paid nem Canceled)
+        $activeCheck = $this->orderService->findOrCreateCheck($tableId);
+        $this->hasActiveCheck = $activeCheck && in_array($activeCheck->status, ['Open', 'Closing', 'Closed']);
+        
         $this->showTableStatusModal = true;
     }
 
@@ -124,11 +130,18 @@ class Tables extends Component
         $this->showTableStatusModal = false;
         $this->selectedTableId = null;
         $this->newTableStatus = null;
+        $this->hasActiveCheck = false;
     }
 
     public function updateTableStatus()
     {
         if (!$this->selectedTableId || !$this->newTableStatus) {
+            return;
+        }
+
+        // Validação: não pode alterar status da mesa com check ativo
+        if ($this->hasActiveCheck) {
+            session()->flash('error', 'Não é possível alterar o status da mesa. Finalize ou cancele o check primeiro.');
             return;
         }
 

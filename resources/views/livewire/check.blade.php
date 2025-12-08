@@ -60,15 +60,17 @@
             </div>
         </div>
         
-        {{-- Botão para gerenciar pedidos --}}
-        <button 
-            wire:click="goToOrders"
-            class="w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-lg font-bold transition shadow-lg flex items-center justify-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-            </svg>
-            Gerenciar Pedidos
-        </button>
+        {{-- Botão para gerenciar pedidos (apenas se check estiver Open) --}}
+        @if($check->status === 'Open')
+            <button 
+                wire:click="goToOrders"
+                class="w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-lg font-bold transition shadow-lg flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Gerenciar Pedidos
+            </button>
+        @endif
     </div>
 
     {{-- Lista de Pedidos que Compõem o Check (Exceto Aguardando) --}}
@@ -92,7 +94,7 @@
                                     $statusConfig = match($order->status) {
                                         'InProduction' => ['label' => 'Preparo', 'color' => 'blue'],
                                         'InTransit' => ['label' => 'Trânsito', 'color' => 'purple'],
-                                        'Delivered' => ['label' => 'Entregue', 'color' => 'green'],
+                                        'Completed' => ['label' => 'Entregue', 'color' => 'green'],
                                         default => ['label' => $order->status, 'color' => 'gray']
                                     };
                                 @endphp
@@ -263,70 +265,12 @@
                 </div>
                 
                 <div class="space-y-4">
-                    {{-- Status do Check --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Status do Check</label>
-                        @php
-                            // Verifica se há pedidos não entregues (excluindo cancelados)
-                            $hasIncompleteOrders = ($groupedOrders['pending']->count() > 0 || 
-                                                   $groupedOrders['inProduction']->count() > 0 || 
-                                                   $groupedOrders['inTransit']->count() > 0);
-                            
-                            // Verifica se pode cancelar (total zero)
-                            $canCancelCheck = $check->total == 0;
-                        @endphp
-                        
-                        @if($hasIncompleteOrders && in_array($newCheckStatus, ['Closed', 'Paid']))
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
-                                <p class="text-sm text-yellow-800">
-                                    <span class="font-semibold">⚠️ Atenção:</span> Há pedidos que ainda não foram entregues. Complete ou cancele todos os pedidos antes de fechar ou marcar como pago.
-                                </p>
-                            </div>
-                        @endif
-                        
-                        <div class="flex flex-wrap gap-2">
-                            <button 
-                                wire:click="$set('newCheckStatus', 'Open')"
-                                class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                    {{ $newCheckStatus === 'Open' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                                Aberto
-                            </button>
-                            <button 
-                                wire:click="$set('newCheckStatus', 'Closing')"
-                                class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                    {{ $newCheckStatus === 'Closing' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                                Fechando
-                            </button>
-                            <button 
-                                wire:click="$set('newCheckStatus', 'Closed')"
-                                @if($hasIncompleteOrders) disabled @endif
-                                class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                    {{ $hasIncompleteOrders ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closed' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
-                                Fechado
-                            </button>
-                            <button 
-                                wire:click="$set('newCheckStatus', 'Paid')"
-                                @if($hasIncompleteOrders) disabled @endif
-                                class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                    {{ $hasIncompleteOrders ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Paid' ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
-                                Pago
-                            </button>
-                            <button 
-                                wire:click="$set('newCheckStatus', 'Canceled')"
-                                @if(!$canCancelCheck) disabled @endif
-                                class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                    {{ !$canCancelCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Canceled' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
-                                Cancelado
-                            </button>
-                        </div>
-                        <p class="mt-2 text-xs text-gray-500">
-                            • <strong>Aberto:</strong> Pode receber novos pedidos<br>
-                            • <strong>Fechando:</strong> Não aceita mais pedidos<br>
-                            • <strong>Fechado:</strong> Aguardando pagamento<br>
-                            • <strong>Pago:</strong> Check finalizado<br>
-                            • <strong>Cancelado:</strong> Apenas checks vazios
-                        </p>
-                    </div>
+                    <x-check-status-selector 
+                        :check="$check"
+                        :newCheckStatus="$newCheckStatus"
+                        :pendingCount="$groupedOrders['pending']->count()"
+                        :inProductionCount="$groupedOrders['inProduction']->count()"
+                        :inTransitCount="$groupedOrders['inTransit']->count()" />
 
                     <div class="flex gap-3">
                         <button 

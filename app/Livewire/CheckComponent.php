@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\TableStatusEnum;
 use App\Models\Check;
 use App\Services\CheckService;
 use App\Services\OrderService;
@@ -63,23 +64,21 @@ class CheckComponent extends Component
             return;
         }
         
-        // Validações baseadas no status
-        $pendingOrders = $this->check->orders->where('status', 'Pending');
-        $inProductionOrders = $this->check->orders->where('status', 'InProduction');
-        $inTransitOrders = $this->check->orders->where('status', 'InTransit');
+        // Usa método centralizado do CheckService para validar e atualizar
+        $result = $this->checkService->validateAndUpdateCheckStatus($this->check, $this->newCheckStatus);
         
-        $hasIncompleteOrders = $pendingOrders->count() > 0 || 
-                               $inProductionOrders->count() > 0 || 
-                               $inTransitOrders->count() > 0;
-        
-        // Não pode fechar/pagar se houver pedidos não entregues
-        if (in_array($this->newCheckStatus, ['Closed', 'Paid']) && $hasIncompleteOrders) {
-            session()->flash('error', 'Não é possível alterar o status. Há pedidos que ainda não foram entregues.');
+        if (!$result['success']) {
+            session()->flash('error', implode(' ', $result['errors']));
             return;
         }
         
-        // Atualiza o status do check
-        $this->orderService->updateCheckStatus($this->check, $this->newCheckStatus);
+        // Se o check foi marcado como PAID, coloca mesa em RELEASING
+        // Se foi CANCELED, libera direto para FREE
+        if ($this->newCheckStatus === 'Paid') {
+            $this->table->update(['status' => TableStatusEnum::RELEASING->value]);
+        } elseif ($this->newCheckStatus === 'Canceled') {
+            $this->table->update(['status' => TableStatusEnum::FREE->value]);
+        }
         
         session()->flash('success', 'Status da comanda atualizado com sucesso!');
         $this->closeStatusModal();
@@ -103,12 +102,18 @@ class CheckComponent extends Component
             'pending' => $this->check->orders->where('status', 'Pending'),
             'inProduction' => $this->check->orders->where('status', 'InProduction'),
             'inTransit' => $this->check->orders->where('status', 'InTransit'),
-            'delivered' => $this->check->orders->where('status', 'Delivered'),
+            'delivered' => $this->check->orders->where('status', 'Completed'),
             'canceled' => $this->check->orders->where('status', 'Canceled'),
         ];
         
+        // Regra simplificada: só pode alterar se TODOS os pedidos (exceto cancelados) estão entregues
+        $activeOrders = $this->check->orders->whereNotIn('status', ['Canceled']);
+        $allDelivered = $activeOrders->every(fn($order) => $order->status === 'Completed');
+        $hasIncompleteOrders = !$allDelivered && $activeOrders->count() > 0;
+        
         return view('livewire.check', [
             'groupedOrders' => $groupedOrders,
+            'hasIncompleteOrders' => $hasIncompleteOrders,
         ]);
     }
 }

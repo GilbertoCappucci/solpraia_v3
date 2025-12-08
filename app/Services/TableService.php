@@ -178,6 +178,7 @@ class TableService
         $table->checkStatusLabel = match($table->status) {
             'occupied' => 'Ocupada',
             'reserved' => 'Reservada',
+            'releasing' => 'Liberando',
             'close' => 'Fechada',
             default => 'Livre'
         };
@@ -185,6 +186,7 @@ class TableService
         $table->checkStatusColor = match($table->status) {
             'occupied' => 'green',
             'reserved' => 'purple',
+            'releasing' => 'teal',
             'close' => 'red',
             default => 'gray'
         };

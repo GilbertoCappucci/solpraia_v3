@@ -20,6 +20,7 @@ class Orders extends Component
     public $showCancelModal = false;
     public $orderToCancel = null;
     public $orderToCancelData = null;
+    public $hasActiveCheck = false;
     
     protected $orderService;
     
@@ -52,6 +53,12 @@ class Orders extends Component
             return;
         }
         
+        // Verifica se o check está aberto (permite se check for NULL - primeiro pedido)
+        if ($this->currentCheck && $this->currentCheck->status !== 'Open') {
+            session()->flash('error', 'Para adicionar novos pedidos, o check precisa estar no status "Aberto". Altere o status do check primeiro.');
+            return;
+        }
+        
         return redirect()->route('menu', ['tableId' => $this->tableId]);
     }
 
@@ -59,6 +66,9 @@ class Orders extends Component
     {
         // Recarrega dados do banco antes de abrir modal
         $this->refreshData();
+        
+        // Verifica se há check ativo (Open, Closing ou Closed)
+        $this->hasActiveCheck = $this->currentCheck && in_array($this->currentCheck->status, ['Open', 'Closing', 'Closed']);
         
         $this->showStatusModal = true;
         $this->newTableStatus = $this->selectedTable->status;
@@ -101,6 +111,12 @@ class Orders extends Component
 
     public function updateOrderStatus($orderId, $newStatus)
     {
+        // Verifica se o check está aberto (se houver check, precisa estar Open)
+        if ($this->currentCheck && $this->currentCheck->status !== 'Open') {
+            session()->flash('error', 'Para alterar o status de pedidos, o check precisa estar no status "Aberto". Altere o status do check primeiro.');
+            return;
+        }
+        
         $this->orderService->updateOrderStatus($orderId, $newStatus);
         session()->flash('success', 'Pedido atualizado com sucesso!');
         $this->refreshData();
@@ -108,6 +124,12 @@ class Orders extends Component
 
     public function openCancelModal($orderId)
     {
+        // Verifica se o check está aberto (se houver check, precisa estar Open)
+        if ($this->currentCheck && $this->currentCheck->status !== 'Open') {
+            session()->flash('error', 'Para cancelar pedidos, o check precisa estar no status "Aberto". Altere o status do check primeiro.');
+            return;
+        }
+        
         $this->orderToCancel = $orderId;
         
         // Busca dados do pedido para exibir no modal
@@ -151,6 +173,12 @@ class Orders extends Component
 
     public function addOneMore($orderId)
     {
+        // Verifica se o check está aberto (se houver check, precisa estar Open)
+        if ($this->currentCheck && $this->currentCheck->status !== 'Open') {
+            session()->flash('error', 'Para adicionar mais pedidos, o check precisa estar no status "Aberto". Altere o status do check primeiro.');
+            return;
+        }
+        
         $result = $this->orderService->duplicatePendingOrder($orderId);
         
         if (!$result['success']) {
@@ -171,6 +199,9 @@ class Orders extends Component
         $inTransitStats = $this->orderService->calculateOrderStats($ordersGrouped['inTransit']);
         $completedStats = $this->orderService->calculateOrderStats($ordersGrouped['completed']);
 
+        // Permite adicionar pedidos se não há check ainda (NULL) ou se check está Open
+        $isCheckOpen = !$this->currentCheck || $this->currentCheck->status === 'Open';
+
         return view('livewire.orders', [
             'pendingOrders' => $ordersGrouped['pending'],
             'pendingTotal' => $pendingStats['total'],
@@ -184,6 +215,7 @@ class Orders extends Component
             'completedOrders' => $ordersGrouped['completed'],
             'completedTotal' => $completedStats['total'],
             'completedTime' => $completedStats['time'],
+            'isCheckOpen' => $isCheckOpen,
         ]);
     }
 }

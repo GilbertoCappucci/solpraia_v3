@@ -91,55 +91,12 @@ class OrderService
             }
         }
         
-        // Validação: Só pode INICIAR fechamento (Open → Closing) se todos os pedidos estiverem entregues
+        // Validação do check usando método centralizado do CheckService
         if ($newCheckStatus && $check && $newCheckStatus !== $check->status) {
-            // Se está tentando cancelar, valida se o total é zero
-            if ($newCheckStatus === CheckStatusEnum::CANCELED->value) {
-                if ($check->total > 0) {
-                    $errors[] = 'Não é possível cancelar o check com valor pendente. Cancele todos os pedidos primeiro.';
-                }
-            } 
-            // Valida pedidos completos apenas ao iniciar fechamento (Open → Closing)
-            // Após estar em Closing, pode avançar livremente (Closing → Closed → Paid)
-            elseif ($newCheckStatus === CheckStatusEnum::CLOSING->value && 
-                    $check->status === CheckStatusEnum::OPEN->value) {
-                
-                $orders = $check->orders()->with('currentStatusHistory')->get();
-                
-                // Filtra pedidos ativos (não cancelados)
-                $activeOrders = $orders->filter(function($order) {
-                    return $order->status !== OrderStatusEnum::CANCELED->value;
-                });
-                
-                // Verifica se todos os pedidos ativos estão completos
-                $hasIncompleteOrders = $activeOrders->filter(function($order) {
-                    return $order->status !== OrderStatusEnum::COMPLETED->value;
-                })->isNotEmpty();
-                
-                if ($hasIncompleteOrders) {
-                    $errors[] = 'Não é possível iniciar fechamento. Todos os pedidos precisam estar entregues (Pronto).';
-                }
-            }
-        }
-        
-        // Validação: Não pode fechar conta sem pedidos (exceto Canceled)
-        if ($newCheckStatus === CheckStatusEnum::CLOSING->value) {
-            if (!$check || $check->total <= 0) {
-                $errors[] = 'Não é possível fechar conta sem pedidos.';
-            }
-        }
-        
-        // Validação: Não pode marcar como CLOSED sem estar em CLOSING
-        if ($newCheckStatus === CheckStatusEnum::CLOSED->value) {
-            if (!$check || $check->status !== CheckStatusEnum::CLOSING->value) {
-                $errors[] = 'A conta precisa estar em "Fechando" antes de ser marcada como "Fechada".';
-            }
-        }
-        
-        // Validação: Não pode marcar como PAID sem estar CLOSED
-        if ($newCheckStatus === CheckStatusEnum::PAID->value) {
-            if (!$check || $check->status !== CheckStatusEnum::CLOSED->value) {
-                $errors[] = 'A conta precisa estar "Fechada" antes de ser marcada como "Paga".';
+            $checkValidation = $this->checkService->validateAndUpdateCheckStatus($check, $newCheckStatus);
+            
+            if (!$checkValidation['success']) {
+                $errors = array_merge($errors, $checkValidation['errors']);
             }
         }
         
@@ -152,12 +109,12 @@ class OrderService
             $table->update(['status' => $newTableStatus]);
         }
         
-        // Atualiza status do check
+        // Se o check foi atualizado com sucesso e foi marcado como PAID, coloca mesa em RELEASING
+        // Se foi CANCELED, libera direto para FREE
         if ($newCheckStatus && $check && $newCheckStatus !== $check->status) {
-            $check->update(['status' => $newCheckStatus]);
-            
-            // Se marcou como PAID ou CANCELED, libera a mesa
-            if (in_array($newCheckStatus, [CheckStatusEnum::PAID->value, CheckStatusEnum::CANCELED->value])) {
+            if ($newCheckStatus === CheckStatusEnum::PAID->value) {
+                $table->update(['status' => TableStatusEnum::RELEASING->value]);
+            } elseif ($newCheckStatus === CheckStatusEnum::CANCELED->value) {
                 $table->update(['status' => TableStatusEnum::FREE->value]);
             }
         }
@@ -372,18 +329,4 @@ class OrderService
     /**
      * Atualiza apenas o status do check
      */
-    public function updateCheckStatus(Check $check, string $newStatus): void
-    {
-        $check->status = $newStatus;
-        
-        // Atualiza closed_at quando o check for fechado ou pago
-        if (in_array($newStatus, [CheckStatusEnum::CLOSED->value, CheckStatusEnum::PAID->value])) {
-            if (!$check->closed_at) {
-                $check->closed_at = now();
-            }
-        }
-        
-        $check->save();
-    }
-
 }

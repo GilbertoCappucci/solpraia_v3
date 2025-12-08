@@ -7,7 +7,8 @@
     'showPrice' => false,
     'nextStatus' => null,
     'previousStatus' => null,
-    'subtotal' => 0
+    'subtotal' => 0,
+    'isCheckOpen' => true
 ])
 
 @php
@@ -92,29 +93,30 @@
                     
                     {{-- Ações ou Preço --}}
                     <div class="flex items-center gap-2">
-                        {{-- Botão Voltar Status (disponível em qualquer status) --}}
-                        @if($previousStatus)
-                            @php
-                                // Define cores do botão de voltar baseado no status anterior
-                                $backButtonConfig = match($previousStatus) {
-                                    'pending' => ['bg' => 'bg-yellow-50', 'hover' => 'hover:bg-yellow-100', 'icon' => 'text-yellow-600'],
-                                    'in_production' => ['bg' => 'bg-blue-50', 'hover' => 'hover:bg-blue-100', 'icon' => 'text-blue-600'],
-                                    'in_transit' => ['bg' => 'bg-purple-50', 'hover' => 'hover:bg-purple-100', 'icon' => 'text-purple-600'],
-                                    default => ['bg' => 'bg-gray-50', 'hover' => 'hover:bg-gray-100', 'icon' => 'text-gray-600']
-                                };
-                                
-                                // Para pedidos agrupados, volta apenas o primeiro pedido individual
-                                $orderIdToGoBack = ($order->is_grouped ?? false) 
-                                    ? $order->individual_orders->first()->id 
-                                    : $order->id;
-                            @endphp
-                            <button 
-                                wire:click="updateOrderStatus({{ $orderIdToGoBack }}, '{{ $previousStatus }}')"
-                                class="p-3 {{ $backButtonConfig['bg'] }} {{ $backButtonConfig['hover'] }} rounded-lg transition active:scale-95"
-                                title="{{ ($order->is_grouped ?? false) ? 'Voltar 1 unidade ao status anterior' : 'Voltar ao status anterior' }}">
-                                <svg class="w-6 h-6 {{ $backButtonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                                </svg>
+                        @if($isCheckOpen)
+                            {{-- Botão Voltar Status (disponível em qualquer status) --}}
+                            @if($previousStatus)
+                                @php
+                                    // Define cores do botão de voltar baseado no status anterior
+                                    $backButtonConfig = match($previousStatus) {
+                                        'pending' => ['bg' => 'bg-yellow-50', 'hover' => 'hover:bg-yellow-100', 'icon' => 'text-yellow-600'],
+                                        'in_production' => ['bg' => 'bg-blue-50', 'hover' => 'hover:bg-blue-100', 'icon' => 'text-blue-600'],
+                                        'in_transit' => ['bg' => 'bg-purple-50', 'hover' => 'hover:bg-purple-100', 'icon' => 'text-purple-600'],
+                                        default => ['bg' => 'bg-gray-50', 'hover' => 'hover:bg-gray-100', 'icon' => 'text-gray-600']
+                                    };
+                                    
+                                    // Para pedidos agrupados, volta apenas o primeiro pedido individual
+                                    $orderIdToGoBack = ($order->is_grouped ?? false) 
+                                        ? $order->individual_orders->first()->id 
+                                        : $order->id;
+                                @endphp
+                                <button 
+                                    wire:click="updateOrderStatus({{ $orderIdToGoBack }}, '{{ $previousStatus }}')"
+                                    class="p-3 {{ $backButtonConfig['bg'] }} {{ $backButtonConfig['hover'] }} rounded-lg transition active:scale-95"
+                                    title="{{ ($order->is_grouped ?? false) ? 'Voltar 1 unidade ao status anterior' : 'Voltar ao status anterior' }}">
+                                    <svg class="w-6 h-6 {{ $backButtonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                    </svg>
                                 </button>
                             @endif
                             @if($showCancel)
@@ -187,6 +189,7 @@
                                     @endif
                                 </button>
                             @endif
+                        @endif
                         
                         {{-- Preço (quando showPrice está ativo) --}}
                         @if($showPrice)

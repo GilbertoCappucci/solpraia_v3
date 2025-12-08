@@ -8,4 +8,5 @@ enum TableStatusEnum: string
     case FREE='free';
     case OCCUPIED='occupied';
     case RESERVED='reserved';
+    case RELEASING='releasing';
 }

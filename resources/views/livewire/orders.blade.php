@@ -33,8 +33,9 @@
                 @php
                     $tableStatusConfig = match($selectedTable->status) {
                         'free' => ['label' => 'Livre', 'color' => 'gray'],
-                        'occupied' => ['label' => 'Ocupada', 'color' => 'blue'],
+                        'occupied' => ['label' => 'Ocupada', 'color' => 'green'],
                         'reserved' => ['label' => 'Reservada', 'color' => 'purple'],
+                        'releasing' => ['label' => 'Liberando', 'color' => 'teal'],
                         'close' => ['label' => 'Fechada', 'color' => 'red'],
                         default => ['label' => 'Livre', 'color' => 'gray']
                     };
@@ -68,6 +69,21 @@
         </div>
     </div>
 
+    {{-- Aviso quando Check não está Aberto --}}
+    @if(!$isCheckOpen && $currentCheck)
+        <div class="mx-4 mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
+            <div class="flex items-start gap-3">
+                <svg class="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <div>
+                    <h4 class="font-bold text-yellow-800 mb-1">Check não está Aberto</h4>
+                    <p class="text-sm text-yellow-700">Para adicionar, alterar ou cancelar pedidos, o check precisa estar no status <span class="font-semibold">"Aberto"</span>. Clique no botão de status acima para alterar.</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Seção de Pedidos Ativos --}}
     <div class="bg-gray-50 p-4 space-y-3">
         <x-order-status-card 
@@ -77,7 +93,8 @@
             color="yellow"
             :showCancel="true"
             nextStatus="in_production"
-            previousStatus="" />
+            previousStatus=""
+            :isCheckOpen="$isCheckOpen" />
 
         <x-order-status-card 
             title="EM PREPARO"
@@ -85,7 +102,8 @@
             :totalTime="$inProductionTime"
             color="blue"
             previousStatus="pending"
-            nextStatus="in_transit" />
+            nextStatus="in_transit"
+            :isCheckOpen="$isCheckOpen" />
 
         <x-order-status-card 
             title="EM TRÂNSITO"
@@ -93,7 +111,8 @@
             :totalTime="$inTransitTime"
             color="purple"
             previousStatus="in_production"
-            nextStatus="completed" />
+            nextStatus="completed"
+            :isCheckOpen="$isCheckOpen" />
 
         <x-order-status-card 
             title="ENTREGUE"
@@ -102,7 +121,8 @@
             color="green"
             previousStatus="in_transit"
             :showPrice="true"
-            :subtotal="$completedTotal" />
+            :subtotal="$completedTotal"
+            :isCheckOpen="$isCheckOpen" />
     </div>
 
     {{-- Total e Botão Adicionar Pedidos --}}
@@ -111,7 +131,15 @@
             <x-total-display :total="$currentCheck->total" />
         @endif
         
-        @if($selectedTable->status !== 'close')
+        @if($selectedTable->status === 'close')
+            <div class="w-full bg-red-100 border-2 border-red-300 text-red-700 py-4 rounded-xl font-bold text-center">
+                Mesa Fechada - Não é possível adicionar pedidos
+            </div>
+        @elseif(!$isCheckOpen)
+            <div class="w-full bg-yellow-100 border-2 border-yellow-300 text-yellow-800 py-4 rounded-xl font-bold text-center">
+                Check não está Aberto - Altere o status para adicionar pedidos
+            </div>
+        @else
             <button 
                 wire:click="goToMenu"
                 class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:shadow-lg transition">
@@ -120,10 +148,6 @@
                 </svg>
                 Adicionar Pedidos
             </button>
-        @else
-            <div class="w-full bg-red-100 border-2 border-red-300 text-red-700 py-4 rounded-xl font-bold text-center">
-                Mesa Fechada - Não é possível adicionar pedidos
-            </div>
         @endif
     </div>
 
@@ -144,9 +168,6 @@
                     {{-- Status da Mesa --}}
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Status da Mesa</label>
-                        @php
-                            $hasActiveCheck = $currentCheck && in_array($currentCheck->status, ['Open', 'Closing', 'Closed']);
-                        @endphp
                         @if($hasActiveCheck)
                             <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
                                 <p class="text-sm text-yellow-800">
@@ -159,28 +180,35 @@
                                 wire:click="$set('newTableStatus', 'free')"
                                 @if($hasActiveCheck) disabled @endif
                                 class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                    {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'free' ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                    {{ $newTableStatus === 'free' ? 'bg-gray-500 text-white ring-2 ring-gray-600' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                 Livre
                             </button>
                             <button 
                                 wire:click="$set('newTableStatus', 'occupied')"
                                 @if($hasActiveCheck) disabled @endif
                                 class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                    {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'occupied' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                    {{ $newTableStatus === 'occupied' ? 'bg-blue-500 text-white ring-2 ring-blue-600' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                 Ocupada
                             </button>
                             <button 
                                 wire:click="$set('newTableStatus', 'reserved')"
                                 @if($hasActiveCheck) disabled @endif
                                 class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                    {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'reserved' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                    {{ $newTableStatus === 'reserved' ? 'bg-purple-500 text-white ring-2 ring-purple-600' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                 Reservada
+                            </button>
+                            <button 
+                                wire:click="$set('newTableStatus', 'releasing')"
+                                @if($hasActiveCheck) disabled @endif
+                                class="px-3 py-2 rounded-lg text-sm font-medium transition
+                                    {{ $newTableStatus === 'releasing' ? 'bg-teal-500 text-white ring-2 ring-teal-600' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                Liberando
                             </button>
                             <button 
                                 wire:click="$set('newTableStatus', 'close')"
                                 @if($hasActiveCheck) disabled @endif
                                 class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                    {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'close' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                                    {{ $newTableStatus === 'close' ? 'bg-red-600 text-white ring-2 ring-red-700' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                                 Fechada
                             </button>
                         </div>
@@ -188,101 +216,12 @@
 
                     {{-- Status do Check --}}
                     @if($currentCheck)
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Status do Check</label>
-                            @php
-                                // Verifica se há pedidos não entregues (excluindo cancelados)
-                                $hasIncompleteOrders = ($pendingOrders->count() > 0 || 
-                                                       $inProductionOrders->count() > 0 || 
-                                                       $inTransitOrders->count() > 0);
-                                
-                                // Verifica se pode cancelar (total zero)
-                                $canCancelCheck = $currentCheck->total == 0;
-                                
-                                // Regras de bloqueio baseadas no status atual do check
-                                // Open: só pode ir para Fechando (se pedidos entregues), não pode pular para Fechado/Pago
-                                // Closing: só pode ir para Closed (próximo passo lógico) ou voltar para Open
-                                // Closed: pode ir para Paid ou voltar para Open (NÃO pode voltar para Closing)
-                                // Paid: livre navegação
-                                $blockClosingButton = match($currentCheck->status) {
-                                    'Open' => $hasIncompleteOrders,
-                                    'Closed' => true, // Bloqueado quando Closed - não pode voltar
-                                    default => false
-                                };
-                                $blockClosedButton = ($currentCheck->status === 'Open'); // Bloqueado quando Open
-                                $blockPaidButton = in_array($currentCheck->status, ['Open', 'Closing']); // Bloqueado em Open e Closing, liberado em Closed
-                            @endphp
-                            @if($blockClosingButton)
-                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
-                                    <p class="text-sm text-yellow-800">
-                                        <span class="font-semibold">⚠️ Atenção:</span> Só é possível iniciar o fechamento quando todos os pedidos estiverem entregues.
-                                    </p>
-                                </div>
-                            @elseif($currentCheck->status === 'Open')
-                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-                                    <p class="text-sm text-blue-800">
-                                        <span class="font-semibold">💡 Fluxo:</span> Open → Fechando → Fechado → Pago
-                                    </p>
-                                </div>
-                            @elseif($currentCheck->status === 'Closing')
-                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-                                    <p class="text-sm text-blue-800">
-                                        <span class="font-semibold">💡 Próximo passo:</span> Mova para "Fechado" para depois poder marcar como "Pago".
-                                    </p>
-                                </div>
-                            @elseif($currentCheck->status === 'Closed')
-                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-                                    <p class="text-sm text-blue-800">
-                                        <span class="font-semibold">💡 Opções:</span> Marque como "Pago" para finalizar ou volte para "Aberto" para reabrir.
-                                    </p>
-                                </div>
-                            @endif
-                            
-                            @if($canCancelCheck)
-                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-                                    <p class="text-sm text-blue-800">
-                                        <span class="font-semibold">💡 Dica:</span> Este check está sem valor. Você pode cancelá-lo para liberar a mesa.
-                                    </p>
-                                </div>
-                            @endif
-                            
-                            <div class="flex flex-wrap gap-2">
-                                <button 
-                                    wire:click="$set('newCheckStatus', 'Open')"
-                                    class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $newCheckStatus === 'Open' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                                    Aberto
-                                </button>
-                                <button 
-                                    wire:click="$set('newCheckStatus', 'Closing')"
-                                    @if($blockClosingButton) disabled @endif
-                                    class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $blockClosingButton ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closing' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
-                                    Fechando
-                                </button>
-                                <button 
-                                    wire:click="$set('newCheckStatus', 'Closed')"
-                                    @if($blockClosedButton) disabled @endif
-                                    class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $blockClosedButton ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closed' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
-                                    Fechado
-                                </button>
-                                <button 
-                                    wire:click="$set('newCheckStatus', 'Paid')"
-                                    @if($blockPaidButton) disabled @endif
-                                    class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ $blockPaidButton ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Paid' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
-                                    Pago
-                                </button>
-                                <button 
-                                    wire:click="$set('newCheckStatus', 'Canceled')"
-                                    @if(!$canCancelCheck) disabled @endif
-                                    class="px-3 py-2 rounded-lg text-sm font-medium transition
-                                        {{ !$canCancelCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Canceled' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
-                                    Cancelar
-                                </button>
-                            </div>
-                        </div>
+                        <x-check-status-selector 
+                            :check="$currentCheck"
+                            :newCheckStatus="$newCheckStatus"
+                            :pendingCount="$pendingOrders->count()"
+                            :inProductionCount="$inProductionOrders->count()"
+                            :inTransitCount="$inTransitOrders->count()" />
                     @endif
                 </div>
 
