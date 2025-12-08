@@ -6,6 +6,7 @@
     'showCancel' => false,
     'showPrice' => false,
     'nextStatus' => null,
+    'previousStatus' => null,
     'subtotal' => 0
 ])
 
@@ -90,19 +91,41 @@
                     </div>
                     
                     {{-- Ações ou Preço --}}
-                    @if($showPrice)
-                        <span class="text-sm font-bold text-orange-600">R$ {{ number_format($order->product->price * $order->quantity, 2, ',', '.') }}</span>
-                    @else
-                        <div class="flex items-center gap-1">
+                    <div class="flex items-center gap-2">
+                        {{-- Botão Voltar Status (disponível em qualquer status) --}}
+                        @if($previousStatus)
+                            @php
+                                // Define cores do botão de voltar baseado no status anterior
+                                $backButtonConfig = match($previousStatus) {
+                                    'pending' => ['bg' => 'bg-yellow-50', 'hover' => 'hover:bg-yellow-100', 'icon' => 'text-yellow-600'],
+                                    'in_production' => ['bg' => 'bg-blue-50', 'hover' => 'hover:bg-blue-100', 'icon' => 'text-blue-600'],
+                                    'in_transit' => ['bg' => 'bg-purple-50', 'hover' => 'hover:bg-purple-100', 'icon' => 'text-purple-600'],
+                                    default => ['bg' => 'bg-gray-50', 'hover' => 'hover:bg-gray-100', 'icon' => 'text-gray-600']
+                                };
+                                
+                                // Para pedidos agrupados, volta apenas o primeiro pedido individual
+                                $orderIdToGoBack = ($order->is_grouped ?? false) 
+                                    ? $order->individual_orders->first()->id 
+                                    : $order->id;
+                            @endphp
+                            <button 
+                                wire:click="updateOrderStatus({{ $orderIdToGoBack }}, '{{ $previousStatus }}')"
+                                class="p-3 {{ $backButtonConfig['bg'] }} {{ $backButtonConfig['hover'] }} rounded-lg transition active:scale-95"
+                                title="{{ ($order->is_grouped ?? false) ? 'Voltar 1 unidade ao status anterior' : 'Voltar ao status anterior' }}">
+                                <svg class="w-6 h-6 {{ $backButtonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                                </button>
+                            @endif
                             @if($showCancel)
                                 {{-- Botão Decrementar (-) --}}
                                 @if($order->is_grouped ?? false)
                                     {{-- Para pedidos agrupados: cancela o último pedido individual --}}
                                     <button 
                                         wire:click="openCancelModal({{ $order->individual_orders->last()->id }})"
-                                        class="p-1.5 hover:bg-red-100 rounded transition group"
+                                        class="p-3 hover:bg-red-100 rounded-lg transition group active:scale-95"
                                         title="Remover 1 unidade">
-                                        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
                                         </svg>
                                     </button>
@@ -110,9 +133,9 @@
                                     {{-- Para pedido único: cancela normalmente --}}
                                     <button 
                                         wire:click="openCancelModal({{ $order->id }})"
-                                        class="p-1.5 hover:bg-red-100 rounded transition group"
+                                        class="p-3 hover:bg-red-100 rounded-lg transition group active:scale-95"
                                         title="Cancelar pedido">
-                                        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                         </svg>
                                     </button>
@@ -127,9 +150,9 @@
                                 @endphp
                                 <button 
                                     wire:click="addOneMore({{ $orderIdToAdd }})"
-                                    class="p-1.5 hover:bg-green-100 rounded transition group"
+                                    class="p-3 hover:bg-green-100 rounded-lg transition group active:scale-95"
                                     title="Adicionar 1 unidade">
-                                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                     </svg>
                                 </button>
@@ -151,21 +174,25 @@
                                 @endphp
                                 <button 
                                     wire:click="updateOrderStatus({{ $orderIdToAdvance }}, '{{ $nextStatus }}')"
-                                    class="p-1.5 {{ $buttonConfig['bg'] }} {{ $buttonConfig['hover'] }} rounded transition"
+                                    class="p-3 {{ $buttonConfig['bg'] }} {{ $buttonConfig['hover'] }} rounded-lg transition active:scale-95"
                                     title="{{ ($order->is_grouped ?? false) ? 'Avançar 1 unidade' : 'Avançar status' }}">
                                     @if($nextStatus === 'completed')
-                                        <svg class="w-4 h-4 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-6 h-6 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                         </svg>
                                     @else
-                                        <svg class="w-4 h-4 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-6 h-6 {{ $buttonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                         </svg>
                                     @endif
                                 </button>
                             @endif
-                        </div>
-                    @endif
+                        
+                        {{-- Preço (quando showPrice está ativo) --}}
+                        @if($showPrice)
+                            <span class="text-sm font-bold text-orange-600 ml-auto">R$ {{ number_format($order->product->price * $order->quantity, 2, ',', '.') }}</span>
+                        @endif
+                    </div>
                 </div>
             @endforeach
             

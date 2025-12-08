@@ -15,6 +15,13 @@ use Illuminate\Support\Collection;
 
 class MenuService
 {
+    protected $checkService;
+    
+    public function __construct(CheckService $checkService)
+    {
+        $this->checkService = $checkService;
+    }
+    
     /**
      * Carrega categorias pai (category_id é null)
      */
@@ -155,16 +162,8 @@ class MenuService
             }
         }
         
-        // Recalcula o total do check com base em TODOS os pedidos
-        $newTotal = Order::where('check_id', $check->id)
-            ->join('products', 'orders.product_id', '=', 'products.id')
-            ->selectRaw('SUM(orders.quantity * products.price) as total')
-            ->value('total') ?? 0;
-        
-        // Atualiza o total do check
-        $check->update([
-            'total' => $newTotal,
-        ]);
+        // Recalcula o total do check (considera apenas pedidos que não estão em PENDING nem CANCELED)
+        $this->checkService->recalculateCheckTotal($check);
         
         // Atualiza status da mesa para ocupada
         if ($table->status !== TableStatusEnum::OCCUPIED->value) {

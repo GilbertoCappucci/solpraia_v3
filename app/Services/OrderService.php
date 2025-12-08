@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
+    protected $checkService;
+    
+    public function __construct(CheckService $checkService)
+    {
+        $this->checkService = $checkService;
+    }
+    
     /**
      * Recalcula o total de todos os checks ativos
      */
@@ -27,32 +34,7 @@ class OrderService
             ->get();
         
         foreach ($activeChecks as $check) {
-            $this->recalculateCheckTotal($check);
-        }
-    }
-    
-    /**
-     * Recalcula o total de um check específico
-     */
-    protected function recalculateCheckTotal(Check $check): void
-    {
-        // Busca todos os pedidos do check que NÃO foram cancelados nem estão aguardando
-        $activeOrders = $check->orders()
-            ->with(['currentStatusHistory', 'product'])
-            ->get()
-            ->filter(function($order) {
-                return $order->status !== OrderStatusEnum::CANCELED->value
-                    && $order->status !== OrderStatusEnum::PENDING->value;
-            });
-        
-        // Recalcula o total baseado em quantidade * preço do produto
-        $newTotal = $activeOrders->sum(function($order) {
-            return $order->quantity * $order->product->price;
-        });
-        
-        // Atualiza o total do check se mudou
-        if ($check->total != $newTotal) {
-            $check->update(['total' => $newTotal]);
+            $this->checkService->recalculateCheckTotal($check);
         }
     }
     
@@ -286,7 +268,7 @@ class OrderService
      */
     public function updateOrderStatus(int $orderId, string $newStatus): void
     {
-        $order = Order::with('currentStatusHistory')->findOrFail($orderId);
+        $order = Order::with(['currentStatusHistory', 'check'])->findOrFail($orderId);
         $oldStatus = $order->status; // Busca do histórico via atributo virtual
         
         // Registra no histórico (não precisa mais atualizar coluna status)
@@ -296,6 +278,12 @@ class OrderService
             'to_status' => $newStatus,
             'changed_at' => now(),
         ]);
+        
+        // Recalcula o total do check após mudança de status
+        // Isso garante que o total reflita corretamente os pedidos que não são PENDING nem CANCELED
+        if ($order->check) {
+            $this->checkService->recalculateCheckTotal($order->check);
+        }
     }
 
     /**
@@ -323,23 +311,7 @@ class OrderService
         
         // Recalcula o total do check
         if ($order->check) {
-            $check = $order->check;
-            
-            // Busca todos os pedidos do check que NÃO foram cancelados nem estão aguardando
-            $activeOrders = $check->orders()
-                ->with(['currentStatusHistory', 'product'])
-                ->get()
-                ->filter(function($order) {
-                    return $order->status !== OrderStatusEnum::CANCELED->value
-                        && $order->status !== OrderStatusEnum::PENDING->value;
-                });
-            
-            // Recalcula o total
-            $newTotal = $activeOrders->sum(function($order) {
-                return $order->quantity * $order->product->price;
-            });
-            
-            $check->update(['total' => $newTotal]);
+            $this->checkService->recalculateCheckTotal($order->check);
         }
         
         return [
@@ -388,23 +360,7 @@ class OrderService
             
             // Recalcula o total do check
             if ($order->check) {
-                $check = $order->check;
-                
-                // Busca todos os pedidos do check que NÃO foram cancelados nem estão aguardando
-                $activeOrders = $check->orders()
-                    ->with(['currentStatusHistory', 'product'])
-                    ->get()
-                    ->filter(function($order) {
-                        return $order->status !== OrderStatusEnum::CANCELED->value
-                            && $order->status !== OrderStatusEnum::PENDING->value;
-                    });
-                
-                // Recalcula o total
-                $newTotal = $activeOrders->sum(function($order) {
-                    return $order->quantity * $order->product->price;
-                });
-                
-                $check->update(['total' => $newTotal]);
+                $this->checkService->recalculateCheckTotal($order->check);
             }
             
             return [

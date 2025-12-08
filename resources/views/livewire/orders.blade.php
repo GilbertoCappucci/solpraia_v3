@@ -76,13 +76,15 @@
             :totalTime="$pendingTime"
             color="yellow"
             :showCancel="true"
-            nextStatus="in_production" />
+            nextStatus="in_production"
+            previousStatus="" />
 
         <x-order-status-card 
             title="EM PREPARO"
             :orders="$inProductionOrders"
             :totalTime="$inProductionTime"
             color="blue"
+            previousStatus="pending"
             nextStatus="in_transit" />
 
         <x-order-status-card 
@@ -90,6 +92,7 @@
             :orders="$inTransitOrders"
             :totalTime="$inTransitTime"
             color="purple"
+            previousStatus="in_production"
             nextStatus="completed" />
 
         <x-order-status-card 
@@ -97,6 +100,7 @@
             :orders="$completedOrders"
             :totalTime="$completedTime"
             color="green"
+            previousStatus="in_transit"
             :showPrice="true"
             :subtotal="$completedTotal" />
     </div>
