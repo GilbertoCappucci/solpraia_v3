@@ -92,11 +92,14 @@ class OrderService
         }
         
         // Validação do check usando método centralizado do CheckService
+        $checkWasUpdated = false;
         if ($newCheckStatus && $check && $newCheckStatus !== $check->status) {
             $checkValidation = $this->checkService->validateAndUpdateCheckStatus($check, $newCheckStatus);
             
             if (!$checkValidation['success']) {
                 $errors = array_merge($errors, $checkValidation['errors']);
+            } else {
+                $checkWasUpdated = true;
             }
         }
         
@@ -111,7 +114,7 @@ class OrderService
         
         // Se o check foi atualizado com sucesso e foi marcado como PAID, coloca mesa em RELEASING
         // Se foi CANCELED, libera direto para FREE
-        if ($newCheckStatus && $check && $newCheckStatus !== $check->status) {
+        if ($checkWasUpdated) {
             if ($newCheckStatus === CheckStatusEnum::PAID->value) {
                 $table->update(['status' => TableStatusEnum::RELEASING->value]);
             } elseif ($newCheckStatus === CheckStatusEnum::CANCELED->value) {
