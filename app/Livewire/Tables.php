@@ -93,6 +93,7 @@ class Tables extends Component
         $validation = $this->tableService->validateTableData([
             'newTableName' => $this->newTableName,
             'newTableNumber' => $this->newTableNumber,
+            'userId' => $this->userId,
         ]);
         
         $this->validate($validation['rules'], $validation['messages']);

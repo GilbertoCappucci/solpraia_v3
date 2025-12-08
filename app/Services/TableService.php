@@ -218,15 +218,26 @@ class TableService
      */
     public function validateTableData(array $data): array
     {
+        $userId = $data['userId'] ?? null;
+        
         $rules = [
-            'newTableName' => 'required|string|max:255',
-            'newTableNumber' => 'required|integer|min:1',
+            'newTableName' => 'nullable|string|max:255',
+            'newTableNumber' => [
+                'required',
+                'integer',
+                'min:1',
+                function ($attribute, $value, $fail) use ($userId) {
+                    if ($userId && Table::where('user_id', $userId)->where('number', $value)->exists()) {
+                        $fail('Já existe um local com este número.');
+                    }
+                },
+            ],
         ];
 
         $messages = [
-            'newTableName.required' => 'O nome do local é obrigatório.',
             'newTableNumber.required' => 'O número do local é obrigatório.',
             'newTableNumber.integer' => 'O número deve ser um valor numérico.',
+            'newTableNumber.min' => 'O número deve ser maior que zero.',
         ];
 
         return ['rules' => $rules, 'messages' => $messages];
