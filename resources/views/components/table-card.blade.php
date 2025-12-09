@@ -127,38 +127,12 @@
         </div>
     @endif
     
-    {{-- Barra Inferior: Reservada para interações específicas --}}
+    {{-- Barra Inferior: Valor do Check (sem clique) --}}
     @if(isset($table->checkTotal) && $table->checkTotal > 0)
-        <div class="absolute bottom-0 left-0 right-0 flex items-center justify-between px-3 py-2 {{ $bottomBarBg }} z-2 rounded-b-xl">
-            {{-- Link para Check (Esquerda) --}}
-            <a href="{{ route('check', $table->checkId) }}" 
-               class="text-xl font-bold text-orange-600 hover:text-orange-700 transition-colors pointer-events-auto"
-               wire:navigate
-               title="Ver comanda">
+        <div class="absolute bottom-0 left-0 right-0 flex items-center justify-center px-3 py-2 {{ $bottomBarBg }} z-1 rounded-b-xl pointer-events-none">
+            <span class="text-xl font-bold text-orange-600">
                 R$ {{ number_format($table->checkTotal, 2, ',', '.') }}
-            </a>
-            
-            {{-- Botão Alterar Status da Mesa (Direita) --}}
-            <button 
-                wire:click.stop="openTableStatusModal({{ $table->id }})"
-                class="p-2 bg-white/50 hover:bg-white/80 rounded-lg shadow-md transition-all active:scale-95 pointer-events-auto"
-                title="Alterar status da mesa">
-                <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
-                </svg>
-            </button>
-        </div>
-    @else
-        {{-- Quando não há valor, mostrar apenas o botão de status --}}
-        <div class="absolute bottom-2 right-2 z-2">
-            <button 
-                wire:click.stop="openTableStatusModal({{ $table->id }})"
-                class="p-2 bg-white/50 hover:bg-white/80 rounded-lg shadow-md transition-all active:scale-95 pointer-events-auto"
-                title="Alterar status da mesa">
-                <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
-                </svg>
-            </button>
+            </span>
         </div>
     @endif
 </div>
