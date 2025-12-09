@@ -1,0 +1,19 @@
+<?php
+
+return [
+    /*
+    |--------------------------------------------------------------------------
+    | Configurações de Tempo do Restaurante
+    |--------------------------------------------------------------------------
+    |
+    | Tempos limite em minutos para alertas de atraso nos pedidos.
+    | No futuro, essas configurações serão armazenadas por admin no banco de dados.
+    |
+    */
+
+    'time_limits' => [
+        'pending' => 10,        // Tempo limite para pedidos aguardando (minutos)
+        'in_production' => 15,  // Tempo limite para pedidos em preparo (minutos)
+        'in_transit' => 5,      // Tempo limite para pedidos em trânsito (minutos)
+    ],
+];

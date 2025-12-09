@@ -81,9 +81,26 @@
         ? route('check', $table->checkId) 
         : route('orders', $table->id);
     $routeTitle = ($table->checkStatus === 'Closed') ? 'Finalizar pagamento' : 'Ver pedidos';
+    
+    // Verifica se há atraso baseado nos limites de tempo configurados
+    $timeLimits = config('restaurant.time_limits');
+    $hasDelay = false;
+    
+    if (isset($table->pendingMinutes) && $table->pendingMinutes > $timeLimits['pending']) {
+        $hasDelay = true;
+    }
+    if (isset($table->productionMinutes) && $table->productionMinutes > $timeLimits['in_production']) {
+        $hasDelay = true;
+    }
+    if (isset($table->transitMinutes) && $table->transitMinutes > $timeLimits['in_transit']) {
+        $hasDelay = true;
+    }
+    
+    // Adiciona classe de animação se houver atraso
+    $delayAnimation = $hasDelay ? 'animate-pulse-warning' : '';
 @endphp
 
-<div {{ $attributes->merge(['class' => "relative aspect-square rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2 {$cardClasses}"]) }}>
+<div {{ $attributes->merge(['class' => "relative aspect-square rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2 {$cardClasses} {$delayAnimation}"]) }}>
     
     {{-- Área Principal Clicável - Vai para Check (se Fechado) ou Orders --}}
     <a href="{{ $routeDestination }}" 
@@ -97,6 +114,17 @@
         <span class="text-3xl font-bold text-gray-900 leading-none">{{ $table->number }}</span>
         <span class="text-xs text-gray-600 font-medium leading-none">{{ $table->name }}</span>
     </div>
+    
+    {{-- Indicador de Atraso --}}
+    @if($hasDelay)
+        <div class="absolute top-2 right-2 z-10 pointer-events-none">
+            <div class="flex items-center justify-center w-8 h-8 bg-red-500 rounded-full shadow-lg animate-bounce">
+                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+        </div>
+    @endif
              
     {{-- Indicadores de Status dos Pedidos ou Label Central --}}
     @if($table->checkStatus && $activeStatuses > 0)
