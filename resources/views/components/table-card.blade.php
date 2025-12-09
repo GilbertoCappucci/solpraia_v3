@@ -75,15 +75,21 @@
         'Paid' => 'text-gray-600',
         default => 'text-gray-400'
     };
+    
+    // Define a rota de destino: check/id se Fechado, senão orders
+    $routeDestination = ($table->checkStatus === 'Closed' && isset($table->checkId)) 
+        ? route('check', $table->checkId) 
+        : route('orders', $table->id);
+    $routeTitle = ($table->checkStatus === 'Closed') ? 'Finalizar pagamento' : 'Ver pedidos';
 @endphp
 
 <div {{ $attributes->merge(['class' => "relative aspect-square rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2 {$cardClasses}"]) }}>
     
-    {{-- Área Principal Clicável - Vai para Orders --}}
-    <a href="{{ route('orders', $table->id) }}" 
+    {{-- Área Principal Clicável - Vai para Check (se Fechado) ou Orders --}}
+    <a href="{{ $routeDestination }}" 
        class="absolute inset-0 z-0"
        wire:navigate
-       title="Ver pedidos">
+       title="{{ $routeTitle }}">
     </a>
 
     {{-- Badge topo esquerdo (Numero e Nome) --}}

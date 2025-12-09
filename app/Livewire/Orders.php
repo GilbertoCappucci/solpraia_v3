@@ -103,6 +103,12 @@ class Orders extends Component
             return;
         }
         
+        // Se alterou para Fechado, redireciona para a tela do check
+        if ($this->newCheckStatus === 'Closed') {
+            session()->flash('success', 'Check fechado! Finalize o pagamento.');
+            return redirect()->route('check', ['checkId' => $this->currentCheck->id]);
+        }
+        
         session()->flash('success', 'Status atualizado com sucesso!');
         $this->dispatch('table-updated'); // Dispara evento para outros componentes
         $this->closeStatusModal();
