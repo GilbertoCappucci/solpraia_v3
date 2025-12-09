@@ -68,11 +68,12 @@
     };
     
     // Determina se deve mostrar label central (checks sem pedidos ativos)
-    $showCenterLabel = in_array($table->checkStatus, ['Closed', 'Paid']) && $activeStatuses === 0;
+    $showCenterLabel = $table->checkStatus === 'Paid' && $activeStatuses === 0;
+    $showClosedIndicator = $table->checkStatus === 'Closed' && $activeStatuses === 0;
+    $showReleasingIndicator = !$table->checkStatus && $table->status === 'releasing';
     
     // Define cor do label central baseado no status do check
     $labelColor = match($table->checkStatus) {
-        'Closed' => 'text-orange-700',
         'Paid' => 'text-gray-600',
         default => 'text-gray-400'
     };
@@ -94,6 +95,12 @@
         $hasDelay = true;
     }
     if (isset($table->transitMinutes) && $table->transitMinutes > $timeLimits['in_transit']) {
+        $hasDelay = true;
+    }
+    if (isset($table->closedMinutes) && $table->closedMinutes > $timeLimits['closed']) {
+        $hasDelay = true;
+    }
+    if (isset($table->releasingMinutes) && $table->releasingMinutes > $timeLimits['releasing']) {
         $hasDelay = true;
     }
     
@@ -144,8 +151,20 @@
                 :textSize="$textSize"
                 :padding="$padding" />
         </div>
+    @elseif($showClosedIndicator)
+        {{-- Indicador de Check Fechado (bolinha laranja + tempo) --}}
+        <div class="flex flex-col items-center justify-center gap-1 z-1 pointer-events-none">
+            <div class="w-6 h-6 bg-orange-500 rounded-full"></div>
+            <span class="text-2xl font-bold text-orange-700">{{ $table->closedMinutes ?? 0 }}m</span>
+        </div>
+    @elseif($showReleasingIndicator)
+        {{-- Indicador de Mesa Liberando (bolinha teal + tempo) --}}
+        <div class="flex flex-col items-center justify-center gap-1 z-1 pointer-events-none">
+            <div class="w-6 h-6 bg-teal-500 rounded-full"></div>
+            <span class="text-2xl font-bold text-teal-700">{{ $table->releasingMinutes ?? 0 }}m</span>
+        </div>
     @else
-        {{-- Label central (mesas sem check ou checks sem pedidos ativos) --}}
+        {{-- Label central (mesas sem check ou checks pagos) --}}
         <div class="text-xs font-medium italic z-1 pointer-events-none {{ $showCenterLabel ? $labelColor : ($table->status === 'close' ? 'text-red-700 font-semibold' : ($table->checkStatusColor === 'green' ? 'text-green-600' : ($table->checkStatusColor === 'purple' ? 'text-purple-600' : 'text-gray-400'))) }}">
             {{ $table->checkStatusLabel }}
         </div>

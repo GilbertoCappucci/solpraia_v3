@@ -149,6 +149,13 @@ class TableService
             default => 'gray'
         };
         $table->checkTotal = $currentCheck->total ?? 0;
+        
+        // Calcula tempo desde que o check foi fechado
+        if ($currentCheck->status === CheckStatusEnum::CLOSED->value && $currentCheck->updated_at) {
+            $table->closedMinutes = abs((int) now()->diffInMinutes($currentCheck->updated_at));
+        } else {
+            $table->closedMinutes = 0;
+        }
     }
 
     /**
@@ -241,6 +248,14 @@ class TableService
         $table->pendingMinutes = 0;
         $table->productionMinutes = 0;
         $table->transitMinutes = 0;
+        $table->closedMinutes = 0;
+        
+        // Calcula tempo desde que a mesa está em RELEASING
+        if ($table->status === 'releasing' && $table->updated_at) {
+            $table->releasingMinutes = abs((int) now()->diffInMinutes($table->updated_at));
+        } else {
+            $table->releasingMinutes = 0;
+        }
         $table->completedMinutes = 0;
     }
 

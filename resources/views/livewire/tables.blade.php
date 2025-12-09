@@ -1,53 +1,58 @@
 <div wire:poll.{{ $pollingInterval }}ms>
     <x-flash-message />
 
-    <div class="p-4 relative">
-        <div class="flex items-center justify-between mb-3">
-            <h2 class="text-lg font-semibold">Local</h2>
+    {{-- Header com fundo laranja --}}
+    <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 flex items-center justify-between sticky top-0 z-40 shadow-md">
+        <div class="flex items-center gap-2">
+            <h2 class="text-2xl font-bold">Local</h2>
             
-            <div class="flex items-center gap-2">
-                {{-- Botão Toggle Alarme --}}
-                <button 
-                    wire:click="toggleDelayAlarm"
-                    class="flex items-center gap-1.5 px-3 py-1.5 border-2 rounded-lg text-sm font-medium transition
-                        {{ $delayAlarmEnabled ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-300 bg-gray-50 text-gray-500' }}"
-                    title="{{ $delayAlarmEnabled ? 'Desativar' : 'Ativar' }} alarme de atraso">
-                    @if($delayAlarmEnabled)
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
-                        </svg>
-                    @else
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
-                            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 4l12 12"/>
-                        </svg>
-                    @endif
-                </button>
-                
-                {{-- Botão Filtros --}}
-                <button 
-                    wire:click="toggleFilters"
-                    class="flex items-center gap-1 px-3 py-1.5 border-2 rounded-lg text-sm font-medium transition
-                        {{ !empty($filterTableStatuses) || !empty($filterCheckStatuses) || !empty($filterOrderStatuses) ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400 text-gray-700' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+            {{-- Botão Toggle Alarme --}}
+            <button 
+                wire:click="toggleDelayAlarm"
+                class="flex items-center gap-1.5 px-2 py-1 border-2 rounded-lg text-sm font-medium transition
+                    {{ $delayAlarmEnabled ? 'border-red-300 bg-red-500/20 text-white' : 'border-white/30 bg-white/10 text-white/60' }}"
+                title="{{ $delayAlarmEnabled ? 'Desativar' : 'Ativar' }} alarme de atraso">
+                @if($delayAlarmEnabled)
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
                     </svg>
-                    Filtros
-                    @if(!empty($filterTableStatuses) || !empty($filterCheckStatuses) || !empty($filterOrderStatuses))
-                        <span class="ml-1 px-1.5 py-0.5 bg-orange-500 text-white rounded-full text-xs">!</span>
-                    @endif
-                </button>
-                
-                <button 
-                    wire:click="openNewTableModal"
-                    class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg text-sm font-medium hover:shadow-lg transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                @else
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                        <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 4l12 12"/>
                     </svg>
-                    Criar Novo
-                </button>
-            </div>
+                @endif
+            </button>
         </div>
+        
+        <div class="flex items-center gap-2">
+            {{-- Botão Filtros --}}
+            <button 
+                wire:click="toggleFilters"
+                class="flex items-center gap-1 px-3 py-1.5 border-2 rounded-lg text-sm font-medium transition
+                    {{ !empty($filterTableStatuses) || !empty($filterCheckStatuses) || !empty($filterOrderStatuses) ? 'border-white bg-white/20 text-white' : 'border-white/30 bg-white/10 text-white hover:bg-white/20' }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                </svg>
+                Filtros
+                @if(!empty($filterTableStatuses) || !empty($filterCheckStatuses) || !empty($filterOrderStatuses))
+                    <span class="ml-1 px-1.5 py-0.5 bg-white text-orange-600 rounded-full text-xs font-bold">!</span>
+                @endif
+            </button>
+            
+            {{-- Botão Criar --}}
+            <button 
+                wire:click="openNewTableModal"
+                class="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 border-2 border-white/30 text-white rounded-lg text-sm font-medium transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                
+            </button>
+        </div>
+    </div>
+
+    <div class="p-4 relative">
         
         {{-- Dropdown de Filtros --}}
         @if($showFilters)
