@@ -108,6 +108,11 @@
                                 {{ in_array('Paid', $filterCheckStatuses) ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Pago
                         </button>
+                        <button wire:click="toggleCheckStatusFilter('delayed_closed')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ in_array('delayed_closed', $filterCheckStatuses) ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Atrasado
+                        </button>
                     </div>
                 </div>
                 

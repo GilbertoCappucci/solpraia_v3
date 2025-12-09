@@ -21,11 +21,6 @@ class TableService
     ): Collection {
         $query = Table::where('user_id', $userId);
         
-        // Só exclui mesas fechadas se não está filtrando especificamente por elas
-        if (empty($filterTableStatuses) || !in_array('close', $filterTableStatuses)) {
-            $query->where('status', '!=', TableStatusEnum::CLOSE->value);
-        }
-        
         return $query->with(['checks' => function($query) {
                 $query->with(['orders.currentStatusHistory']);
             }])
@@ -61,7 +56,23 @@ class TableService
         
         $matchesCheckStatus = false;
         if (!empty($filterCheckStatuses) && $currentCheck) {
-            $matchesCheckStatus = in_array($currentCheck->status, $filterCheckStatuses);
+            // Verifica se há filtro de 'delayed_closed'
+            $hasDelayedClosedFilter = in_array('delayed_closed', $filterCheckStatuses);
+            $otherCheckStatuses = array_diff($filterCheckStatuses, ['delayed_closed']);
+            
+            // Verifica checks com status normais
+            if (!empty($otherCheckStatuses)) {
+                $matchesCheckStatus = in_array($currentCheck->status, $otherCheckStatuses);
+            }
+            
+            // Verifica checks fechados atrasados (status virtual)
+            if ($hasDelayedClosedFilter && !$matchesCheckStatus) {
+                if ($currentCheck->status === CheckStatusEnum::CLOSED->value && $currentCheck->updated_at) {
+                    $timeLimits = config('restaurant.time_limits');
+                    $closedMinutes = abs((int) now()->diffInMinutes($currentCheck->updated_at));
+                    $matchesCheckStatus = $closedMinutes > $timeLimits['closed'];
+                }
+            }
         }
         
         $matchesOrderStatus = false;
