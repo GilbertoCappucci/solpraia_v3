@@ -16,6 +16,7 @@ class Tables extends Component
     public $filterCheckStatuses = [];
     public $filterOrderStatuses = [];
     public $showFilters = false;
+    public $delayAlarmEnabled = true;
     public $showNewTableModal = false;
     public $newTableName = '';
     public $newTableNumber = '';
@@ -46,12 +47,19 @@ class Tables extends Component
         $this->filterCheckStatuses = session('tables.filterCheckStatuses', []);
         $this->filterOrderStatuses = session('tables.filterOrderStatuses', []);
         $this->showFilters = session('tables.showFilters', false);
+        $this->delayAlarmEnabled = session('tables.delayAlarmEnabled', true);
     }
 
     public function toggleFilters()
     {
         $this->showFilters = !$this->showFilters;
         $this->saveFiltersToSession();
+    }
+
+    public function toggleDelayAlarm()
+    {
+        $this->delayAlarmEnabled = !$this->delayAlarmEnabled;
+        session(['tables.delayAlarmEnabled' => $this->delayAlarmEnabled]);
     }
 
     public function toggleTableStatusFilter($status)

@@ -21,6 +21,7 @@ class Orders extends Component
     public $orderToCancel = null;
     public $orderToCancelData = null;
     public $hasActiveCheck = false;
+    public $delayAlarmEnabled = true;
     
     protected $orderService;
     
@@ -38,6 +39,13 @@ class Orders extends Component
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
+        $this->delayAlarmEnabled = session('orders.delayAlarmEnabled', true);
+    }
+
+    public function toggleDelayAlarm()
+    {
+        $this->delayAlarmEnabled = !$this->delayAlarmEnabled;
+        session(['orders.delayAlarmEnabled' => $this->delayAlarmEnabled]);
     }
 
     public function backToTables()

@@ -8,7 +8,8 @@
     'nextStatus' => null,
     'previousStatus' => null,
     'subtotal' => 0,
-    'isCheckOpen' => true
+    'isCheckOpen' => true,
+    'delayAlarmEnabled' => true
 ])
 
 @php
@@ -101,7 +102,7 @@
                         };
                     }
                     
-                    $delayAnimation = $isDelayed ? 'animate-pulse-warning' : '';
+                    $delayAnimation = ($isDelayed && $delayAlarmEnabled) ? 'animate-pulse-warning' : '';
                 @endphp
                 <div class="flex items-center justify-between py-1 border-b border-gray-100 last:border-0 rounded px-2 -mx-2 {{ $delayAnimation }}">
                     <div class="flex items-center gap-2 flex-1">

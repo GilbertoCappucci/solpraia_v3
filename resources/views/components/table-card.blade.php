@@ -1,6 +1,7 @@
 @props([
     'table',
-    'onStatusClick' => null
+    'onStatusClick' => null,
+    'delayAlarmEnabled' => true
 ])
 
 @php
@@ -96,8 +97,8 @@
         $hasDelay = true;
     }
     
-    // Adiciona classe de animação se houver atraso
-    $delayAnimation = $hasDelay ? 'animate-pulse-warning' : '';
+    // Adiciona classe de animação se houver atraso E alarme estiver ativo
+    $delayAnimation = ($hasDelay && $delayAlarmEnabled) ? 'animate-pulse-warning' : '';
 @endphp
 
 <div {{ $attributes->merge(['class' => "relative aspect-square rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2 {$cardClasses} {$delayAnimation}"]) }}>
