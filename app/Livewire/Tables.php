@@ -40,11 +40,18 @@ class Tables extends Component
         $this->userId = Auth::user()->isAdmin() 
             ? Auth::id() 
             : Auth::user()->user_id;
+        
+        // Carrega filtros salvos da sessão
+        $this->filterTableStatuses = session('tables.filterTableStatuses', []);
+        $this->filterCheckStatuses = session('tables.filterCheckStatuses', []);
+        $this->filterOrderStatuses = session('tables.filterOrderStatuses', []);
+        $this->showFilters = session('tables.showFilters', false);
     }
 
     public function toggleFilters()
     {
         $this->showFilters = !$this->showFilters;
+        $this->saveFiltersToSession();
     }
 
     public function toggleTableStatusFilter($status)
@@ -54,6 +61,7 @@ class Tables extends Component
         } else {
             $this->filterTableStatuses[] = $status;
         }
+        $this->saveFiltersToSession();
     }
 
     public function toggleCheckStatusFilter($status)
@@ -63,6 +71,7 @@ class Tables extends Component
         } else {
             $this->filterCheckStatuses[] = $status;
         }
+        $this->saveFiltersToSession();
     }
 
     public function toggleOrderStatusFilter($status)
@@ -72,6 +81,7 @@ class Tables extends Component
         } else {
             $this->filterOrderStatuses[] = $status;
         }
+        $this->saveFiltersToSession();
     }
 
     public function clearFilters()
@@ -80,6 +90,20 @@ class Tables extends Component
         $this->filterCheckStatuses = [];
         $this->filterOrderStatuses = [];
         $this->showFilters = false;
+        session()->forget('tables.filterTableStatuses');
+        session()->forget('tables.filterCheckStatuses');
+        session()->forget('tables.filterOrderStatuses');
+        session()->forget('tables.showFilters');
+    }
+
+    protected function saveFiltersToSession()
+    {
+        session([
+            'tables.filterTableStatuses' => $this->filterTableStatuses,
+            'tables.filterCheckStatuses' => $this->filterCheckStatuses,
+            'tables.filterOrderStatuses' => $this->filterOrderStatuses,
+            'tables.showFilters' => $this->showFilters,
+        ]);
     }
 
     public function openNewTableModal()
