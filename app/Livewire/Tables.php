@@ -12,8 +12,8 @@ class Tables extends Component
     public $title = 'Locais';
     public $userId;
     public $pollingInterval = 5000;
-    public $filterTableStatus = null;
-    public $filterCheckStatus = null;
+    public $filterTableStatuses = [];
+    public $filterCheckStatuses = [];
     public $filterOrderStatuses = [];
     public $showFilters = false;
     public $showNewTableModal = false;
@@ -47,14 +47,22 @@ class Tables extends Component
         $this->showFilters = !$this->showFilters;
     }
 
-    public function setTableStatusFilter($status)
+    public function toggleTableStatusFilter($status)
     {
-        $this->filterTableStatus = $this->filterTableStatus === $status ? null : $status;
+        if (in_array($status, $this->filterTableStatuses)) {
+            $this->filterTableStatuses = array_values(array_filter($this->filterTableStatuses, fn($s) => $s !== $status));
+        } else {
+            $this->filterTableStatuses[] = $status;
+        }
     }
 
-    public function setCheckStatusFilter($status)
+    public function toggleCheckStatusFilter($status)
     {
-        $this->filterCheckStatus = $this->filterCheckStatus === $status ? null : $status;
+        if (in_array($status, $this->filterCheckStatuses)) {
+            $this->filterCheckStatuses = array_values(array_filter($this->filterCheckStatuses, fn($s) => $s !== $status));
+        } else {
+            $this->filterCheckStatuses[] = $status;
+        }
     }
 
     public function toggleOrderStatusFilter($status)
@@ -68,8 +76,8 @@ class Tables extends Component
 
     public function clearFilters()
     {
-        $this->filterTableStatus = null;
-        $this->filterCheckStatus = null;
+        $this->filterTableStatuses = [];
+        $this->filterCheckStatuses = [];
         $this->filterOrderStatuses = [];
         $this->showFilters = false;
     }
@@ -160,8 +168,8 @@ class Tables extends Component
         
         $tables = $this->tableService->getFilteredTables(
             $this->userId,
-            $this->filterTableStatus,
-            $this->filterCheckStatus,
+            $this->filterTableStatuses,
+            $this->filterCheckStatuses,
             $this->filterOrderStatuses
         );
 

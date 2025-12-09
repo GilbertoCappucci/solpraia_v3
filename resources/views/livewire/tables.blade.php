@@ -10,12 +10,12 @@
                 <button 
                     wire:click="toggleFilters"
                     class="flex items-center gap-1 px-3 py-1.5 border-2 rounded-lg text-sm font-medium transition
-                        {{ $filterTableStatus || $filterCheckStatus || !empty($filterOrderStatuses) ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400 text-gray-700' }}">
+                        {{ !empty($filterTableStatuses) || !empty($filterCheckStatuses) || !empty($filterOrderStatuses) ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:border-gray-400 text-gray-700' }}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
                     </svg>
                     Filtros
-                    @if($filterTableStatus || $filterCheckStatus || !empty($filterOrderStatuses))
+                    @if(!empty($filterTableStatuses) || !empty($filterCheckStatuses) || !empty($filterOrderStatuses))
                         <span class="ml-1 px-1.5 py-0.5 bg-orange-500 text-white rounded-full text-xs">!</span>
                     @endif
                 </button>
@@ -38,29 +38,29 @@
                 <div class="mb-4">
                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Status da Mesa</h3>
                     <div class="flex flex-wrap gap-2">
-                        <button wire:click="setTableStatusFilter('free')"
+                        <button wire:click="toggleTableStatusFilter('free')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterTableStatus === 'free' ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ in_array('free', $filterTableStatuses) ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Livre
                         </button>
-                        <button wire:click="setTableStatusFilter('occupied')"
+                        <button wire:click="toggleTableStatusFilter('occupied')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterTableStatus === 'occupied' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ in_array('occupied', $filterTableStatuses) ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Ocupada
                         </button>
-                        <button wire:click="setTableStatusFilter('reserved')"
+                        <button wire:click="toggleTableStatusFilter('reserved')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterTableStatus === 'reserved' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ in_array('reserved', $filterTableStatuses) ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Reservada
                         </button>
-                        <button wire:click="setTableStatusFilter('releasing')"
+                        <button wire:click="toggleTableStatusFilter('releasing')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterTableStatus === 'releasing' ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ in_array('releasing', $filterTableStatuses) ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Liberando
                         </button>
-                        <button wire:click="setTableStatusFilter('close')"
+                        <button wire:click="toggleTableStatusFilter('close')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterTableStatus === 'close' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ in_array('close', $filterTableStatuses) ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Fechada
                         </button>
                     </div>
@@ -70,19 +70,19 @@
                 <div class="mb-4">
                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Status do Check</h3>
                     <div class="flex flex-wrap gap-2">
-                        <button wire:click="setCheckStatusFilter('Open')"
+                        <button wire:click="toggleCheckStatusFilter('Open')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterCheckStatus === 'Open' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ in_array('Open', $filterCheckStatuses) ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Aberto
                         </button>
-                        <button wire:click="setCheckStatusFilter('Closed')"
+                        <button wire:click="toggleCheckStatusFilter('Closed')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterCheckStatus === 'Closed' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ in_array('Closed', $filterCheckStatuses) ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Fechado
                         </button>
-                        <button wire:click="setCheckStatusFilter('Paid')"
+                        <button wire:click="toggleCheckStatusFilter('Paid')"
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
-                                {{ $filterCheckStatus === 'Paid' ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ in_array('Paid', $filterCheckStatuses) ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Pago
                         </button>
                     </div>

@@ -15,14 +15,14 @@ class TableService
      */
     public function getFilteredTables(
         int $userId,
-        ?string $filterTableStatus = null,
-        ?string $filterCheckStatus = null,
+        array $filterTableStatuses = [],
+        array $filterCheckStatuses = [],
         array $filterOrderStatuses = []
     ): Collection {
         $query = Table::where('user_id', $userId);
         
         // Só exclui mesas fechadas se não está filtrando especificamente por elas
-        if ($filterTableStatus !== 'close') {
+        if (empty($filterTableStatuses) || !in_array('close', $filterTableStatuses)) {
             $query->where('status', '!=', TableStatusEnum::CLOSE->value);
         }
         
@@ -31,8 +31,8 @@ class TableService
             }])
             ->orderBy('number')
             ->get()
-            ->filter(function($table) use ($filterTableStatus, $filterCheckStatus, $filterOrderStatuses) {
-                return $this->applyFilters($table, $filterTableStatus, $filterCheckStatus, $filterOrderStatuses);
+            ->filter(function($table) use ($filterTableStatuses, $filterCheckStatuses, $filterOrderStatuses) {
+                return $this->applyFilters($table, $filterTableStatuses, $filterCheckStatuses, $filterOrderStatuses);
             })
             ->map(function($table) {
                 return $this->enrichTableData($table);
@@ -40,39 +40,39 @@ class TableService
     }
 
     /**
-     * Aplica filtros na table
+     * Aplica filtros na table (lógica OR - pelo menos um filtro deve ser atendido)
      */
     protected function applyFilters(
         Table $table,
-        ?string $filterTableStatus,
-        ?string $filterCheckStatus,
+        array $filterTableStatuses,
+        array $filterCheckStatuses,
         array $filterOrderStatuses
     ): bool {
         $currentCheck = $table->checks->sortByDesc('created_at')->first();
         
-        // Filtro de status da Table (mesa física)
-        if ($filterTableStatus && $table->status !== $filterTableStatus) {
-            return false;
+        // Se nenhum filtro está ativo, mostra todas as tables
+        $hasAnyFilter = !empty($filterTableStatuses) || !empty($filterCheckStatuses) || !empty($filterOrderStatuses);
+        if (!$hasAnyFilter) {
+            return true;
         }
         
-        // Filtro de status do Check
-        if ($filterCheckStatus) {
-            if (!$currentCheck || $currentCheck->status !== $filterCheckStatus) {
-                return false;
-            }
+        // Verifica se atende pelo menos um filtro (OR)
+        $matchesTableStatus = !empty($filterTableStatuses) && in_array($table->status, $filterTableStatuses);
+        
+        $matchesCheckStatus = false;
+        if (!empty($filterCheckStatuses) && $currentCheck) {
+            $matchesCheckStatus = in_array($currentCheck->status, $filterCheckStatuses);
         }
         
-        // Filtro de status dos Orders
+        $matchesOrderStatus = false;
         if (!empty($filterOrderStatuses) && $currentCheck) {
-            $hasAnyFilteredStatus = $currentCheck->orders
+            $matchesOrderStatus = $currentCheck->orders
                 ->filter(fn($order) => in_array($order->status, $filterOrderStatuses))
                 ->isNotEmpty();
-            if (!$hasAnyFilteredStatus) {
-                return false;
-            }
         }
         
-        return true;
+        // Retorna true se atende pelo menos um dos filtros ativos
+        return $matchesTableStatus || $matchesCheckStatus || $matchesOrderStatus;
     }
 
     /**
