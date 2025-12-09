@@ -12,8 +12,8 @@ return [
     */
 
     'time_limits' => [
-        'pending' => 10,        // Tempo limite para pedidos aguardando (minutos)
-        'in_production' => 15,  // Tempo limite para pedidos em preparo (minutos)
+        'pending' => 1,        // Tempo limite para pedidos aguardando (minutos)
+        'in_production' => 2,  // Tempo limite para pedidos em preparo (minutos)
         'in_transit' => 5,      // Tempo limite para pedidos em trânsito (minutos)
     ],
 ];

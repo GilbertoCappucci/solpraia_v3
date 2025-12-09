@@ -85,7 +85,25 @@
     @if($orders->count() > 0)
         <div class="p-3 space-y-2">
             @foreach($orders as $order)
-                <div class="flex items-center justify-between py-1 border-b border-gray-100 last:border-0">
+                @php
+                    // Verifica se o pedido está atrasado
+                    $timeLimits = config('restaurant.time_limits');
+                    $isDelayed = false;
+                    
+                    if ($order->status_changed_at) {
+                        $minutes = abs((int) now()->diffInMinutes($order->status_changed_at));
+                        
+                        $isDelayed = match($order->status) {
+                            'pending' => $minutes > $timeLimits['pending'],
+                            'in_production' => $minutes > $timeLimits['in_production'],
+                            'in_transit' => $minutes > $timeLimits['in_transit'],
+                            default => false
+                        };
+                    }
+                    
+                    $delayAnimation = $isDelayed ? 'animate-pulse-warning' : '';
+                @endphp
+                <div class="flex items-center justify-between py-1 border-b border-gray-100 last:border-0 rounded px-2 -mx-2 {{ $delayAnimation }}">
                     <div class="flex items-center gap-2 flex-1">
                         <span class="text-lg font-semibold text-gray-700">{{ $order->quantity }}x</span>
                         <span class="text-sm text-gray-800">{{ $order->product->name }}</span>

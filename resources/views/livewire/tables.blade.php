@@ -115,6 +115,11 @@
                                 {{ in_array('completed', $filterOrderStatuses) ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Pronto
                         </button>
+                        <button wire:click="toggleOrderStatusFilter('delayed')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ in_array('delayed', $filterOrderStatuses) ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Atrasado
+                        </button>
                     </div>
                 </div>
                 

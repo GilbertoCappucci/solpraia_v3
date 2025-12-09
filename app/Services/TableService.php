@@ -66,9 +66,37 @@ class TableService
         
         $matchesOrderStatus = false;
         if (!empty($filterOrderStatuses) && $currentCheck) {
-            $matchesOrderStatus = $currentCheck->orders
-                ->filter(fn($order) => in_array($order->status, $filterOrderStatuses))
-                ->isNotEmpty();
+            // Verifica se há filtro de 'delayed'
+            $hasDelayedFilter = in_array('delayed', $filterOrderStatuses);
+            $otherStatuses = array_diff($filterOrderStatuses, ['delayed']);
+            
+            // Verifica pedidos com status normais
+            if (!empty($otherStatuses)) {
+                $matchesOrderStatus = $currentCheck->orders
+                    ->filter(fn($order) => in_array($order->status, $otherStatuses))
+                    ->isNotEmpty();
+            }
+            
+            // Verifica pedidos atrasados (status virtual)
+            if ($hasDelayedFilter && !$matchesOrderStatus) {
+                $timeLimits = config('restaurant.time_limits');
+                $now = now();
+                
+                $matchesOrderStatus = $currentCheck->orders
+                    ->filter(function($order) use ($now, $timeLimits) {
+                        if (!$order->status_changed_at) return false;
+                        
+                        $minutes = abs((int) $now->diffInMinutes($order->status_changed_at));
+                        
+                        return match($order->status) {
+                            OrderStatusEnum::PENDING->value => $minutes > $timeLimits['pending'],
+                            OrderStatusEnum::IN_PRODUCTION->value => $minutes > $timeLimits['in_production'],
+                            OrderStatusEnum::IN_TRANSIT->value => $minutes > $timeLimits['in_transit'],
+                            default => false
+                        };
+                    })
+                    ->isNotEmpty();
+            }
         }
         
         // Retorna true se atende pelo menos um dos filtros ativos
@@ -163,6 +191,22 @@ class TableService
         $table->completedMinutes = $oldestCompleted && $oldestCompleted->status_changed_at 
             ? abs((int) $now->diffInMinutes($oldestCompleted->status_changed_at)) 
             : 0;
+        
+        // Delayed orders (virtual status - pedidos que excederam o tempo limite)
+        $timeLimits = config('restaurant.time_limits');
+        $delayedOrders = $orders->filter(function($order) use ($now, $timeLimits) {
+            if (!$order->status_changed_at) return false;
+            
+            $minutes = abs((int) $now->diffInMinutes($order->status_changed_at));
+            
+            return match($order->status) {
+                OrderStatusEnum::PENDING->value => $minutes > $timeLimits['pending'],
+                OrderStatusEnum::IN_PRODUCTION->value => $minutes > $timeLimits['in_production'],
+                OrderStatusEnum::IN_TRANSIT->value => $minutes > $timeLimits['in_transit'],
+                default => false
+            };
+        });
+        $table->ordersDelayed = $delayedOrders->count();
     }
 
     /**

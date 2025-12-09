@@ -9,6 +9,7 @@ enum OrderStatusEnum: string
     case IN_TRANSIT = 'in_transit';
     case COMPLETED = 'completed';
     case CANCELED = 'canceled';
+    case DELAYED = 'delayed';
 
     public static function getLabel(self $status): string
     {
@@ -18,6 +19,7 @@ enum OrderStatusEnum: string
             self::IN_TRANSIT => 'In Transit',
             self::COMPLETED => 'Completed',
             self::CANCELED => 'Canceled',
+            self::DELAYED => 'Delayed',
         };
     }
 }
