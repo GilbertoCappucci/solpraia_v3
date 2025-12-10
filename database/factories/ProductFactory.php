@@ -22,7 +22,6 @@ class ProductFactory extends Factory
         //$user_id = $this->getRamdomUserId();
 
         return [
-            //'user_id' => $user_id,
             //'category_id' => $this->getRandomCategoryId($user_id),
             'name' => fake()->word(),
             'description' => fake()->sentence(),
@@ -32,13 +31,6 @@ class ProductFactory extends Factory
         ];
     }
 
-    public function getRamdomUserId(): int
-    {
-        return User::where('role', RoleEnum::ADMIN->value)
-            ->where('active', true)
-            ->inRandomOrder()
-            ->first()->id;
-    }
     
     public function getRandomCategoryId(int $user_id): int
     {

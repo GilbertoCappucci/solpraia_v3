@@ -11,7 +11,6 @@ class Product extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
         'category_id',
         'name',
         'description',
@@ -24,9 +23,5 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }   
+  
 }

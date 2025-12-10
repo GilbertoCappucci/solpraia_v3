@@ -128,7 +128,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     
     public function products()
     {
-        return $this->hasMany(Product::class, 'user_id');
+        return $this->hasManyThrough(Product::class, Category::class);
     }
 
     public function devices()

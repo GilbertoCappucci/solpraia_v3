@@ -57,7 +57,9 @@ class MenuService
         ?string $searchTerm = null
     ): Collection {
         $query = Product::where('active', true)
-            ->where('user_id', $userId);
+            ->whereHas('category', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            });
 
         // Se está mostrando apenas favoritos
         if ($showFavoritesOnly) {
