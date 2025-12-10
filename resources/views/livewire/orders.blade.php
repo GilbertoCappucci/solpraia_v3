@@ -147,6 +147,10 @@
             <div class="w-full bg-teal-100 border-2 border-teal-300 text-teal-800 py-4 rounded-xl font-bold text-center">
                 Mesa em Liberação - Não é possível adicionar pedidos
             </div>
+        @elseif($selectedTable->status === 'reserved')
+            <div class="w-full bg-purple-100 border-2 border-purple-300 text-purple-800 py-4 rounded-xl font-bold text-center">
+                Mesa Reservada - Não é possível adicionar pedidos
+            </div>
         @elseif(!$isCheckOpen)
             <div class="w-full bg-yellow-100 border-2 border-yellow-300 text-yellow-800 py-4 rounded-xl font-bold text-center">
                 Check não está Aberto - Altere o status para adicionar pedidos
