@@ -158,6 +158,8 @@
                                             @mouseleave="cancelPress()"
                                             @touchstart="startPress()"
                                             @touchend="endPress()"
+                                            wire:loading.attr="disabled"
+                                            wire:loading.class="opacity-50 cursor-wait"
                                             class="p-3 {{ $backButtonConfig['bg'] }} {{ $backButtonConfig['hover'] }} rounded-lg transition active:scale-95"
                                             title="Clique: voltar 1 unidade | Segurar: voltar todas">
                                             <svg class="w-6 h-6 {{ $backButtonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,6 +171,8 @@
                                     {{-- Botão simples para pedido único --}}
                                     <button 
                                         wire:click="updateOrderStatus({{ $orderIdToGoBack }}, '{{ $previousStatus }}')"
+                                        wire:loading.attr="disabled"
+                                        wire:loading.class="opacity-50 cursor-wait"
                                         class="p-3 {{ $backButtonConfig['bg'] }} {{ $backButtonConfig['hover'] }} rounded-lg transition active:scale-95"
                                         title="Voltar ao status anterior">
                                         <svg class="w-6 h-6 {{ $backButtonConfig['icon'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,6 +265,8 @@
                                             @mouseleave="cancelPress()"
                                             @touchstart="startPress()"
                                             @touchend="endPress()"
+                                            wire:loading.attr="disabled"
+                                            wire:loading.class="opacity-50 cursor-wait"
                                             class="p-3 {{ $buttonConfig['bg'] }} {{ $buttonConfig['hover'] }} rounded-lg transition active:scale-95"
                                             title="Clique: avançar 1 unidade | Segurar: avançar todas">
                                             @if($nextStatus === 'completed')
@@ -278,6 +284,8 @@
                                     {{-- Botão simples para pedido único --}}
                                     <button 
                                         wire:click="updateOrderStatus({{ $orderIdToAdvance }}, '{{ $nextStatus }}')"
+                                        wire:loading.attr="disabled"
+                                        wire:loading.class="opacity-50 cursor-wait"
                                         class="p-3 {{ $buttonConfig['bg'] }} {{ $buttonConfig['hover'] }} rounded-lg transition active:scale-95"
                                         title="Avançar status">
                                         @if($nextStatus === 'completed')

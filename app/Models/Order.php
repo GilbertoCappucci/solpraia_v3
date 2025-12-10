@@ -26,9 +26,8 @@ class Order extends Model
      */
     public function getStatusAttribute()
     {
-        return $this->statusHistory()
-            ->latest('changed_at')
-            ->value('to_status');
+        // Usa a relação já carregada ou retorna 'pending' se não houver histórico
+        return $this->currentStatusHistory ? $this->currentStatusHistory->to_status : 'pending';
     }
 
     public function user()

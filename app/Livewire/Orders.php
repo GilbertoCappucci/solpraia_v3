@@ -132,7 +132,13 @@ class Orders extends Component
             return;
         }
         
-        $this->orderService->updateOrderStatus($orderId, $newStatus);
+        $result = $this->orderService->updateOrderStatus($orderId, $newStatus);
+        
+        if (!$result['success']) {
+            session()->flash('error', $result['message']);
+            return;
+        }
+
         session()->flash('success', 'Pedido atualizado com sucesso!');
         $this->refreshData();
     }
@@ -145,13 +151,28 @@ class Orders extends Component
             return;
         }
         
+        $successCount = 0;
+        $errors = [];
+
         // Atualiza todos os pedidos do array
         foreach ($orderIds as $orderId) {
-            $this->orderService->updateOrderStatus($orderId, $newStatus);
+            $result = $this->orderService->updateOrderStatus($orderId, $newStatus);
+            if ($result['success']) {
+                $successCount++;
+            } else {
+                $errors[] = $result['message'];
+            }
         }
         
-        $count = count($orderIds);
-        session()->flash('success', "{$count} " . ($count === 1 ? 'pedido atualizado' : 'pedidos atualizados') . " com sucesso!");
+        if (!empty($errors)) {
+            // Mostra apenas o primeiro erro para não poluir a tela, ou um resumo
+            session()->flash('error', "Erro em alguns itens: " . implode('. ', array_unique($errors)));
+        }
+        
+        if ($successCount > 0) {
+            session()->flash('success', "{$successCount} " . ($successCount === 1 ? 'pedido atualizado' : 'pedidos atualizados') . " com sucesso!");
+        }
+        
         $this->refreshData();
     }
 

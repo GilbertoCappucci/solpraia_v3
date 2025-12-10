@@ -226,43 +226,55 @@ class OrderService
     /**
      * Atualiza status individual de um pedido e registra no histórico
      */
-    public function updateOrderStatus(int $orderId, string $newStatus): void
+    public function updateOrderStatus(int $orderId, string $newStatus): array
     {
-        $order = Order::with(['currentStatusHistory', 'check'])->findOrFail($orderId);
-        $oldStatus = $order->status; // Busca do histórico via atributo virtual
-        
-        // Stock Logic: Decrement check BEFORE transition
-        if ($oldStatus === OrderStatusEnum::PENDING->value && $newStatus === OrderStatusEnum::IN_PRODUCTION->value) {
-            $hasStock = $this->stockService->hasStock($order->product_id, $order->quantity);
-            if (!$hasStock) {
-                // Should we throw exception or handle gracefully?
-                // For now, let's throw strict exception to prevent transition
-                throw new \Exception("Stock insuficiente para produzir este item.");
+        try {
+            $order = Order::with(['currentStatusHistory', 'check'])->findOrFail($orderId);
+            $oldStatus = $order->status; // Busca do histórico via atributo virtual
+            
+            // Stock Logic: Decrement check BEFORE transition
+            if ($oldStatus === OrderStatusEnum::PENDING->value && $newStatus === OrderStatusEnum::IN_PRODUCTION->value) {
+                $hasStock = $this->stockService->hasStock($order->product_id, $order->quantity);
+                if (!$hasStock) {
+                    return [
+                        'success' => false,
+                        'message' => "Estoque insuficiente para produzir o item: {$order->product->name}"
+                    ];
+                }
+                
+                if (!$this->stockService->decrement($order->product_id, $order->quantity)) {
+                     return [
+                        'success' => false,
+                        'message' => "Erro ao atualizar estoque do item: {$order->product->name}"
+                    ];
+                }
             }
-            // Proceed to decrement (we checked hasStock, but decrement does the atomic lock/check again usually, 
-            // but our service is simple. safer to just call decrement and check result)
-            if (!$this->stockService->decrement($order->product_id, $order->quantity)) {
-                 throw new \Exception("Falha ao decrementar stock. Tente novamente.");
+            
+            // Stock Logic: Increment check (always safe to increment usually)
+            if ($oldStatus === OrderStatusEnum::IN_PRODUCTION->value && $newStatus === OrderStatusEnum::PENDING->value) {
+                $this->stockService->increment($order->product_id, $order->quantity);
             }
-        }
-        
-        // Stock Logic: Increment check (always safe to increment usually)
-        if ($oldStatus === OrderStatusEnum::IN_PRODUCTION->value && $newStatus === OrderStatusEnum::PENDING->value) {
-            $this->stockService->increment($order->product_id, $order->quantity);
-        }
+    
+            // Registra no histórico
+            OrderStatusHistory::create([
+                'order_id' => $orderId,
+                'from_status' => $oldStatus,
+                'to_status' => $newStatus,
+                'changed_at' => now(),
+            ]);
+            
+            // Recalcula o total do check após mudança de status
+            if ($order->check) {
+                $this->checkService->recalculateCheckTotal($order->check);
+            }
 
-        // Registra no histórico
-        OrderStatusHistory::create([
-            'order_id' => $orderId,
-            'from_status' => $oldStatus,
-            'to_status' => $newStatus,
-            'changed_at' => now(),
-        ]);
-        
-        // Recalcula o total do check após mudança de status
-        // Isso garante que o total reflita corretamente os pedidos que não são PENDING nem CANCELED
-        if ($order->check) {
-            $this->checkService->recalculateCheckTotal($order->check);
+            return ['success' => true];
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Erro ao atualizar pedido: ' . $e->getMessage()
+            ];
         }
     }
 
