@@ -279,6 +279,63 @@ class OrderService
     }
 
     /**
+     * Cancela múltiplos pedidos de uma vez
+     */
+    public function cancelOrders(array $orderIds): array
+    {
+        return DB::transaction(function() use ($orderIds) {
+            $count = 0;
+            $check = null;
+            
+            foreach ($orderIds as $orderId) {
+                // Busca individualmente para validar e registrar histórico
+                $order = Order::with(['currentStatusHistory', 'check'])->find($orderId);
+                
+                if (!$order) continue;
+                
+                // Captura check do primeiro pedido para recalcular no final
+                if (!$check && $order->check) {
+                    $check = $order->check;
+                }
+                
+                // Valida status PENDING
+                if ($order->status !== OrderStatusEnum::PENDING->value) {
+                    continue; // Pula pedidos que não estão aguardando
+                }
+                
+                // Registra cancelamento
+                OrderStatusHistory::create([
+                    'order_id' => $orderId,
+                    'from_status' => $order->status,
+                    'to_status' => OrderStatusEnum::CANCELED->value,
+                    'changed_at' => now(),
+                ]);
+                
+                $count++;
+            }
+            
+            if ($count === 0) {
+                return [
+                    'success' => false,
+                    'message' => 'Nenhum pedido pôde ser cancelado (verifique se estão com status "Aguardando").'
+                ];
+            }
+            
+            // Recalcula total do check uma única vez
+            if ($check) {
+                $this->checkService->recalculateCheckTotal($check);
+            }
+            
+            return [
+                'success' => true,
+                'message' => $count === 1 
+                    ? '1 item removido com sucesso!' 
+                    : "{$count} itens removidos com sucesso!"
+            ];
+        });
+    }
+
+    /**
      * Duplica um pedido PENDING (adiciona mais uma unidade)
      */
     public function duplicatePendingOrder(int $orderId): array

@@ -180,11 +180,11 @@
                             @if($showCancel)
                                 {{-- Botão Decrementar (-) --}}
                                 @if($order->is_grouped ?? false)
-                                    {{-- Para pedidos agrupados: cancela o último pedido individual --}}
+                                    {{-- Para pedidos agrupados: cancela o último pedido individual e passa todos os IDs --}}
                                     <button 
-                                        wire:click="openCancelModal({{ $order->individual_orders->last()->id }})"
+                                        wire:click="openCancelModal({{ $order->individual_orders->last()->id }}, {{ json_encode($order->individual_orders->pluck('id')->toArray()) }})"
                                         class="p-3 hover:bg-red-100 rounded-lg transition group active:scale-95"
-                                        title="Remover 1 unidade">
+                                        title="Remover unidade">
                                         <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
                                         </svg>

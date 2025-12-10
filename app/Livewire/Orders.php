@@ -19,6 +19,7 @@ class Orders extends Component
     public $newCheckStatus = null;
     public $showCancelModal = false;
     public $orderToCancel = null;
+    public $orderIdsToCancel = [];
     public $orderToCancelData = null;
     public $hasActiveCheck = false;
     public $delayAlarmEnabled = true;
@@ -154,7 +155,7 @@ class Orders extends Component
         $this->refreshData();
     }
 
-    public function openCancelModal($orderId)
+    public function openCancelModal($orderId, $allGroupIds = [])
     {
         // Verifica se o check está aberto (se houver check, precisa estar Open)
         if ($this->currentCheck && $this->currentCheck->status !== 'Open') {
@@ -163,13 +164,15 @@ class Orders extends Component
         }
         
         $this->orderToCancel = $orderId;
+        $this->orderIdsToCancel = $allGroupIds;
         
         // Busca dados do pedido para exibir no modal
         $order = \App\Models\Order::with('product')->find($orderId);
         if ($order) {
             $this->orderToCancelData = [
                 'product_name' => $order->product->name,
-                'quantity' => $order->quantity,
+                'quantity' => count($allGroupIds) > 0 ? count($allGroupIds) : $order->quantity,
+                'single_quantity' => $order->quantity, // Quantidade do item individual (normalmente 1)
                 'price' => $order->product->price,
             ];
         }
@@ -181,9 +184,29 @@ class Orders extends Component
     {
         $this->showCancelModal = false;
         $this->orderToCancel = null;
+        $this->orderIdsToCancel = [];
         $this->orderToCancelData = null;
     }
     
+    public function confirmCancelAll()
+    {
+        if (empty($this->orderIdsToCancel)) {
+            return;
+        }
+        
+        $result = $this->orderService->cancelOrders($this->orderIdsToCancel);
+        
+        if (!$result['success']) {
+            session()->flash('error', $result['message']);
+            $this->closeCancelModal();
+            return;
+        }
+        
+        session()->flash('success', $result['message']);
+        $this->closeCancelModal();
+        $this->refreshData();
+    }
+
     public function confirmCancelOrder()
     {
         if (!$this->orderToCancel) {
