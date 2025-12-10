@@ -15,7 +15,7 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
 
-        //category_id:8 - Coca-Cola
+        //id:1 - category_id:8 - Coca-Cola
         Product::factory()->create([
             'user_id' => 2,
             'category_id' => 8,
@@ -26,7 +26,7 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
 
-        //category_id:6 - Suco de laranja
+        //id:2 - category_id:6 - Suco de laranja
         Product::factory()->create([
             'user_id' => 2,
             'category_id' => 6,
@@ -37,7 +37,7 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
 
-        //category_id:7 - Agua mineral
+        //id:3 - category_id:7 - Agua mineral
         Product::factory()->create([
             'user_id' => 2,
             'category_id' => 7,
@@ -48,7 +48,7 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
 
-        //category_id:7 - Agua com gas
+        //id:4 - category_id:7 - Agua com gas
         Product::factory()->create([
             'user_id' => 2,
             'category_id' => 7,
@@ -59,7 +59,7 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
 
-        //category_id:3 - Batata frita tradicional
+        //id:5 - category_id:3 - Batata frita tradicional
         Product::factory()->create([
             'user_id' => 2,
             'category_id' => 3,
@@ -70,7 +70,7 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
         
-        //category_id:3 - Batata frita cheddar e bacon
+        //id:6 - category_id:3 - Batata frita cheddar e bacon
         Product::factory()->create([
             'user_id' => 2,
             'category_id' => 3,
@@ -81,7 +81,28 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
 
+        //id:7 - category_id:11 - Fritas
+        Product::factory()->create([
+            'user_id' => 5,
+            'category_id' => 11,
+            'name' => 'Fritas',
+            'description' => 'Fritas crocantes',
+            'price' => 6.00,
+            'favorite' => true,
+            'active' => true,
+        ]);
 
+        //id:8 - category_id:12 - Bebida não alcoólica
+        Product::factory()->create([
+            'user_id' => 5,
+            'category_id' => 12,
+            'name' => 'Coca-Cola',
+            'description' => 'Refrigerante sabor cola',
+            'price' => 5.00,
+            'favorite' => true,
+            'active' => true,
+        ]);
+        
         /*
         for ($i = 0; $i < 10; $i++) {
             $category = Category::whereNotNull('category_id')->inRandomOrder()->first();

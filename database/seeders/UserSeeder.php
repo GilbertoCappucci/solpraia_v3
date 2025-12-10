@@ -75,7 +75,21 @@ class UserSeeder extends Seeder
             'active' => true,
         ]);
 
-
+        //Create Sol
+        User::factory()->create([
+            'id' => 5,
+            'user_id' => null,
+            'name' => 'Sol',
+            'email' => 'sol@gmail.com',
+            'email_verified_at' => now(),
+            'password' => '45rtfgvb',
+            'remember_token' => null,
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+            'role' => RoleEnum::ADMIN->value,
+            'active' => true,
+        ]);
 
         /*
         for ($i = 0; $i < 2; $i++){

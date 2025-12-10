@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             MenuSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
+            StockSeeder::class,
             MenuItemSeeder::class,
             TableSeeder::class,
             //CheckSeeder::class,

@@ -13,8 +13,23 @@ class MenuSeeder extends Seeder
      */
     public function run(): void
     {
+        //id:1 - user_id:2 - Main Menu
         Menu::factory()->create([
             'user_id' => 2,
+            'name' => 'Main Menu',
+            'active' => true,
+        ]);
+
+        //id:2 - user_id:2 - Secondary Menu
+        Menu::factory()->create([
+            'user_id' => 2,
+            'name' => 'Secondary Menu',
+            'active' => false,
+        ]);
+
+        //id:3 - user_id:5 - Main Menu
+        Menu::factory()->create([
+            'user_id' => 5,
             'name' => 'Main Menu',
             'active' => true,
         ]);

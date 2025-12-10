@@ -102,6 +102,50 @@ class CategorySeeder extends Seeder
             ],
         );
 
+        //Id:9 - Porções
+        Category::factory()->create(
+            [
+                'user_id' => 5,
+                'category_id' => null,
+                'name' => 'Porções',
+                'active' => true,
+                'description' => 'Porções de alimentos'
+            ],
+        );
+
+        //Id:10 - Bebidas
+        Category::factory()->create(
+            [
+                'user_id' => 5,
+                'category_id' => null,
+                'name' => 'Bebidas',
+                'active' => true,
+                'description' => 'Bebidas alcoólicas e não alcoólicas'
+            ],
+        );
+        
+        //Id:11 - Batata fritas
+        Category::factory()->create(
+            [
+                'user_id' => 5,
+                'category_id' => 9,
+                'name' => 'Batata fritas',
+                'active' => true,
+                'description' => 'Batata fritas'
+            ],
+        );
+
+        //Id:12 - Bebida não alcoólica
+        Category::factory()->create(
+            [
+                'user_id' => 5,
+                'category_id' => 10,
+                'name' => 'Bebida não alcoólica',
+                'active' => true,
+                'description' => 'Bebidas não alcoólicas'
+            ],
+        );
+
         /*
         for ($i = 0; $i < 30; $i++) {
             Category::factory()->create();
