@@ -26,6 +26,7 @@ class OrderSeeder extends Seeder
      */
     public function run(): void
     {
+        /*
         // Usuário para todos os pedidos
         $user = User::find(2);
 
@@ -132,5 +133,6 @@ class OrderSeeder extends Seeder
         
         // Atualiza total do check1
         $check1->update(['total' => $check1->total + ($product3->price * 3)]);
+        */
     }
 }

@@ -130,11 +130,19 @@
                                 </button>
                             </div>
                         @else
-                            <button 
-                                wire:click="addToCart({{ $product->id }})"
-                                class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:shadow-lg transition">
-                                Adicionar
-                            </button>
+                            @if(($product->stock?->quantity ?? 0) === 0)
+                                <button 
+                                    disabled
+                                    class="bg-gray-400 text-white px-5 py-2.5 rounded-lg text-sm font-semibold cursor-not-allowed">
+                                    Sem Estoque
+                                </button>
+                            @else
+                                <button 
+                                    wire:click="addToCart({{ $product->id }})"
+                                    class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:shadow-lg transition">
+                                    Adicionar
+                                </button>
+                            @endif
                         @endif
                     </div>
                 @endforeach

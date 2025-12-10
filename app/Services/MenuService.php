@@ -60,6 +60,7 @@ class MenuService
         ?string $searchTerm = null
     ): Collection {
         $query = Product::where('active', true)
+            ->with(['stock'])
             ->whereHas('category', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             });
