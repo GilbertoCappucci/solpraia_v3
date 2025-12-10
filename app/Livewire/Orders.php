@@ -97,6 +97,11 @@ class Orders extends Component
         // Recarrega dados atualizados do banco
         $this->selectedTable->refresh();
         $this->currentCheck = $this->orderService->findOrCreateCheck($this->tableId);
+        
+        // Garante que o objeto esteja fresco
+        if ($this->currentCheck) {
+            $this->currentCheck->refresh();
+        }
     }
 
     public function updateStatuses()

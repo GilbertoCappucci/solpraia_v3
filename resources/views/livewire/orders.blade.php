@@ -127,8 +127,14 @@
     {{-- Total e Botão Adicionar Pedidos --}}
     <div class="p-4 bg-white space-y-3">
         @if($currentCheck)
-            <x-total-display :total="$currentCheck->total" />
+            <div wire:key="total-display-{{ $currentCheck->id }}-{{ $currentCheck->total }}">
+                <x-total-display :total="$currentCheck->total" />
+            </div>
         @endif
+        
+        <div wire:loading wire:target="refreshData, updateOrderStatus, updateAllOrderStatus" class="w-full text-center py-2">
+            <span class="text-sm text-gray-500 animate-pulse">Atualizando totais...</span>
+        </div>
         
         @if($selectedTable->status === 'close')
             <div class="w-full bg-red-100 border-2 border-red-300 text-red-700 py-4 rounded-xl font-bold text-center">
