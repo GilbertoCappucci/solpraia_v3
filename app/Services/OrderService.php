@@ -15,10 +15,12 @@ use Illuminate\Support\Facades\DB;
 class OrderService
 {
     protected $checkService;
+    protected $stockService;
     
-    public function __construct(CheckService $checkService)
+    public function __construct(CheckService $checkService, StockService $stockService)
     {
         $this->checkService = $checkService;
+        $this->stockService = $stockService;
     }
     
     /**
@@ -229,7 +231,27 @@ class OrderService
         $order = Order::with(['currentStatusHistory', 'check'])->findOrFail($orderId);
         $oldStatus = $order->status; // Busca do histórico via atributo virtual
         
-        // Registra no histórico (não precisa mais atualizar coluna status)
+        // Stock Logic: Decrement check BEFORE transition
+        if ($oldStatus === OrderStatusEnum::PENDING->value && $newStatus === OrderStatusEnum::IN_PRODUCTION->value) {
+            $hasStock = $this->stockService->hasStock($order->product_id, $order->quantity);
+            if (!$hasStock) {
+                // Should we throw exception or handle gracefully?
+                // For now, let's throw strict exception to prevent transition
+                throw new \Exception("Stock insuficiente para produzir este item.");
+            }
+            // Proceed to decrement (we checked hasStock, but decrement does the atomic lock/check again usually, 
+            // but our service is simple. safer to just call decrement and check result)
+            if (!$this->stockService->decrement($order->product_id, $order->quantity)) {
+                 throw new \Exception("Falha ao decrementar stock. Tente novamente.");
+            }
+        }
+        
+        // Stock Logic: Increment check (always safe to increment usually)
+        if ($oldStatus === OrderStatusEnum::IN_PRODUCTION->value && $newStatus === OrderStatusEnum::PENDING->value) {
+            $this->stockService->increment($order->product_id, $order->quantity);
+        }
+
+        // Registra no histórico
         OrderStatusHistory::create([
             'order_id' => $orderId,
             'from_status' => $oldStatus,
@@ -354,6 +376,14 @@ class OrderService
                 return [
                     'success' => false,
                     'message' => 'Apenas pedidos no status "Aguardando" podem ter a quantidade aumentada.'
+                ];
+            }
+
+            // Valida STOCK
+            if (!$this->stockService->hasStock($order->product_id, 1)) {
+                 return [
+                    'success' => false,
+                    'message' => 'Estoque insuficiente para adicionar mais um item.'
                 ];
             }
             

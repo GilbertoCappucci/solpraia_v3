@@ -26,11 +26,13 @@ class Menu extends Component
     
     protected $menuService;
     protected $orderService;
+    protected $stockService;
     
-    public function boot(MenuService $menuService, OrderService $orderService)
+    public function boot(\App\Services\MenuService $menuService, \App\Services\OrderService $orderService, \App\Services\StockService $stockService)
     {
         $this->menuService = $menuService;
         $this->orderService = $orderService;
+        $this->stockService = $stockService;
     }
     
     public function mount($tableId)
@@ -106,8 +108,17 @@ class Menu extends Component
         $product = \App\Models\Product::find($productId);
         
         if (isset($this->cart[$productId])) {
+            $currentQty = $this->cart[$productId]['quantity'];
+            if (!$this->stockService->hasStock($productId, $currentQty + 1)) {
+                session()->flash('error', 'Estoque insuficiente.');
+                return;
+            }
             $this->cart[$productId]['quantity']++;
         } else {
+            if (!$this->stockService->hasStock($productId, 1)) {
+                 session()->flash('error', 'Produto sem estoque.');
+                 return;
+            }
             $this->cart[$productId] = [
                 'product' => $product,
                 'quantity' => 1,

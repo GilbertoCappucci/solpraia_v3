@@ -12,14 +12,17 @@ use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Table;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class MenuService
 {
     protected $checkService;
+    protected $stockService;
     
-    public function __construct(CheckService $checkService)
+    public function __construct(CheckService $checkService, StockService $stockService)
     {
         $this->checkService = $checkService;
+        $this->stockService = $stockService;
     }
     
     /**
@@ -117,61 +120,53 @@ class MenuService
     /**
      * Confirma pedido e atualiza check e mesa
      */
-    public function confirmOrder(
-        int $userId,
-        int $tableId,
-        Table $table,
-        ?Check &$check,
-        array $cart,
-        float $cartTotal
-    ): void {
-        // Valida se a mesa não está fechada
-        if ($table->status === \App\Enums\TableStatusEnum::CLOSE->value) {
-            throw new \Exception('Não é possível adicionar pedidos em uma mesa fechada!');
-        }
-        
-        // Cria check se não existir
-        if (!$check) {
-            $check = Check::create([
-                'table_id' => $tableId,
-                'total' => 0,
-                'status' => CheckStatusEnum::OPEN->value,
-                'opened_at' => now(),
-            ]);
-        }
-
-        // Cria novos pedidos para todos os itens do carrinho
-        // Se quantidade > 1, cria pedidos individuais para facilitar gestão de produção
-        foreach ($cart as $productId => $item) {
-            $quantity = $item['quantity'];
-            
-            // Cria pedidos individuais (1 unidade cada)
-            for ($i = 0; $i < $quantity; $i++) {
-                $order = Order::create([
-                    'user_id' => $userId,
-                    'check_id' => $check->id,
-                    'product_id' => $productId,
-                    'quantity' => 1,  // Sempre 1 unidade por pedido
-                ]);
-                
-                // Registra o status inicial no histórico (PENDING)
-                OrderStatusHistory::create([
-                    'order_id' => $order->id,
-                    'from_status' => null,
-                    'to_status' => OrderStatusEnum::PENDING->value,
-                    'changed_at' => now(),
-                ]);
+    public function confirmOrder(int $userId, int $tableId, Table $table, ?Check $check, array $cart, float $total): void
+    {
+        DB::transaction(function () use ($userId, $tableId, $table, &$check, $cart, $total) {
+            // Valida Stock para todos os itens novamente antes de efetivar
+            foreach ($cart as $productId => $item) {
+                if (!$this->stockService->hasStock($productId, $item['quantity'])) {
+                    throw new \Exception("Stock insuficiente para o produto: {$item['product']->name}");
+                }
             }
-        }
-        
-        // Recalcula o total do check (considera apenas pedidos que não estão em PENDING nem CANCELED)
-        $this->checkService->recalculateCheckTotal($check);
-        
-        // Atualiza status da mesa para ocupada
-        if ($table->status !== TableStatusEnum::OCCUPIED->value) {
-            $table->update([
-                'status' => TableStatusEnum::OCCUPIED->value,
-            ]);
-        }
+
+            // 1. Se não houver check, cria um novo
+            if (!$check) {
+                $check = Check::create([
+                    'table_id' => $tableId,
+                    'status' => CheckStatusEnum::OPEN->value,
+                    'total' => 0, // Será calculado abaixo
+                ]);
+                // Atualiza status da mesa para ocupada
+                if ($table->status === TableStatusEnum::FREE->value) {
+                    $table->update(['status' => TableStatusEnum::OCCUPIED->value]);
+                }
+            }
+            
+            // 2. Cria os pedidos
+            foreach ($cart as $productId => $item) {
+                // Cria múltiplos pedidos individuais baseados na quantidade
+                for ($i = 0; $i < $item['quantity']; $i++) {
+                    $order = Order::create([
+                        'user_id' => $userId,
+                        'check_id' => $check->id,
+                        'product_id' => $productId,
+                        'quantity' => 1, // Ordens são individuais
+                        // status padrão é PENDING
+                    ]);
+                    
+                    // Cria histórico inicial
+                    OrderStatusHistory::create([
+                        'order_id' => $order->id,
+                        'from_status' => null,
+                        'to_status' => OrderStatusEnum::PENDING->value,
+                        'changed_at' => now(),
+                    ]);
+                }
+            }
+            
+            // 3. Recalcula o total do check
+            $this->checkService->recalculateCheckTotal($check);
+        });
     }
 }
