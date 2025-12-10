@@ -211,15 +211,23 @@
                                     $orderIdToAdd = ($order->is_grouped ?? false) 
                                         ? $order->individual_orders->first()->id 
                                         : $order->id;
+                                        
+                                    // Verifica disponibilidade de estoque
+                                    // Se stock for null, assume disponível. Se < 0, é infinito. Se > 0, tem qtd. Se == 0, indisponível.
+                                    $stock = $order->product->stock;
+                                    $hasStockToAdd = !$stock || $stock->quantity != 0;
                                 @endphp
-                                <button 
-                                    wire:click="addOneMore({{ $orderIdToAdd }})"
-                                    class="p-3 hover:bg-green-100 rounded-lg transition group active:scale-95"
-                                    title="Adicionar 1 unidade">
-                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                    </svg>
-                                </button>
+                                
+                                @if($hasStockToAdd)
+                                    <button 
+                                        wire:click="addOneMore({{ $orderIdToAdd }})"
+                                        class="p-3 hover:bg-green-100 rounded-lg transition group active:scale-95"
+                                        title="Adicionar 1 unidade">
+                                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                        </svg>
+                                    </button>
+                                @endif
                             @endif
                             @if($nextStatus)
                                 @php

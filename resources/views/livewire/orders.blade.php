@@ -1,13 +1,4 @@
-<div x-data="{ 
-    lastRefresh: Date.now(),
-    handleFocus() {
-        // Só atualiza se passou mais de 2 segundos desde o último refresh
-        if (Date.now() - this.lastRefresh > 2000) {
-            this.lastRefresh = Date.now();
-            $wire.call('refreshData');
-        }
-    }
-}" x-init="window.addEventListener('focus', () => handleFocus())">
+<div wire:poll.{{ $pollingInterval }}ms>
     
     <x-flash-message />
 

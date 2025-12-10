@@ -141,7 +141,7 @@ class OrderService
 
         // Busca pedidos com histórico de status
         $activeOrders = Order::where('check_id', $check->id)
-            ->with(['product', 'currentStatusHistory'])
+            ->with(['product.stock', 'currentStatusHistory'])
             ->get()
             ->filter(function($order) {
                 return in_array($order->status, [
@@ -232,28 +232,9 @@ class OrderService
             $order = Order::with(['currentStatusHistory', 'check'])->findOrFail($orderId);
             $oldStatus = $order->status; // Busca do histórico via atributo virtual
             
-            // Stock Logic: Decrement check BEFORE transition
-            if ($oldStatus === OrderStatusEnum::PENDING->value && $newStatus === OrderStatusEnum::IN_PRODUCTION->value) {
-                $hasStock = $this->stockService->hasStock($order->product_id, $order->quantity);
-                if (!$hasStock) {
-                    return [
-                        'success' => false,
-                        'message' => "Estoque insuficiente para produzir o item: {$order->product->name}"
-                    ];
-                }
-                
-                if (!$this->stockService->decrement($order->product_id, $order->quantity)) {
-                     return [
-                        'success' => false,
-                        'message' => "Erro ao atualizar estoque do item: {$order->product->name}"
-                    ];
-                }
-            }
-            
-            // Stock Logic: Increment check (always safe to increment usually)
-            if ($oldStatus === OrderStatusEnum::IN_PRODUCTION->value && $newStatus === OrderStatusEnum::PENDING->value) {
-                $this->stockService->increment($order->product_id, $order->quantity);
-            }
+            // Stock Logic: removed dynamic decrement/increment on status change
+            // Stock is now decremented on creation (PENDING) and incremented on CANCELLATION.
+            // Moving between PENDING <-> IN_PRODUCTION should NOT change stock.
     
             // Registra no histórico
             OrderStatusHistory::create([
@@ -293,6 +274,9 @@ class OrderService
             ];
         }
         
+        // Devolve o estoque
+        $this->stockService->increment($order->product_id, $order->quantity);
+
         // Registra o cancelamento no histórico
         OrderStatusHistory::create([
             'order_id' => $orderId,
@@ -308,7 +292,7 @@ class OrderService
         
         return [
             'success' => true,
-            'message' => 'Pedido cancelado com sucesso!'
+            'message' => 'Pedido cancelado e estoque estornado com sucesso!'
         ];
     }
 
@@ -337,6 +321,9 @@ class OrderService
                     continue; // Pula pedidos que não estão aguardando
                 }
                 
+                // Devolve o estoque
+                $this->stockService->increment($order->product_id, $order->quantity);
+
                 // Registra cancelamento
                 OrderStatusHistory::create([
                     'order_id' => $orderId,
@@ -391,11 +378,18 @@ class OrderService
                 ];
             }
 
-            // Valida STOCK
+            // Valida STOCK e Debita
             if (!$this->stockService->hasStock($order->product_id, 1)) {
                  return [
                     'success' => false,
                     'message' => 'Estoque insuficiente para adicionar mais um item.'
+                ];
+            }
+            
+            if (!$this->stockService->decrement($order->product_id, 1)) {
+                 return [
+                    'success' => false,
+                    'message' => 'Erro ao atualizar estoque.'
                 ];
             }
             

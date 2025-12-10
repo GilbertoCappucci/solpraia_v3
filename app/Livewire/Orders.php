@@ -23,6 +23,7 @@ class Orders extends Component
     public $orderToCancelData = null;
     public $hasActiveCheck = false;
     public $delayAlarmEnabled = true;
+    public $pollingInterval = 5000;
     
     protected $orderService;
     
