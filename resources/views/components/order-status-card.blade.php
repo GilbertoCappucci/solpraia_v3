@@ -104,7 +104,7 @@
                     
                     $delayAnimation = ($isDelayed && $delayAlarmEnabled) ? 'animate-pulse-warning' : '';
                 @endphp
-                <div class="flex items-center justify-between py-1 border-b border-gray-100 last:border-0 rounded px-2 -mx-2 {{ $delayAnimation }}">
+                <div wire:key="order-{{ $order->id }}" class="flex items-center justify-between py-1 border-b border-gray-100 last:border-0 rounded px-2 -mx-2 {{ $delayAnimation }}">
                     <div class="flex items-center gap-2 flex-1">
                         <span class="text-lg font-semibold text-gray-700">{{ $order->quantity }}x</span>
                         <span class="text-sm text-gray-800">{{ $order->product->name }}</span>
@@ -138,7 +138,7 @@
                                             this.longPress = false;
                                             this.pressTimer = setTimeout(() => {
                                                 this.longPress = true;
-                                                @this.call('updateAllOrderStatus', {{ json_encode($order->individual_orders->pluck('id')->toArray()) }}, '{{ $previousStatus }}');
+                                                @this.call('updateAllOrderStatus', {{ json_encode($order->individual_orders->pluck('id')->values()->toArray()) }}, '{{ $previousStatus }}');
                                             }, 500);
                                         },
                                         endPress() {
@@ -186,7 +186,7 @@
                                 @if($order->is_grouped ?? false)
                                     {{-- Para pedidos agrupados: cancela o último pedido individual e passa todos os IDs --}}
                                     <button 
-                                        wire:click="openCancelModal({{ $order->individual_orders->last()->id }}, {{ json_encode($order->individual_orders->pluck('id')->toArray()) }})"
+                                        wire:click="openCancelModal({{ $order->individual_orders->last()->id }}, {{ json_encode($order->individual_orders->pluck('id')->values()->toArray()) }})"
                                         class="p-3 hover:bg-red-100 rounded-lg transition group active:scale-95"
                                         title="Remover unidade">
                                         <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -253,7 +253,7 @@
                                             this.longPress = false;
                                             this.pressTimer = setTimeout(() => {
                                                 this.longPress = true;
-                                                @this.call('updateAllOrderStatus', {{ json_encode($order->individual_orders->pluck('id')->toArray()) }}, '{{ $nextStatus }}');
+                                                @this.call('updateAllOrderStatus', {{ json_encode($order->individual_orders->pluck('id')->values()->toArray()) }}, '{{ $nextStatus }}');
                                             }, 500);
                                         },
                                         endPress() {
