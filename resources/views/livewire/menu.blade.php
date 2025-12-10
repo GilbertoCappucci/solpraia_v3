@@ -121,13 +121,28 @@
                                     </svg>
                                 </button>
                                 <span class="font-bold text-lg w-8 text-center">{{ $cart[$product->id]['quantity'] }}</span>
-                                <button 
-                                    wire:click="addToCart({{ $product->id }})"
-                                    class="w-9 h-9 bg-green-500 text-white rounded-lg flex items-center justify-center hover:bg-green-600 transition shadow">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                    </svg>
-                                </button>
+                                @php
+                                    $stockQty = $product->stock?->quantity ?? 0;
+                                    $cartQty = $cart[$product->id]['quantity'];
+                                    $isUnlimited = $stockQty < 0;
+                                    $limitReached = !$isUnlimited && ($cartQty >= $stockQty);
+                                @endphp
+
+                                @if($limitReached)
+                                    <button 
+                                        disabled
+                                        class="w-9 h-9 bg-gray-400 text-white rounded-lg flex items-center justify-center cursor-not-allowed font-bold text-sm">
+                                        ND
+                                    </button>
+                                @else
+                                    <button 
+                                        wire:click="addToCart({{ $product->id }})"
+                                        class="w-9 h-9 bg-green-500 text-white rounded-lg flex items-center justify-center hover:bg-green-600 transition shadow">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                        </svg>
+                                    </button>
+                                @endif
                             </div>
                         @else
                             @if(($product->stock?->quantity ?? 0) === 0)

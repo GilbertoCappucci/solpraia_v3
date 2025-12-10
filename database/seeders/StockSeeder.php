@@ -23,14 +23,14 @@ class StockSeeder extends Seeder
         //Suco de Laranja
         Stock::factory()->create([
             'product_id' => 2,
-            'quantity' => 10,
+            'quantity' => 2,
             'price' => 100,
         ]);
 
         //Agua Mineral Sem Gas
         Stock::factory()->create([
             'product_id' => 3,
-            'quantity' => 10,
+            'quantity' => 2,
             'price' => 100,
         ]);
 
@@ -44,28 +44,28 @@ class StockSeeder extends Seeder
         //Batata Frita Tradicional
         Stock::factory()->create([
             'product_id' => 5,
-            'quantity' => 10,
+            'quantity' => 1,
             'price' => 100,
         ]);
 
         //Batata Frita Cheddar e Bacon
         Stock::factory()->create([
             'product_id' => 6,
-            'quantity' => 10,
+            'quantity' => 2,
             'price' => 100,
         ]);
         
         //Fritas
         Stock::factory()->create([
             'product_id' => 7,
-            'quantity' => 10,
+            'quantity' => 3,
             'price' => 100,
         ]);
 
         //Coca Cola
         Stock::factory()->create([
             'product_id' => 8,
-            'quantity' => 10,
+            'quantity' => 4,
             'price' => 100,
         ]);
         
