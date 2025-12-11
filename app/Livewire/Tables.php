@@ -45,14 +45,22 @@ class Tables extends Component
             ? Auth::id() 
             : Auth::user()->user_id;
         
-        // Carrega filtros salvos da sessão
-        $this->filterTableStatuses = session('tables.filterTableStatuses', []);
-        $this->filterCheckStatuses = session('tables.filterCheckStatuses', []);
-        $this->filterOrderStatuses = session('tables.filterOrderStatuses', []);
-        $this->filterDepartaments = session('tables.filterDepartaments', []);
-        $this->globalFilterMode = session('tables.globalFilterMode', 'AND');
+        // Carrega configurações padrão do config
+        $defaultFilters = config('restaurant.table_filter_default_options', []);
+        
+        // Carrega filtros salvos da sessão ou utiliza os valores padrão do config
+        $this->filterTableStatuses = session('tables.filterTableStatuses', $defaultFilters['table'] ?? []);
+        $this->filterCheckStatuses = session('tables.filterCheckStatuses', $defaultFilters['check'] ?? []);
+        $this->filterOrderStatuses = session('tables.filterOrderStatuses', $defaultFilters['order'] ?? []);
+        $this->filterDepartaments = session('tables.filterDepartaments', $defaultFilters['departament'] ?? []);
+        $this->globalFilterMode = session('tables.globalFilterMode', $defaultFilters['mode'] ?? 'AND');
         $this->showFilters = session('tables.showFilters', false);
         $this->delayAlarmEnabled = session('tables.delayAlarmEnabled', true);
+        
+        // Se não há filtros na sessão, salva os valores padrão
+        if (!session()->has('tables.filterTableStatuses')) {
+            $this->saveFiltersToSession();
+        }
     }
 
     public function toggleFilters()

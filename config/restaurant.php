@@ -18,4 +18,12 @@ return [
         'closed' => 1,         // Tempo limite para checks fechados aguardando pagamento (minutos)
         'releasing' => 5,      // Tempo limite para mesas em processo de liberação (minutos)
     ],
+
+    'table_filter_default_options' => [
+        'mode' => 'AND',
+        'table' => [],
+        'check' => [],
+        'order' => [],
+        'departament' => []
+    ],
 ];
