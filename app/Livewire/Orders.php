@@ -250,14 +250,20 @@ class Orders extends Component
             return;
         }
 
+        // Busca estoque disponível
+        $stock = \App\Models\Stock::where('product_id', $order->product_id)->first();
+        $availableStock = $stock ? $stock->quantity : 0;
+
         $this->orderDetails = [
             'id' => $order->id,
+            'product_id' => $order->product_id,
             'product_name' => $order->product->name,
             'quantity' => $order->quantity,
             'price' => $order->product->price,
             'status' => $order->status,
             'created_at' => $order->created_at,
             'total' => $order->quantity * $order->product->price,
+            'available_stock' => $availableStock,
         ];
 
         $this->showDetailsModal = true;

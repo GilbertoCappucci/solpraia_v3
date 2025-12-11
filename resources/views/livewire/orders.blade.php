@@ -608,20 +608,39 @@
                 @if($isCheckOpen && $orderDetails['status'] === 'pending')
                 <div class="space-y-2">
                     <label class="block text-sm font-semibold text-gray-700">Quantidade</label>
+                    
+                    @if($orderDetails['available_stock'] <= 0)
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-2">
+                        <p class="text-sm text-red-800 text-center">
+                            ⚠️ Sem estoque disponível. Não é possível aumentar a quantidade.
+                        </p>
+                    </div>
+                    @endif
+                    
                     <div class="flex items-center gap-4">
                         <button
                             wire:click="decrementQuantity"
-                            class="w-12 h-12 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold text-xl transition shadow-md">
+                            {{ $orderDetails['quantity'] <= 1 ? 'disabled' : '' }}
+                            class="w-12 h-12 flex items-center justify-center rounded-lg font-bold text-xl transition shadow-md
+                                {{ $orderDetails['quantity'] > 1 ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed' }}">
                             −
                         </button>
                         
                         <div class="flex-1 text-center">
                             <span class="text-4xl font-bold text-gray-900">{{ $orderDetails['quantity'] }}</span>
+                            @if($orderDetails['available_stock'] > 0)
+                            <p class="text-xs text-gray-500 mt-1">Estoque: {{ $orderDetails['available_stock'] }}</p>
+                            @endif
+                            @if($orderDetails['quantity'] <= 1)
+                            <p class="text-xs text-gray-500 mt-1">Use "Cancelar" para remover</p>
+                            @endif
                         </div>
                         
                         <button
                             wire:click="incrementQuantity"
-                            class="w-12 h-12 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold text-xl transition shadow-md">
+                            {{ $orderDetails['available_stock'] <= 0 ? 'disabled' : '' }}
+                            class="w-12 h-12 flex items-center justify-center rounded-lg font-bold text-xl transition shadow-md
+                                {{ $orderDetails['available_stock'] > 0 ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed' }}">
                             +
                         </button>
                     </div>
