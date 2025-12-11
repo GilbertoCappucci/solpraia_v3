@@ -20,10 +20,10 @@ return [
     ],
 
     'table_filter_default_options' => [
-        'mode' => 'AND',
-        'table' => [],
-        'check' => [],
-        'order' => [],
-        'departament' => []
+        'mode' => 'AND', // Opções: 'AND' ou 'OR'
+        'table' => [], // Status das mesas
+        'check' => [], // Status dos checks
+        'order' => [], // Status dos pedidos
+        'departament' => [] // Departamentos
     ],
 ];

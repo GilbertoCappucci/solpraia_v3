@@ -14,7 +14,16 @@ return new class extends Migration
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->integer('setting_a')->default(0);
+            $table->integer('setting_time_limit_pending')->nullable();
+            $table->integer('setting_time_limit_in_production')->nullable();
+            $table->integer('setting_time_limit_in_transit')->nullable();
+            $table->integer('setting_time_limit_closed')->nullable();
+            $table->integer('setting_time_limit_releasing')->nullable();
+            $table->string('table_filter_mode')->default('AND');
+            $table->json('table_filter_table')->nullable();
+            $table->json('table_filter_check')->nullable();
+            $table->json('table_filter_order')->nullable();
+            $table->json('table_filter_departament')->nullable();
             $table->timestamps();
         });
     }
