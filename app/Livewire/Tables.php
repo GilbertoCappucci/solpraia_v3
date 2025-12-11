@@ -17,7 +17,7 @@ class Tables extends Component
     public $filterCheckStatuses = [];
     public $filterOrderStatuses = [];
     public $filterDepartaments = [];
-    public $globalFilterMode = 'OR';
+    public $globalFilterMode = 'AND';
     public $showFilters = false;
     public $delayAlarmEnabled = true;
     public $showNewTableModal = false;
@@ -50,7 +50,7 @@ class Tables extends Component
         $this->filterCheckStatuses = session('tables.filterCheckStatuses', []);
         $this->filterOrderStatuses = session('tables.filterOrderStatuses', []);
         $this->filterDepartaments = session('tables.filterDepartaments', []);
-        $this->globalFilterMode = session('tables.globalFilterMode', 'OR');
+        $this->globalFilterMode = session('tables.globalFilterMode', 'AND');
         $this->showFilters = session('tables.showFilters', false);
         $this->delayAlarmEnabled = session('tables.delayAlarmEnabled', true);
     }
@@ -119,7 +119,7 @@ class Tables extends Component
         $this->filterCheckStatuses = [];
         $this->filterOrderStatuses = [];
         $this->filterDepartaments = [];
-        $this->globalFilterMode = 'OR';
+        $this->globalFilterMode = 'AND';
         $this->showFilters = false;
         session()->forget('tables.filterTableStatuses');
         session()->forget('tables.filterCheckStatuses');
