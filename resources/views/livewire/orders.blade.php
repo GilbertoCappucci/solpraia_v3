@@ -90,8 +90,12 @@
                     default => ['label' => 'Desconhecido', 'color' => 'bg-gray-100 text-gray-800 border-gray-200']
                 };
                 
-                // Verifica se o grupo está atrasado
-                $timeLimits = config('restaurant.time_limits');
+                // Verifica se o grupo está atrasado (usando valores da sessão do usuário)
+                $timeLimits = [
+                    'pending' => session('restaurant.time_limits.pending', config('restaurant.time_limits.pending')),
+                    'in_production' => session('restaurant.time_limits.in_production', config('restaurant.time_limits.in_production')),
+                    'in_transit' => session('restaurant.time_limits.in_transit', config('restaurant.time_limits.in_transit')),
+                ];
                 $isDelayed = false;
                 
                 if ($group->status_changed_at) {

@@ -84,8 +84,14 @@
         : route('orders', $table->id);
     $routeTitle = ($table->checkStatus === 'Closed') ? 'Finalizar pagamento' : 'Ver pedidos';
     
-    // Verifica se há atraso baseado nos limites de tempo configurados
-    $timeLimits = config('restaurant.time_limits');
+    // Verifica se há atraso baseado nos limites de tempo configurados (da sessão do usuário)
+    $timeLimits = [
+        'pending' => session('restaurant.time_limits.pending', config('restaurant.time_limits.pending')),
+        'in_production' => session('restaurant.time_limits.in_production', config('restaurant.time_limits.in_production')),
+        'in_transit' => session('restaurant.time_limits.in_transit', config('restaurant.time_limits.in_transit')),
+        'closed' => session('restaurant.time_limits.closed', config('restaurant.time_limits.closed')),
+        'releasing' => session('restaurant.time_limits.releasing', config('restaurant.time_limits.releasing')),
+    ];
     $hasDelay = false;
     
     if (isset($table->pendingMinutes) && $table->pendingMinutes > $timeLimits['pending']) {
