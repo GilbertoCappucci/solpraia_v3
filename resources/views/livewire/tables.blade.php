@@ -30,12 +30,12 @@
             <button 
                 wire:click="toggleFilters"
                 class="flex items-center gap-1 px-3 py-1.5 border-2 rounded-lg text-sm font-medium transition
-                    {{ !empty($filterTableStatuses) || !empty($filterCheckStatuses) || !empty($filterOrderStatuses) ? 'border-white bg-white/20 text-white' : 'border-white/30 bg-white/10 text-white hover:bg-white/20' }}">
+                    {{ !empty($filterTableStatuses) || !empty($filterCheckStatuses) || !empty($filterOrderStatuses) || !empty($filterDepartaments) ? 'border-white bg-white/20 text-white' : 'border-white/30 bg-white/10 text-white hover:bg-white/20' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
                 </svg>
                 Filtros
-                @if(!empty($filterTableStatuses) || !empty($filterCheckStatuses) || !empty($filterOrderStatuses))
+                @if(!empty($filterTableStatuses) || !empty($filterCheckStatuses) || !empty($filterOrderStatuses) || !empty($filterDepartaments))
                     <span class="ml-1 px-1.5 py-0.5 bg-white text-orange-600 rounded-full text-xs font-bold">!</span>
                 @endif
             </button>
@@ -57,6 +57,18 @@
         {{-- Dropdown de Filtros --}}
         @if($showFilters)
             <div class="absolute top-16 left-4 right-4 lg:left-4 lg:right-auto lg:w-80 bg-white rounded-lg shadow-xl border-2 border-gray-200 z-50 p-4">
+                {{-- Toggle Global de Filtros --}}
+                <div class="mb-4 pb-3 border-b-2 border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-gray-800">Modo de Filtragem</h3>
+                        <button wire:click="toggleGlobalFilterMode" 
+                            class="px-3 py-1.5 text-xs font-semibold rounded-lg transition shadow-sm
+                                {{ $globalFilterMode === 'OR' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-purple-500 text-white hover:bg-purple-600' }}">
+                            {{ $globalFilterMode === 'OR' ? 'Qualquer Filtro' : 'Todos os Filtros' }}
+                        </button>
+                    </div>
+                </div>
+
                 {{-- Filtro Status da Mesa --}}
                 <div class="mb-4">
                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Status da Mesa</h3>
@@ -117,7 +129,7 @@
                 </div>
                 
                 {{-- Filtro Status dos Pedidos --}}
-                <div class="mb-3">
+                <div class="mb-4">
                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Status dos Pedidos</h3>
                     <div class="flex flex-wrap gap-2">
                         <button wire:click="toggleOrderStatusFilter('pending')"
@@ -147,6 +159,43 @@
                             class="px-3 py-1.5 rounded-md text-xs font-medium transition
                                 {{ in_array('delayed', $filterOrderStatuses) ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Atrasado
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Filtro Departamentos --}}
+                <div class="mb-3">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Departamentos</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button wire:click="toggleDepartamentFilter('Administration')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ in_array('Administration', $filterDepartaments) ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Administração
+                        </button>
+                        <button wire:click="toggleDepartamentFilter('Expedition')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ in_array('Expedition', $filterDepartaments) ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Expedição
+                        </button>
+                        <button wire:click="toggleDepartamentFilter('Bar')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ in_array('Bar', $filterDepartaments) ? 'bg-cyan-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Bar
+                        </button>
+                        <button wire:click="toggleDepartamentFilter('Kitchen')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ in_array('Kitchen', $filterDepartaments) ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Cozinha
+                        </button>
+                        <button wire:click="toggleDepartamentFilter('Finance')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ in_array('Finance', $filterDepartaments) ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Financeiro
+                        </button>
+                        <button wire:click="toggleDepartamentFilter('Service')"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition
+                                {{ in_array('Service', $filterDepartaments) ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            Atendimento
                         </button>
                     </div>
                 </div>

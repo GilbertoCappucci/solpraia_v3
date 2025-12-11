@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\DepartamentEnum;
 use App\Services\OrderService;
 use App\Services\TableService;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,8 @@ class Tables extends Component
     public $filterTableStatuses = [];
     public $filterCheckStatuses = [];
     public $filterOrderStatuses = [];
+    public $filterDepartaments = [];
+    public $globalFilterMode = 'OR';
     public $showFilters = false;
     public $delayAlarmEnabled = true;
     public $showNewTableModal = false;
@@ -46,6 +49,8 @@ class Tables extends Component
         $this->filterTableStatuses = session('tables.filterTableStatuses', []);
         $this->filterCheckStatuses = session('tables.filterCheckStatuses', []);
         $this->filterOrderStatuses = session('tables.filterOrderStatuses', []);
+        $this->filterDepartaments = session('tables.filterDepartaments', []);
+        $this->globalFilterMode = session('tables.globalFilterMode', 'OR');
         $this->showFilters = session('tables.showFilters', false);
         $this->delayAlarmEnabled = session('tables.delayAlarmEnabled', true);
     }
@@ -92,15 +97,35 @@ class Tables extends Component
         $this->saveFiltersToSession();
     }
 
+    public function toggleDepartamentFilter($departament)
+    {
+        if (in_array($departament, $this->filterDepartaments)) {
+            $this->filterDepartaments = array_values(array_filter($this->filterDepartaments, fn($d) => $d !== $departament));
+        } else {
+            $this->filterDepartaments[] = $departament;
+        }
+        $this->saveFiltersToSession();
+    }
+
+    public function toggleGlobalFilterMode()
+    {
+        $this->globalFilterMode = $this->globalFilterMode === 'OR' ? 'AND' : 'OR';
+        $this->saveFiltersToSession();
+    }
+
     public function clearFilters()
     {
         $this->filterTableStatuses = [];
         $this->filterCheckStatuses = [];
         $this->filterOrderStatuses = [];
+        $this->filterDepartaments = [];
+        $this->globalFilterMode = 'OR';
         $this->showFilters = false;
         session()->forget('tables.filterTableStatuses');
         session()->forget('tables.filterCheckStatuses');
         session()->forget('tables.filterOrderStatuses');
+        session()->forget('tables.filterDepartaments');
+        session()->forget('tables.globalFilterMode');
         session()->forget('tables.showFilters');
     }
 
@@ -110,6 +135,8 @@ class Tables extends Component
             'tables.filterTableStatuses' => $this->filterTableStatuses,
             'tables.filterCheckStatuses' => $this->filterCheckStatuses,
             'tables.filterOrderStatuses' => $this->filterOrderStatuses,
+            'tables.filterDepartaments' => $this->filterDepartaments,
+            'tables.globalFilterMode' => $this->globalFilterMode,
             'tables.showFilters' => $this->showFilters,
         ]);
     }
@@ -202,7 +229,9 @@ class Tables extends Component
             $this->userId,
             $this->filterTableStatuses,
             $this->filterCheckStatuses,
-            $this->filterOrderStatuses
+            $this->filterOrderStatuses,
+            $this->filterDepartaments,
+            $this->globalFilterMode
         );
 
         return view('livewire.tables', [
