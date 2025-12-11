@@ -2,126 +2,145 @@
 
     <x-flash-message />
 
-    {{-- Header Compacto com Info do Local --}}
+    {{-- Header Compacto Mobile-Friendly --}}
     <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 flex items-center justify-between sticky top-0 z-40 shadow-md">
+        {{-- Lado Esquerdo --}}
         <div class="flex items-center gap-2">
+            {{-- Botão Voltar --}}
             <button
                 wire:click="backToTables"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition">
+                class="p-2 hover:bg-white/20 rounded-lg transition"
+                title="Voltar">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
             </button>
-            <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-bold">{{ $selectedTable->number }}</span>
-                {{--
-                <span class="text-sm opacity-90">{{ $selectedTable->name }}</span>
-                --}}
-            </div>
+            
+            {{-- Número da Mesa --}}
+            <span class="text-2xl font-bold">{{ $selectedTable->number }}</span>
+        </div>
 
-            {{-- Botão Toggle Alarme --}}
+        {{-- Lado Direito --}}
+        <div class="flex items-center gap-1">
+            {{-- Toggle Alarme --}}
             <button
                 wire:click="toggleDelayAlarm"
-                class="flex items-center gap-1.5 px-2 py-1 border-2 rounded-lg text-sm font-medium transition
-                    {{ $delayAlarmEnabled ? 'border-red-300 bg-red-500/20 text-white' : 'border-white/30 bg-white/10 text-white/60' }}"
-                title="{{ $delayAlarmEnabled ? 'Desativar' : 'Ativar' }} alarme de atraso">
+                class="p-2 hover:bg-white/20 rounded-lg transition"
+                title="{{ $delayAlarmEnabled ? 'Desativar' : 'Ativar' }} alarme">
                 @if($delayAlarmEnabled)
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
                 </svg>
                 @else
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
                     <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 4l12 12" />
                 </svg>
                 @endif
             </button>
-        </div>
-        <div class="flex items-center gap-2">
+
+            {{-- Filtro --}}
+            <button
+                wire:click="openFilterModal"
+                class="p-2 hover:bg-white/20 rounded-lg transition relative"
+                title="Filtrar pedidos">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                @if(count($statusFilters) < 5)
+                <span class="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full text-xs flex items-center justify-center text-gray-900 font-bold">
+                    {{ count($statusFilters) }}
+                </span>
+                @endif
+            </button>
+
+            {{-- Status Mesa/Check --}}
             <button
                 wire:click="openStatusModal"
-                class="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-lg px-3 py-1.5 transition-all">
-                @php
-                $tableStatusConfig = match($selectedTable->status) {
-                'free' => ['label' => 'Livre', 'color' => 'gray'],
-                'occupied' => ['label' => 'Ocupada', 'color' => 'green'],
-                'reserved' => ['label' => 'Reservada', 'color' => 'purple'],
-                'releasing' => ['label' => 'Liberando', 'color' => 'teal'],
-                'close' => ['label' => 'Fechada', 'color' => 'red'],
-                default => ['label' => 'Livre', 'color' => 'gray']
-                };
-                $checkStatusConfig = $currentCheck ? match($currentCheck->status) {
-                'Open' => ['label' => 'Aberto', 'color' => 'green'],
-                'Closed' => ['label' => 'Fechado', 'color' => 'red'],
-                'Paid' => ['label' => 'Pago', 'color' => 'gray'],
-                'Canceled' => ['label' => 'Cancelado', 'color' => 'orange'],
-                default => ['label' => 'Aberto', 'color' => 'green']
-                } : null;
-                @endphp
-
-                <x-order-status-badge
-                    label="Mesa"
-                    :value="$tableStatusConfig['label']"
-                    :color="$tableStatusConfig['color']" />
-
-                @if($currentCheck)
-                <x-order-status-badge
-                    label="Check"
-                    :value="$checkStatusConfig['label']"
-                    :color="$checkStatusConfig['color']"
-                    :isDivider="true" />
-                @endif
-
-                <svg class="w-4 h-4 opacity-75 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                class="p-2 hover:bg-white/20 rounded-lg transition"
+                title="Alterar status">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
             </button>
         </div>
     </div>
 
-    {{-- Seção de Pedidos Ativos --}}
-    <div class="bg-gray-50 p-4 space-y-3">
-        <x-order-status-card
-            title="AGUARDANDO"
-            :orders="$pendingOrders"
-            :totalTime="$pendingTime"
-            color="yellow"
-            :showCancel="true"
-            nextStatus="in_production"
-            previousStatus=""
-            :isCheckOpen="$isCheckOpen"
-            :delayAlarmEnabled="$delayAlarmEnabled" />
-
-        <x-order-status-card
-            title="EM PREPARO"
-            :orders="$inProductionOrders"
-            :totalTime="$inProductionTime"
-            color="blue"
-            previousStatus="pending"
-            nextStatus="in_transit"
-            :isCheckOpen="$isCheckOpen"
-            :delayAlarmEnabled="$delayAlarmEnabled" />
-
-        <x-order-status-card
-            title="EM TRÂNSITO"
-            :orders="$inTransitOrders"
-            :totalTime="$inTransitTime"
-            color="purple"
-            previousStatus="in_production"
-            nextStatus="completed"
-            :isCheckOpen="$isCheckOpen"
-            :delayAlarmEnabled="$delayAlarmEnabled" />
-
-        <x-order-status-card
-            title="ENTREGUE"
-            :orders="$completedOrders"
-            :totalTime="$completedTime"
-            color="green"
-            previousStatus="in_transit"
-            :showPrice="true"
-            :subtotal="$completedTotal"
-            :isCheckOpen="$isCheckOpen"
-            :delayAlarmEnabled="$delayAlarmEnabled" />
+    {{-- Lista de Pedidos --}}
+    <div class="bg-white">
+        @if($orders->isEmpty())
+        <div class="p-8 text-center text-gray-400">
+            <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <p class="text-lg font-medium">Nenhum pedido ativo</p>
+            <p class="text-sm mt-1">Clique em "Adicionar Pedidos" para começar</p>
+        </div>
+        @else
+        <div class="divide-y divide-gray-200">
+            @foreach($orders as $order)
+            @php
+                $statusConfig = match($order->status) {
+                    'pending' => ['label' => 'Aguardando', 'color' => 'bg-yellow-100 text-yellow-800 border-yellow-200'],
+                    'in_production' => ['label' => 'Em Preparo', 'color' => 'bg-blue-100 text-blue-800 border-blue-200'],
+                    'in_transit' => ['label' => 'Em Trânsito', 'color' => 'bg-purple-100 text-purple-800 border-purple-200'],
+                    'completed' => ['label' => 'Entregue', 'color' => 'bg-green-100 text-green-800 border-green-200'],
+                    'canceled' => ['label' => 'Cancelado', 'color' => 'bg-red-100 text-red-800 border-red-200'],
+                    default => ['label' => 'Desconhecido', 'color' => 'bg-gray-100 text-gray-800 border-gray-200']
+                };
+                
+                // Verifica se o pedido está atrasado
+                $timeLimits = config('restaurant.time_limits');
+                $isDelayed = false;
+                
+                if ($order->status_changed_at) {
+                    $minutes = abs((int) now()->diffInMinutes($order->status_changed_at));
+                    
+                    $isDelayed = match($order->status) {
+                        'pending' => $minutes > $timeLimits['pending'],
+                        'in_production' => $minutes > $timeLimits['in_production'],
+                        'in_transit' => $minutes > $timeLimits['in_transit'],
+                        default => false
+                    };
+                }
+                
+                $delayAnimation = ($isDelayed && $delayAlarmEnabled) ? 'animate-pulse-warning' : '';
+            @endphp
+            
+            <div class="p-4 hover:bg-gray-50 transition flex items-center gap-4 {{ $delayAnimation }}">
+                {{-- Quantidade --}}
+                <div class="flex-shrink-0 w-14 text-center">
+                    <span class="text-xl font-bold text-gray-900">{{ $order->quantity }}x</span>
+                </div>
+                
+                {{-- Nome do Produto --}}
+                <div class="flex-1 min-w-0">
+                    <h4 class="font-semibold text-gray-900 truncate">{{ $order->product->name }}</h4>
+                    <p class="text-sm text-gray-500">R$ {{ number_format($order->product->price * $order->quantity, 2, ',', '.') }}</p>
+                </div>
+                
+                {{-- Status --}}
+                <div class="flex-shrink-0">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border {{ $statusConfig['color'] }}">
+                        {{ $statusConfig['label'] }}
+                    </span>
+                </div>
+                
+                {{-- Botão Detalhes --}}
+                <div class="flex-shrink-0">
+                    <button
+                        wire:click="openDetailsModal({{ $order->id }})"
+                        class="p-2 text-gray-600 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif
     </div>
 
     {{-- Total e Botão Adicionar Pedidos --}}
@@ -229,12 +248,17 @@
 
                 {{-- Status do Check --}}
                 @if($currentCheck)
+                @php
+                    $pendingCount = $orders->where('status', 'pending')->count();
+                    $inProductionCount = $orders->where('status', 'in_production')->count();
+                    $inTransitCount = $orders->where('status', 'in_transit')->count();
+                @endphp
                 <x-check-status-selector
                     :check="$currentCheck"
                     :newCheckStatus="$newCheckStatus"
-                    :pendingCount="$pendingOrders->count()"
-                    :inProductionCount="$inProductionOrders->count()"
-                    :inTransitCount="$inTransitOrders->count()" />
+                    :pendingCount="$pendingCount"
+                    :inProductionCount="$inProductionCount"
+                    :inTransitCount="$inTransitCount" />
                 @endif
             </div>
 
@@ -249,6 +273,293 @@
                     class="flex-1 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-medium hover:shadow-lg transition">
                     Salvar
                 </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Modal de Filtro --}}
+    @if($showFilterModal)
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeFilterModal">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full" wire:click.stop>
+            {{-- Header --}}
+            <div class="bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-bold">Filtrar Pedidos</h3>
+                    <button wire:click="closeFilterModal" class="text-white/80 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Corpo --}}
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-gray-600 mb-4">Selecione os status que deseja visualizar:</p>
+
+                {{-- Opções de Filtro --}}
+                <div class="space-y-3">
+                    <label class="flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition hover:bg-gray-50
+                        {{ in_array('pending', $statusFilters) ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200' }}">
+                        <input
+                            type="checkbox"
+                            wire:click="toggleStatusFilter('pending')"
+                            {{ in_array('pending', $statusFilters) ? 'checked' : '' }}
+                            class="w-5 h-5 text-yellow-500 rounded focus:ring-yellow-400">
+                        <div class="flex-1">
+                            <span class="font-semibold text-gray-900">⏳ Aguardando</span>
+                            <p class="text-xs text-gray-500">Pedidos ainda não iniciados</p>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition hover:bg-gray-50
+                        {{ in_array('in_production', $statusFilters) ? 'border-blue-400 bg-blue-50' : 'border-gray-200' }}">
+                        <input
+                            type="checkbox"
+                            wire:click="toggleStatusFilter('in_production')"
+                            {{ in_array('in_production', $statusFilters) ? 'checked' : '' }}
+                            class="w-5 h-5 text-blue-500 rounded focus:ring-blue-400">
+                        <div class="flex-1">
+                            <span class="font-semibold text-gray-900">🍳 Em Preparo</span>
+                            <p class="text-xs text-gray-500">Sendo preparados na cozinha</p>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition hover:bg-gray-50
+                        {{ in_array('in_transit', $statusFilters) ? 'border-purple-400 bg-purple-50' : 'border-gray-200' }}">
+                        <input
+                            type="checkbox"
+                            wire:click="toggleStatusFilter('in_transit')"
+                            {{ in_array('in_transit', $statusFilters) ? 'checked' : '' }}
+                            class="w-5 h-5 text-purple-500 rounded focus:ring-purple-400">
+                        <div class="flex-1">
+                            <span class="font-semibold text-gray-900">🚶 Em Trânsito</span>
+                            <p class="text-xs text-gray-500">A caminho da mesa</p>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition hover:bg-gray-50
+                        {{ in_array('completed', $statusFilters) ? 'border-green-400 bg-green-50' : 'border-gray-200' }}">
+                        <input
+                            type="checkbox"
+                            wire:click="toggleStatusFilter('completed')"
+                            {{ in_array('completed', $statusFilters) ? 'checked' : '' }}
+                            class="w-5 h-5 text-green-500 rounded focus:ring-green-400">
+                        <div class="flex-1">
+                            <span class="font-semibold text-gray-900">✓ Entregue</span>
+                            <p class="text-xs text-gray-500">Já entregues ao cliente</p>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition hover:bg-gray-50
+                        {{ in_array('canceled', $statusFilters) ? 'border-red-400 bg-red-50' : 'border-gray-200' }}">
+                        <input
+                            type="checkbox"
+                            wire:click="toggleStatusFilter('canceled')"
+                            {{ in_array('canceled', $statusFilters) ? 'checked' : '' }}
+                            class="w-5 h-5 text-red-500 rounded focus:ring-red-400">
+                        <div class="flex-1">
+                            <span class="font-semibold text-gray-900">✕ Cancelado</span>
+                            <p class="text-xs text-gray-500">Pedidos cancelados</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            {{-- Footer --}}
+            <div class="p-6 pt-0 flex gap-2">
+                <button
+                    wire:click="resetFilters"
+                    class="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">
+                    Limpar Filtros
+                </button>
+                <button
+                    wire:click="closeFilterModal"
+                    class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-bold hover:shadow-lg transition">
+                    Aplicar
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Modal de Detalhes do Pedido --}}
+    @if($showDetailsModal && $orderDetails)
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeDetailsModal">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden" wire:click.stop>
+            {{-- Header --}}
+            <div class="bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-bold">Detalhes do Pedido</h3>
+                    <button wire:click="closeDetailsModal" class="text-white/80 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Corpo --}}
+            <div class="p-6 space-y-6">
+                {{-- Informações do Produto --}}
+                <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Produto</span>
+                        <span class="font-bold text-gray-900">{{ $orderDetails['product_name'] }}</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Preço Unitário</span>
+                        <span class="font-semibold text-gray-900">R$ {{ number_format($orderDetails['price'], 2, ',', '.') }}</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between border-t pt-3">
+                        <span class="text-sm font-semibold text-gray-700">Total</span>
+                        <span class="text-xl font-bold text-orange-600">R$ {{ number_format($orderDetails['total'], 2, ',', '.') }}</span>
+                    </div>
+                </div>
+
+                {{-- Controle de Quantidade --}}
+                @if($isCheckOpen && $orderDetails['status'] === 'pending')
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Quantidade</label>
+                    <div class="flex items-center gap-4">
+                        <button
+                            wire:click="decrementQuantity"
+                            class="w-12 h-12 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold text-xl transition shadow-md">
+                            −
+                        </button>
+                        
+                        <div class="flex-1 text-center">
+                            <span class="text-4xl font-bold text-gray-900">{{ $orderDetails['quantity'] }}</span>
+                        </div>
+                        
+                        <button
+                            wire:click="incrementQuantity"
+                            class="w-12 h-12 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold text-xl transition shadow-md">
+                            +
+                        </button>
+                    </div>
+                </div>
+                @elseif(!$isCheckOpen)
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p class="text-sm text-yellow-800 text-center">
+                        Check não está aberto. Não é possível alterar a quantidade.
+                    </p>
+                </div>
+                @elseif($orderDetails['status'] !== 'pending')
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p class="text-sm text-blue-800 text-center">
+                        Apenas pedidos no status "Aguardando" podem ter a quantidade alterada.
+                    </p>
+                    <div class="text-center mt-2">
+                        <span class="text-2xl font-bold text-gray-900">Quantidade: {{ $orderDetails['quantity'] }}</span>
+                    </div>
+                </div>
+                @endif
+
+                {{-- Status Atual e Alteração --}}
+                <div class="space-y-3">
+                    <label class="block text-sm font-semibold text-gray-700">Status do Pedido</label>
+                    
+                    {{-- Status Atual --}}
+                    @php
+                        $currentStatusDisplay = match($orderDetails['status']) {
+                            'pending' => ['label' => '⏳ Aguardando', 'color' => 'bg-yellow-500'],
+                            'in_production' => ['label' => '🍳 Em Preparo', 'color' => 'bg-blue-500'],
+                            'in_transit' => ['label' => '🚶 Em Trânsito', 'color' => 'bg-purple-500'],
+                            'completed' => ['label' => '✓ Entregue', 'color' => 'bg-green-500'],
+                            'canceled' => ['label' => '✕ Cancelado', 'color' => 'bg-red-500'],
+                            default => ['label' => 'Desconhecido', 'color' => 'bg-gray-500']
+                        };
+                    @endphp
+                    
+                    <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-3 border-2 border-gray-200">
+                        <span class="text-sm text-gray-600">Status Atual:</span>
+                        <span class="px-3 py-1.5 {{ $currentStatusDisplay['color'] }} text-white rounded-lg font-bold text-sm shadow-sm">
+                            {{ $currentStatusDisplay['label'] }}
+                        </span>
+                    </div>
+                    
+                    {{-- Botões para Alterar Status --}}
+                    @if($isCheckOpen && $orderDetails['status'] !== 'canceled')
+                    @php
+                        // Define quais status são permitidos baseado no status atual
+                        $allowedTransitions = match($orderDetails['status']) {
+                            'pending' => ['in_production'], // Aguardando só pode ir para Em Preparo
+                            'in_production' => ['pending', 'in_transit'], // Em Preparo pode voltar para Aguardando ou ir para Em Trânsito
+                            'in_transit' => ['in_production', 'completed'], // Em Trânsito pode voltar para Em Preparo ou ir para Entregue
+                            'completed' => ['in_transit'], // Entregue pode voltar para Em Trânsito
+                            default => []
+                        };
+                    @endphp
+                    <div class="space-y-2">
+                        <p class="text-xs text-gray-500">Alterar para:</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            {{-- Aguardando --}}
+                            @php $canGoToPending = in_array('pending', $allowedTransitions); @endphp
+                            <button
+                                wire:click="updateOrderStatusFromModal('pending')"
+                                {{ !$canGoToPending ? 'disabled' : '' }}
+                                class="px-4 py-2.5 rounded-lg font-medium transition shadow-sm
+                                    {{ $canGoToPending ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed' }}">
+                                ⏳ Aguardando
+                            </button>
+                            
+                            {{-- Em Preparo --}}
+                            @php $canGoToProduction = in_array('in_production', $allowedTransitions); @endphp
+                            <button
+                                wire:click="updateOrderStatusFromModal('in_production')"
+                                {{ !$canGoToProduction ? 'disabled' : '' }}
+                                class="px-4 py-2.5 rounded-lg font-medium transition shadow-sm
+                                    {{ $canGoToProduction ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed' }}">
+                                🍳 Em Preparo
+                            </button>
+                            
+                            {{-- Em Trânsito --}}
+                            @php $canGoToTransit = in_array('in_transit', $allowedTransitions); @endphp
+                            <button
+                                wire:click="updateOrderStatusFromModal('in_transit')"
+                                {{ !$canGoToTransit ? 'disabled' : '' }}
+                                class="px-4 py-2.5 rounded-lg font-medium transition shadow-sm
+                                    {{ $canGoToTransit ? 'bg-purple-500 hover:bg-purple-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed' }}">
+                                🚶 Em Trânsito
+                            </button>
+                            
+                            {{-- Entregue --}}
+                            @php $canGoToCompleted = in_array('completed', $allowedTransitions); @endphp
+                            <button
+                                wire:click="updateOrderStatusFromModal('completed')"
+                                {{ !$canGoToCompleted ? 'disabled' : '' }}
+                                class="px-4 py-2.5 rounded-lg font-medium transition shadow-sm
+                                    {{ $canGoToCompleted ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed' }}">
+                                ✓ Entregue
+                            </button>
+                        </div>
+                    </div>
+                    @elseif(!$isCheckOpen)
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <p class="text-sm text-yellow-800 text-center">
+                            Check não está aberto. Não é possível alterar o status.
+                        </p>
+                    </div>
+                    @endif
+                </div>
+
+                {{-- Botão Cancelar Pedido --}}
+                @if($isCheckOpen)
+                <div class="pt-4 border-t">
+                    <button
+                        wire:click="cancelOrderFromModal"
+                        class="w-full px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold transition shadow-md flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Cancelar Pedido
+                    </button>
+                </div>
+                @endif
             </div>
         </div>
     </div>

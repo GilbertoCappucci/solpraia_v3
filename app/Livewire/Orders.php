@@ -24,6 +24,10 @@ class Orders extends Component
     public $hasActiveCheck = false;
     public $delayAlarmEnabled = true;
     public $pollingInterval = 5000;
+    public $showDetailsModal = false;
+    public $orderDetails = null;
+    public $showFilterModal = false;
+    public $statusFilters = ['pending', 'in_production', 'in_transit', 'completed', 'canceled'];
 
     protected $orderService;
 
@@ -42,6 +46,7 @@ class Orders extends Component
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
         $this->delayAlarmEnabled = session('orders.delayAlarmEnabled', true);
+        $this->statusFilters = session('orders.statusFilters', ['pending', 'in_production', 'in_transit', 'completed', 'canceled']);
     }
 
     public function toggleDelayAlarm()
@@ -237,31 +242,177 @@ class Orders extends Component
         $this->refreshData();
     }
 
+    public function openDetailsModal($orderId)
+    {
+        $order = \App\Models\Order::with('product')->find($orderId);
+        
+        if (!$order) {
+            session()->flash('error', 'Pedido não encontrado.');
+            return;
+        }
+
+        $this->orderDetails = [
+            'id' => $order->id,
+            'product_name' => $order->product->name,
+            'quantity' => $order->quantity,
+            'price' => $order->product->price,
+            'status' => $order->status,
+            'created_at' => $order->created_at,
+            'total' => $order->quantity * $order->product->price,
+        ];
+
+        $this->showDetailsModal = true;
+    }
+
+    public function closeDetailsModal()
+    {
+        $this->showDetailsModal = false;
+        $this->orderDetails = null;
+    }
+
+    public function incrementQuantity()
+    {
+        if (!$this->orderDetails || !$this->currentCheck || $this->currentCheck->status !== 'Open') {
+            session()->flash('error', 'Não é possível alterar a quantidade neste momento.');
+            return;
+        }
+
+        if ($this->orderDetails['status'] !== 'pending') {
+            session()->flash('error', 'Só é possível alterar a quantidade de pedidos no status "Aguardando".');
+            return;
+        }
+
+        $result = $this->orderService->duplicatePendingOrder($this->orderDetails['id']);
+
+        if (!$result['success']) {
+            session()->flash('error', $result['message']);
+            return;
+        }
+
+        session()->flash('success', 'Quantidade aumentada!');
+        $this->closeDetailsModal();
+        $this->refreshData();
+    }
+
+    public function decrementQuantity()
+    {
+        if (!$this->orderDetails || !$this->currentCheck || $this->currentCheck->status !== 'Open') {
+            session()->flash('error', 'Não é possível alterar a quantidade neste momento.');
+            return;
+        }
+
+        if ($this->orderDetails['status'] !== 'pending') {
+            session()->flash('error', 'Só é possível alterar a quantidade de pedidos no status "Aguardando".');
+            return;
+        }
+
+        if ($this->orderDetails['quantity'] <= 1) {
+            session()->flash('error', 'Use o botão cancelar para remover o último item.');
+            return;
+        }
+
+        $result = $this->orderService->cancelOrder($this->orderDetails['id'], 1);
+
+        if (!$result['success']) {
+            session()->flash('error', $result['message']);
+            return;
+        }
+
+        session()->flash('success', 'Quantidade reduzida!');
+        $this->closeDetailsModal();
+        $this->refreshData();
+    }
+
+    public function updateOrderStatusFromModal($newStatus)
+    {
+        if (!$this->orderDetails || !$this->currentCheck || $this->currentCheck->status !== 'Open') {
+            session()->flash('error', 'Não é possível alterar o status neste momento.');
+            return;
+        }
+
+        $result = $this->orderService->updateOrderStatus($this->orderDetails['id'], $newStatus, 0);
+
+        if (!$result['success']) {
+            session()->flash('error', $result['message']);
+            return;
+        }
+
+        session()->flash('success', 'Status atualizado!');
+        $this->closeDetailsModal();
+        $this->refreshData();
+    }
+
+    public function cancelOrderFromModal()
+    {
+        if (!$this->orderDetails) {
+            return;
+        }
+
+        $this->orderToCancel = $this->orderDetails['id'];
+        $this->orderToCancelData = $this->orderDetails;
+        $this->closeDetailsModal();
+        $this->showCancelModal = true;
+    }
+
+    public function openFilterModal()
+    {
+        $this->showFilterModal = true;
+    }
+
+    public function closeFilterModal()
+    {
+        $this->showFilterModal = false;
+    }
+
+    public function toggleStatusFilter($status)
+    {
+        if (in_array($status, $this->statusFilters)) {
+            $this->statusFilters = array_values(array_diff($this->statusFilters, [$status]));
+        } else {
+            $this->statusFilters[] = $status;
+        }
+        
+        session(['orders.statusFilters' => $this->statusFilters]);
+    }
+
+    public function resetFilters()
+    {
+        $this->statusFilters = ['pending', 'in_production', 'in_transit', 'completed', 'canceled'];
+        session(['orders.statusFilters' => $this->statusFilters]);
+    }
+
     public function render()
     {
-        $ordersGrouped = $this->orderService->getActiveOrdersGrouped($this->currentCheck);
-
-        $pendingStats = $this->orderService->calculateOrderStats($ordersGrouped['pending']);
-        $inProductionStats = $this->orderService->calculateOrderStats($ordersGrouped['inProduction']);
-        $inTransitStats = $this->orderService->calculateOrderStats($ordersGrouped['inTransit']);
-        $completedStats = $this->orderService->calculateOrderStats($ordersGrouped['completed']);
+        // Busca todos os pedidos ativos
+        $allOrders = collect();
+        
+        if ($this->currentCheck) {
+            $orders = \App\Models\Order::with(['product', 'currentStatusHistory'])
+                ->where('check_id', $this->currentCheck->id)
+                ->where(function($query) {
+                    $query->whereHas('currentStatusHistory', function($q) {
+                        $q->whereIn('to_status', ['pending', 'in_production', 'in_transit', 'completed', 'canceled']);
+                    })
+                    ->orDoesntHave('statusHistory');
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // Aplica filtro de status
+            if (!empty($this->statusFilters)) {
+                $allOrders = $orders->filter(function($order) {
+                    return in_array($order->status, $this->statusFilters);
+                });
+            } else {
+                $allOrders = $orders;
+            }
+        }
 
         // Permite adicionar pedidos se não há check ainda (NULL) ou se check está Open
         $isCheckOpen = !$this->currentCheck || $this->currentCheck->status === 'Open';
 
         return view('livewire.orders', [
-            'pendingOrders' => $ordersGrouped['pending'],
-            'pendingTotal' => $pendingStats['total'],
-            'pendingTime' => $pendingStats['time'],
-            'inProductionOrders' => $ordersGrouped['inProduction'],
-            'inProductionTotal' => $inProductionStats['total'],
-            'inProductionTime' => $inProductionStats['time'],
-            'inTransitOrders' => $ordersGrouped['inTransit'],
-            'inTransitTotal' => $inTransitStats['total'],
-            'inTransitTime' => $inTransitStats['time'],
-            'completedOrders' => $ordersGrouped['completed'],
-            'completedTotal' => $completedStats['total'],
-            'completedTime' => $completedStats['time'],
+            'orders' => $allOrders,
             'isCheckOpen' => $isCheckOpen,
         ]);
     }
