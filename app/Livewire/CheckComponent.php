@@ -107,18 +107,29 @@ class CheckComponent extends Component
     
     public function render()
     {
-        // Agrupa pedidos por status
-        $groupedOrders = [
-            'pending' => $this->check->orders->where('status', 'Pending'),
-            'inProduction' => $this->check->orders->where('status', 'InProduction'),
-            'inTransit' => $this->check->orders->where('status', 'InTransit'),
-            'delivered' => $this->check->orders->where('status', 'Completed'),
-            'canceled' => $this->check->orders->where('status', 'Canceled'),
-        ];
+        // Se o check estiver fechado, mostra apenas pedidos entregues
+        if ($this->check->status === 'Closed' || $this->check->status === 'Paid') {
+            $groupedOrders = [
+                'pending' => collect([]),
+                'inProduction' => collect([]),
+                'inTransit' => collect([]),
+                'delivered' => $this->check->orders->where('status', 'completed'),
+                'canceled' => collect([]),
+            ];
+        } else {
+            // Agrupa pedidos por status (exibição normal)
+            $groupedOrders = [
+                'pending' => $this->check->orders->where('status', 'pending'),
+                'inProduction' => $this->check->orders->where('status', 'in_production'),
+                'inTransit' => $this->check->orders->where('status', 'in_transit'),
+                'delivered' => $this->check->orders->where('status', 'completed'),
+                'canceled' => $this->check->orders->where('status', 'canceled'),
+            ];
+        }
         
         // Regra simplificada: só pode alterar se TODOS os pedidos (exceto cancelados) estão entregues
-        $activeOrders = $this->check->orders->whereNotIn('status', ['Canceled']);
-        $allDelivered = $activeOrders->every(fn($order) => $order->status === 'Completed');
+        $activeOrders = $this->check->orders->whereNotIn('status', ['canceled']);
+        $allDelivered = $activeOrders->every(fn($order) => $order->status === 'completed');
         $hasIncompleteOrders = !$allDelivered && $activeOrders->count() > 0;
         
         return view('livewire.check', [

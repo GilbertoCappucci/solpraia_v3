@@ -2,25 +2,32 @@
     
     <x-flash-message />
 
-    {{-- Header Compacto com Info do Check --}}
-    <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 flex items-center justify-between sticky top-0 z-10 shadow-md">
+    {{-- Botões de navegação e impressão - Escondidos na impressão --}}
+    <div class="print:hidden bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 flex items-center justify-between sticky top-0 z-10 shadow-md">
+        <button 
+            wire:click="goBack"
+            class="p-2 hover:bg-white/20 rounded-lg transition flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Voltar
+        </button>
+        
         <div class="flex items-center gap-2">
-            <button 
-                wire:click="goBack"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
-            </button>
-            <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-bold">{{ $table->number }}</span>
-                <span class="text-sm opacity-90">{{ $table->name }}</span>
-            </div>
-        </div>
-        <div class="flex items-center gap-2">
+            @if($check->status === 'Open')
+                <button 
+                    wire:click="goToOrders"
+                    class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Pedidos
+                </button>
+            @endif
+            
             <button 
                 wire:click="openStatusModal"
-                class="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-lg px-3 py-1.5 transition-all">
+                class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition flex items-center gap-2">
                 @php
                     $checkStatusConfig = match($check->status) {
                         'Open' => ['label' => 'Aberto', 'color' => 'green'],
@@ -30,95 +37,111 @@
                         default => ['label' => 'Aberto', 'color' => 'green']
                     };
                 @endphp
-                
-                <x-order-status-badge 
-                    label="Check" 
-                    :value="$checkStatusConfig['label']" 
-                    :color="$checkStatusConfig['color']" />
-                
-                <svg class="w-4 h-4 opacity-75 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                Status
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-        </div>
-    </div>
-
-    {{-- Informações do Check --}}
-    <div class="bg-white border-b-2 border-gray-200 p-4">
-        <div class="flex items-center justify-between mb-3">
-            <div>
-                <h2 class="text-lg font-bold text-gray-900">Comanda #{{ $check->id }}</h2>
-                <p class="text-sm text-gray-600">Aberta em {{ \Carbon\Carbon::parse($check->opened_at)->format('d/m/Y H:i') }}</p>
-                @if($check->closed_at)
-                    <p class="text-sm text-gray-600">Fechada em {{ \Carbon\Carbon::parse($check->closed_at)->format('d/m/Y H:i') }}</p>
-                @endif
-            </div>
-            <div class="text-right">
-                <p class="text-sm text-gray-600">Total</p>
-                <p class="text-2xl font-bold text-orange-600">R$ {{ number_format($check->total, 2, ',', '.') }}</p>
-            </div>
-        </div>
-        
-        {{-- Botão para gerenciar pedidos (apenas se check estiver Open) --}}
-        @if($check->status === 'Open')
+            
             <button 
-                wire:click="goToOrders"
-                class="w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-lg font-bold transition shadow-lg flex items-center justify-center gap-2">
+                onclick="window.print()"
+                class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                 </svg>
-                Gerenciar Pedidos
+                Imprimir
             </button>
-        @endif
+        </div>
     </div>
 
-    {{-- Lista de Pedidos que Compõem o Check (Exceto Aguardando) --}}
+    {{-- Layout tipo recibo para impressão --}}
     @php
-        // Filtra pedidos que compõem o valor do check (não Pending e não Canceled)
-        $checkOrders = $check->orders->whereNotIn('status', ['Pending', 'Canceled'])->sortBy('created_at');
+        // Se o check estiver fechado, mostra apenas entregues; caso contrário, mostra todos exceto pending e canceled
+        if ($check->status === 'Closed' || $check->status === 'Paid') {
+            $checkOrders = $check->orders->where('status', 'completed')->sortBy('created_at');
+        } else {
+            $checkOrders = $check->orders->whereNotIn('status', ['pending', 'canceled'])->sortBy('created_at');
+        }
         $checkTotal = $checkOrders->sum(fn($order) => $order->product->price);
     @endphp
     
-    @if($checkOrders->count() > 0)
-        <div class="bg-white p-4 border-b-2 border-gray-200">
-            <h3 class="text-sm font-bold text-gray-700 mb-3 uppercase">Itens da Comanda</h3>
-            <div class="space-y-2">
-                @foreach($checkOrders as $order)
-                    <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                        <div class="flex-1">
-                            <p class="font-medium text-gray-900">{{ $order->product->name }}</p>
-                            <div class="flex items-center gap-2 text-xs text-gray-500">
-                                <span>{{ \Carbon\Carbon::parse($order->created_at)->format('H:i') }}</span>
-                                @php
-                                    $statusConfig = match($order->status) {
-                                        'InProduction' => ['label' => 'Preparo', 'color' => 'blue'],
-                                        'InTransit' => ['label' => 'Trânsito', 'color' => 'purple'],
-                                        'Completed' => ['label' => 'Entregue', 'color' => 'green'],
-                                        default => ['label' => $order->status, 'color' => 'gray']
-                                    };
-                                @endphp
-                                <span class="px-2 py-0.5 rounded text-white text-xs font-medium bg-{{ $statusConfig['color'] }}-500">
-                                    {{ $statusConfig['label'] }}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold text-gray-900">R$ {{ number_format($order->product->price, 2, ',', '.') }}</p>
-                        </div>
-                    </div>
-                @endforeach
+    <div class="max-w-sm mx-auto bg-white p-6 print:p-4 print:max-w-none">
+        {{-- Cabeçalho do recibo --}}
+        <div class="text-center border-b-2 border-dashed border-gray-400 pb-4 mb-4">
+            <h1 class="text-2xl font-bold text-gray-900 uppercase">Comanda</h1>
+            <p class="text-lg font-semibold text-gray-700">#{{ $check->id }}</p>
+        </div>
+        
+        {{-- Informações do local --}}
+        <div class="mb-4 space-y-1">
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600 font-medium">Local:</span>
+                <span class="text-gray-900 font-bold text-lg">{{ $table->number }} - {{ $table->name }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600 font-medium">Abertura:</span>
+                <span class="text-gray-900">{{ \Carbon\Carbon::parse($check->opened_at)->format('d/m/Y H:i') }}</span>
+            </div>
+            @if($check->closed_at)
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600 font-medium">Fechamento:</span>
+                    <span class="text-gray-900">{{ \Carbon\Carbon::parse($check->closed_at)->format('d/m/Y H:i') }}</span>
+                </div>
+            @endif
+        </div>
+        
+        {{-- Linha separadora --}}
+        <div class="border-t-2 border-dashed border-gray-400 my-4"></div>
+        
+        {{-- Lista de produtos --}}
+        @if($checkOrders->count() > 0)
+            <div class="mb-4">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-300">
+                            <th class="text-left py-2 font-bold text-gray-700">Item</th>
+                            <th class="text-right py-2 font-bold text-gray-700">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($checkOrders as $order)
+                            <tr class="border-b border-gray-200">
+                                <td class="py-2 text-gray-900">{{ $order->product->name }}</td>
+                                <td class="py-2 text-right text-gray-900 font-medium">R$ {{ number_format($order->product->price, 2, ',', '.') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
             
-            {{-- Subtotal --}}
-            <div class="mt-3 pt-3 border-t-2 border-gray-200 flex items-center justify-between">
-                <span class="font-bold text-gray-900">Subtotal ({{ $checkOrders->count() }} {{ $checkOrders->count() === 1 ? 'item' : 'itens' }})</span>
-                <span class="font-bold text-lg text-orange-600">R$ {{ number_format($checkTotal, 2, ',', '.') }}</span>
+            {{-- Linha separadora antes do total --}}
+            <div class="border-t-2 border-gray-800 my-4"></div>
+            
+            {{-- Total --}}
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-xl font-bold text-gray-900">TOTAL</span>
+                <span class="text-2xl font-bold text-gray-900">R$ {{ number_format($checkTotal, 2, ',', '.') }}</span>
             </div>
+            
+            {{-- Quantidade de itens --}}
+            <div class="text-center text-gray-600 text-sm">
+                {{ $checkOrders->count() }} {{ $checkOrders->count() === 1 ? 'item' : 'itens' }}
+            </div>
+        @else
+            <div class="text-center text-gray-500 py-8">
+                Nenhum item na comanda
+            </div>
+        @endif
+        
+        {{-- Linha separadora final --}}
+        <div class="border-t-2 border-dashed border-gray-400 mt-6 pt-4">
+            <p class="text-center text-xs text-gray-500">Obrigado pela preferência!</p>
         </div>
-    @endif
+    </div>
 
-    {{-- Resumo dos Pedidos por Status --}}
-    <div class="bg-gray-50 p-4 space-y-3">
+    {{-- Resumo dos Pedidos por Status (apenas quando check estiver aberto e na tela, escondido na impressão) --}}
+    @if($check->status === 'Open')
+    <div class="print:hidden bg-gray-50 p-4 space-y-3 mt-6">
         {{-- Pedidos Aguardando --}}
         @if($groupedOrders['pending']->count() > 0)
             <div class="bg-white rounded-lg shadow-sm border-l-4 border-yellow-500 p-4">
@@ -249,6 +272,7 @@
             </div>
         @endif
     </div>
+    @endif
 
     {{-- Modal Alterar Status do Check --}}
     @if($showStatusModal)
@@ -287,4 +311,52 @@
             </div>
         </div>
     @endif
+    
+    {{-- Estilos específicos para impressão --}}
+    <style>
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            
+            /* Oculta tudo que não deve ser impresso */
+            .print\:hidden {
+                display: none !important;
+            }
+            
+            /* Ajusta o layout para impressora térmica */
+            .max-w-sm {
+                max-width: 100% !important;
+                width: 80mm; /* Largura típica de impressora térmica */
+            }
+            
+            /* Remove cores de fundo para economizar tinta */
+            * {
+                background: white !important;
+                color: black !important;
+            }
+            
+            /* Ajusta tamanhos de fonte para impressão */
+            body {
+                font-size: 12pt;
+                line-height: 1.3;
+            }
+            
+            /* Remove sombras e efeitos */
+            * {
+                box-shadow: none !important;
+                text-shadow: none !important;
+            }
+            
+            /* Garante quebras de página adequadas */
+            table {
+                page-break-inside: avoid;
+            }
+            
+            tr {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
 </div>
