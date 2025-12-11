@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\DepartamentEnum;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -15,9 +16,10 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
 
-        //id:1 - category_id:8 - Coca-Cola
+        //id:1 - category_id:8 - Coca-Cola - Bar
         Product::factory()->create([
             'category_id' => 8,
+            'production_local' => DepartamentEnum::BAR,
             'name' => 'Coca-Cola',
             'description' => 'Refrigerante sabor cola',
             'price' => 5.00,
@@ -25,9 +27,10 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
 
-        //id:2 - category_id:6 - Suco de laranja
+        //id:2 - category_id:6 - Suco de laranja - Bar
         Product::factory()->create([
             'category_id' => 6,
+            'production_local' => DepartamentEnum::BAR,
             'name' => 'Suco de laranja',
             'description' => 'Suco natural de laranja',
             'price' => 7.00,
@@ -35,9 +38,10 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
 
-        //id:3 - category_id:7 - Agua mineral
+        //id:3 - category_id:7 - Agua mineral - Bar
         Product::factory()->create([
             'category_id' => 7,
+            'production_local' => DepartamentEnum::BAR,
             'name' => 'Agua mineral sem gas',
             'description' => 'Agua mineral sem gas',
             'price' => 3.00,
@@ -45,9 +49,10 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
 
-        //id:4 - category_id:7 - Agua com gas
+        //id:4 - category_id:7 - Agua com gas - Bar
         Product::factory()->create([
             'category_id' => 7,
+            'production_local' => DepartamentEnum::BAR,
             'name' => 'Agua mineral com gas',
             'description' => 'Agua mineral com gas',
             'price' => 3.50,
@@ -55,9 +60,10 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
 
-        //id:5 - category_id:3 - Batata frita tradicional
+        //id:5 - category_id:3 - Batata frita tradicional - Kitchen
         Product::factory()->create([
             'category_id' => 3,
+            'production_local' => DepartamentEnum::KITCHEN,
             'name' => 'Batata frita tradicional',
             'description' => 'Batata frita tradicional crocante',
             'price' => 15.00,
@@ -65,9 +71,10 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
         
-        //id:6 - category_id:3 - Batata frita cheddar e bacon
+        //id:6 - category_id:3 - Batata frita cheddar e bacon - Kitchen
         Product::factory()->create([
             'category_id' => 3,
+            'production_local' => DepartamentEnum::KITCHEN,
             'name' => 'Batata frita cheddar e bacon',
             'description' => 'Batata frita com cheddar e bacon crocante',
             'price' => 20.00,
@@ -75,9 +82,10 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
 
-        //id:7 - category_id:11 - Fritas
+        //id:7 - category_id:11 - Fritas - Kitchen
         Product::factory()->create([
             'category_id' => 11,
+            'production_local' => DepartamentEnum::KITCHEN,
             'name' => 'Fritas',
             'description' => 'Fritas crocantes',
             'price' => 6.00,
@@ -85,9 +93,10 @@ class ProductSeeder extends Seeder
             'active' => true,
         ]);
 
-        //id:8 - category_id:12 - Bebida não alcoólica
+        //id:8 - category_id:12 - Bebida não alcoólica - Bar
         Product::factory()->create([
             'category_id' => 12,
+            'production_local' => DepartamentEnum::BAR,
             'name' => 'Coca-Cola',
             'description' => 'Refrigerante sabor cola',
             'price' => 5.00,
