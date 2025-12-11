@@ -291,9 +291,9 @@ class OrderService
         return DB::transaction(function () use ($orderId, $qtyToCancel) {
             $order = Order::with(['product', 'check'])->lockForUpdate()->findOrFail($orderId);
 
-            // Valida status
-            if ($order->status !== OrderStatusEnum::PENDING->value) {
-                return ['success' => false, 'message' => 'Apenas itens "Aguardando" podem ser cancelados.'];
+            // Valida se já está cancelado
+            if ($order->status === OrderStatusEnum::CANCELED->value) {
+                return ['success' => false, 'message' => 'Este pedido já está cancelado.'];
             }
 
             if ($qtyToCancel > $order->quantity) {
@@ -303,33 +303,26 @@ class OrderService
             // Devolve estoque
             $this->stockService->increment($order->product_id, $qtyToCancel);
 
-            // Se cancelar tudo, remove o pedido ou marca como cancelado?
-            // O sistema deletava ou marcava? O código anterior usava OrderStatusHistory com status CANCELED.
-            // Se marcarmos como CANCELED, ele sai da lista "Ativa" (pois getActiveOrders filtra CANCELED fora).
-
+            // Se cancelar tudo, marca como cancelado independente do status atual
             if ($qtyToCancel >= $order->quantity) {
                 // Cancela TUDO
                 OrderStatusHistory::create([
                     'order_id' => $orderId,
                     'from_status' => $order->status,
-                    'to_status' => OrderStatusEnum::CANCELED->value, // Sai da lista
+                    'to_status' => OrderStatusEnum::CANCELED->value,
                     'changed_at' => now(),
                 ]);
             } else {
                 // Cancela PARCIAL (Apenas reduz a quantidade)
-                // Não geramos um "pedido cancelado" separado para não sujar o banco, apenas reduzimos a qtd.
-                // Mas para log de auditoria talvez fosse bom. 
-                // Por simplicidade: REDUZ QUANTIDADE.
+                // Para cancelamento parcial, mantém o status atual e apenas reduz quantidade
                 $order->decrement('quantity', $qtyToCancel);
-
-                // *Opcional*: Registrar log de que X itens foram removidos.
             }
 
             if ($order->check) {
                 $this->checkService->recalculateCheckTotal($order->check);
             }
 
-            return ['success' => true, 'message' => 'Item removido.'];
+            return ['success' => true, 'message' => 'Item removido com sucesso.'];
         });
     }
 

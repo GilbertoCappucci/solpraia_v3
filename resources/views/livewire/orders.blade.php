@@ -108,7 +108,7 @@
                 $delayAnimation = ($isDelayed && $delayAlarmEnabled) ? 'animate-pulse-warning' : '';
             @endphp
             
-            <div class="p-4 hover:bg-gray-50 transition flex items-center gap-4 {{ $delayAnimation }}">
+            <div wire:click="openDetailsModal({{ $order->id }})" class="p-4 hover:bg-gray-50 transition flex items-center gap-4 cursor-pointer {{ $delayAnimation }}">
                 {{-- Quantidade --}}
                 <div class="flex-shrink-0 w-14 text-center">
                     <span class="text-xl font-bold text-gray-900">{{ $order->quantity }}x</span>
@@ -127,15 +127,11 @@
                     </span>
                 </div>
                 
-                {{-- Botão Detalhes --}}
-                <div class="flex-shrink-0">
-                    <button
-                        wire:click="openDetailsModal({{ $order->id }})"
-                        class="p-2 text-gray-600 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </button>
+                {{-- Ícone Indicador --}}
+                <div class="flex-shrink-0 text-gray-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
                 </div>
             </div>
             @endforeach
@@ -483,7 +479,7 @@
                     </div>
                     
                     {{-- Botões para Alterar Status --}}
-                    @if($isCheckOpen && $orderDetails['status'] !== 'canceled')
+                    @if($isCheckOpen)
                     @php
                         // Define quais status são permitidos baseado no status atual
                         $allowedTransitions = match($orderDetails['status']) {
@@ -491,6 +487,7 @@
                             'in_production' => ['pending', 'in_transit'], // Em Preparo pode voltar para Aguardando ou ir para Em Trânsito
                             'in_transit' => ['in_production', 'completed'], // Em Trânsito pode voltar para Em Preparo ou ir para Entregue
                             'completed' => ['in_transit'], // Entregue pode voltar para Em Trânsito
+                            'canceled' => ['pending', 'in_production', 'in_transit', 'completed'], // Cancelado pode voltar para qualquer status
                             default => []
                         };
                     @endphp
@@ -548,8 +545,15 @@
                 </div>
 
                 {{-- Botão Cancelar Pedido --}}
-                @if($isCheckOpen)
+                @if($orderDetails['status'] !== 'canceled')
                 <div class="pt-4 border-t">
+                    @if(!$isCheckOpen)
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                        <p class="text-sm text-yellow-800 text-center">
+                            ⚠️ O check não está aberto, mas você pode cancelar o pedido se necessário.
+                        </p>
+                    </div>
+                    @endif
                     <button
                         wire:click="cancelOrderFromModal"
                         class="w-full px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold transition shadow-md flex items-center justify-center gap-2">
@@ -558,6 +562,14 @@
                         </svg>
                         Cancelar Pedido
                     </button>
+                </div>
+                @else
+                <div class="pt-4 border-t">
+                    <div class="bg-gray-100 border border-gray-300 rounded-lg p-3">
+                        <p class="text-sm text-gray-600 text-center">
+                            Este pedido já está cancelado.
+                        </p>
+                    </div>
                 </div>
                 @endif
             </div>

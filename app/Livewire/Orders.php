@@ -158,12 +158,6 @@ class Orders extends Component
 
     public function openCancelModal($orderId)
     {
-        // Verifica se o check está aberto (se houver check, precisa estar Open)
-        if ($this->currentCheck && $this->currentCheck->status !== 'Open') {
-            session()->flash('error', 'Para cancelar pedidos, o check precisa estar no status "Aberto". Altere o status do check primeiro.');
-            return;
-        }
-
         $this->orderToCancel = $orderId;
 
         // Busca dados do pedido para exibir no modal
