@@ -122,7 +122,6 @@ class Tables extends Component
         $this->filterOrderStatuses = [];
         $this->filterDepartaments = [];
         $this->globalFilterMode = 'AND';
-        $this->showFilters = false;
         
         // Limpa no banco e sessão
         $user = Auth::user();
