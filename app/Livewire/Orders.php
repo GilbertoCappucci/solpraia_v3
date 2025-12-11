@@ -30,6 +30,9 @@ class Orders extends Component
     public $statusFilters = ['pending', 'in_production', 'in_transit', 'completed', 'canceled'];
     public $showGroupModal = false;
     public $groupOrders = [];
+    public $selectedOrderIds = [];
+    public $showGroupActionsModal = false;
+    public $groupActionData = null;
 
     protected $orderService;
 
@@ -268,26 +271,21 @@ class Orders extends Component
 
     public function openGroupModal($productId, $status)
     {
-        // Busca todos os pedidos desse produto com esse status
-        $orders = \App\Models\Order::with('product')
+        // Limpa seleções anteriores
+        $this->selectedOrderIds = [];
+        
+        // Busca todos os pedidos do check atual
+        $allOrders = \App\Models\Order::with(['product', 'currentStatusHistory'])
             ->where('check_id', $this->currentCheck->id)
             ->where('product_id', $productId)
-            ->whereHas('currentStatusHistory', function($q) use ($status) {
-                $q->where('to_status', $status);
-            })
-            ->orWhere(function($query) use ($productId, $status) {
-                $query->where('check_id', $this->currentCheck->id)
-                    ->where('product_id', $productId)
-                    ->doesntHave('statusHistory')
-                    ->when($status === 'pending', function($q) {
-                        return $q;
-                    }, function($q) {
-                        return $q->whereRaw('1=0'); // Não retorna nada se status != pending
-                    });
-            })
             ->get();
 
-        $this->groupOrders = $orders->toArray();
+        // Filtra manualmente por status usando o atributo virtual
+        $orders = $allOrders->filter(function($order) use ($status) {
+            return $order->status === $status;
+        });
+
+        $this->groupOrders = $orders->values()->toArray();
         $this->showGroupModal = true;
     }
 
@@ -295,12 +293,127 @@ class Orders extends Component
     {
         $this->showGroupModal = false;
         $this->groupOrders = [];
+        $this->selectedOrderIds = [];
     }
 
     public function openDetailsFromGroup($orderId)
     {
         $this->closeGroupModal();
         $this->openDetailsModal($orderId);
+    }
+
+    public function toggleOrderSelection($orderId)
+    {
+        if (in_array($orderId, $this->selectedOrderIds)) {
+            $this->selectedOrderIds = array_values(array_diff($this->selectedOrderIds, [$orderId]));
+        } else {
+            $this->selectedOrderIds[] = $orderId;
+        }
+    }
+
+    public function toggleSelectAll()
+    {
+        if (count($this->selectedOrderIds) === count($this->groupOrders)) {
+            $this->selectedOrderIds = [];
+        } else {
+            $this->selectedOrderIds = collect($this->groupOrders)->pluck('id')->toArray();
+        }
+    }
+
+    public function openGroupActionsModal()
+    {
+        if (empty($this->selectedOrderIds)) {
+            session()->flash('error', 'Selecione ao menos um pedido.');
+            return;
+        }
+
+        $selectedOrders = collect($this->groupOrders)->whereIn('id', $this->selectedOrderIds);
+        $firstOrder = $selectedOrders->first();
+        
+        $this->groupActionData = [
+            'order_ids' => $this->selectedOrderIds,
+            'count' => count($this->selectedOrderIds),
+            'total_quantity' => $selectedOrders->sum('quantity'),
+            'product_name' => $firstOrder['product']['name'] ?? '',
+            'status' => $firstOrder['status'] ?? 'pending',
+            'total_price' => $selectedOrders->sum(fn($o) => $o['quantity'] * $o['product']['price']),
+        ];
+
+        $this->showGroupActionsModal = true;
+    }
+
+    public function closeGroupActionsModal()
+    {
+        $this->showGroupActionsModal = false;
+        $this->groupActionData = null;
+    }
+
+    public function updateGroupStatus($newStatus)
+    {
+        if (!$this->groupActionData || !$this->currentCheck || $this->currentCheck->status !== 'Open') {
+            session()->flash('error', 'Não é possível alterar o status neste momento.');
+            return;
+        }
+
+        $success = 0;
+        $errors = [];
+
+        foreach ($this->groupActionData['order_ids'] as $orderId) {
+            $result = $this->orderService->updateOrderStatus($orderId, $newStatus, 0);
+            if ($result['success']) {
+                $success++;
+            } else {
+                $errors[] = $result['message'];
+            }
+        }
+
+        if ($success > 0) {
+            session()->flash('success', "$success pedido(s) atualizado(s) com sucesso!");
+        }
+
+        if (!empty($errors)) {
+            session()->flash('error', implode(' ', array_unique($errors)));
+        }
+
+        $this->closeGroupActionsModal();
+        $this->closeGroupModal();
+        $this->selectedOrderIds = [];
+        $this->refreshData();
+    }
+
+    public function cancelGroupOrders()
+    {
+        if (!$this->groupActionData) {
+            return;
+        }
+
+        $success = 0;
+        $errors = [];
+
+        foreach ($this->groupActionData['order_ids'] as $orderId) {
+            $order = \App\Models\Order::find($orderId);
+            if ($order) {
+                $result = $this->orderService->cancelOrder($orderId, $order->quantity);
+                if ($result['success']) {
+                    $success++;
+                } else {
+                    $errors[] = $result['message'];
+                }
+            }
+        }
+
+        if ($success > 0) {
+            session()->flash('success', "$success pedido(s) cancelado(s) com sucesso!");
+        }
+
+        if (!empty($errors)) {
+            session()->flash('error', implode(' ', array_unique($errors)));
+        }
+
+        $this->closeGroupActionsModal();
+        $this->closeGroupModal();
+        $this->selectedOrderIds = [];
+        $this->refreshData();
     }
 
     public function incrementQuantity()

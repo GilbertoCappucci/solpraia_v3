@@ -108,7 +108,7 @@
                 $delayAnimation = ($isDelayed && $delayAlarmEnabled) ? 'animate-pulse-warning' : '';
             @endphp
             
-            <div wire:click="openGroupModal({{ $group->product_id }}, '{{ $group->status }}')" class="p-4 hover:bg-gray-50 transition flex items-center gap-4 cursor-pointer {{ $delayAnimation }}">
+            <div wire:click="{{ $group->order_count === 1 ? 'openDetailsModal(' . $group->orders->first()->id . ')' : 'openGroupModal(' . $group->product_id . ', \'' . $group->status . '\')' }}" class="p-4 hover:bg-gray-50 transition flex items-center gap-4 cursor-pointer {{ $delayAnimation }}">
                 {{-- Quantidade Total --}}
                 <div class="flex-shrink-0 w-14 text-center">
                     <span class="text-xl font-bold text-gray-900">{{ $group->total_quantity }}</span>
@@ -283,7 +283,12 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-2xl font-bold">Pedidos do Grupo</h3>
-                        <p class="text-sm text-white/90 mt-1">{{ count($groupOrders) }} pedido(s) individual(is)</p>
+                        <p class="text-sm text-white/90 mt-1">
+                            {{ count($groupOrders) }} pedido(s) 
+                            @if(count($selectedOrderIds) > 0)
+                            | <strong>{{ count($selectedOrderIds) }} selecionado(s)</strong>
+                            @endif
+                        </p>
                     </div>
                     <button wire:click="closeGroupModal" class="text-white/80 hover:text-white">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,6 +296,16 @@
                         </svg>
                     </button>
                 </div>
+                
+                {{-- Checkbox Selecionar Todos --}}
+                <label class="flex items-center gap-2 mt-4 cursor-pointer">
+                    <input 
+                        type="checkbox" 
+                        wire:click="toggleSelectAll"
+                        {{ count($selectedOrderIds) === count($groupOrders) ? 'checked' : '' }}
+                        class="w-5 h-5 text-white bg-white/20 border-white/40 rounded focus:ring-white focus:ring-2">
+                    <span class="text-sm font-medium">Selecionar todos</span>
+                </label>
             </div>
 
             {{-- Lista de Pedidos Individuais --}}
@@ -298,28 +313,149 @@
                 @foreach($groupOrders as $order)
                 @php
                     $orderObj = (object) $order;
-                    $product = (object) $order['product'];
+                    $product = isset($order['product']) ? (object) $order['product'] : (object)['name' => 'Produto', 'price' => 0];
+                    $isSelected = in_array($orderObj->id, $selectedOrderIds);
                 @endphp
-                <div wire:click.stop="openDetailsFromGroup({{ $orderObj->id }})" 
-                     class="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 cursor-pointer transition border-2 border-gray-200 hover:border-orange-400">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-lg font-bold text-gray-900">{{ $orderObj->quantity }}x {{ $product->name }}</span>
-                        <span class="text-sm font-semibold text-orange-600">R$ {{ number_format($product->price * $orderObj->quantity, 2, ',', '.') }}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-xs text-gray-500">
-                        <span>Pedido #{{ $orderObj->id }}</span>
-                        <span>{{ \Carbon\Carbon::parse($orderObj->created_at)->format('H:i') }}</span>
+                <div class="bg-gray-50 rounded-lg p-4 transition border-2 {{ $isSelected ? 'border-orange-400 bg-orange-50' : 'border-gray-200' }}">
+                    <div class="flex items-start gap-3">
+                        {{-- Checkbox --}}
+                        <input 
+                            type="checkbox" 
+                            wire:click="toggleOrderSelection({{ $orderObj->id }})"
+                            {{ $isSelected ? 'checked' : '' }}
+                            class="mt-1 w-5 h-5 text-orange-500 border-gray-300 rounded focus:ring-orange-400 cursor-pointer">
+                        
+                        {{-- Conteúdo --}}
+                        <div class="flex-1 cursor-pointer" wire:click.stop="openDetailsFromGroup({{ $orderObj->id }})">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-lg font-bold text-gray-900">{{ $orderObj->quantity }} {{ $product->name }}</span>
+                                <span class="text-sm font-semibold text-orange-600">R$ {{ number_format($product->price * $orderObj->quantity, 2, ',', '.') }}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span>Pedido #{{ $orderObj->id }}</span>
+                                <span>{{ \Carbon\Carbon::parse($orderObj->created_at)->format('H:i') }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 @endforeach
             </div>
 
             {{-- Footer --}}
-            <div class="p-6 pt-0 flex-shrink-0 border-t">
+            <div class="p-6 pt-0 flex-shrink-0 border-t space-y-2">
+                @if(count($selectedOrderIds) > 0)
+                <button
+                    wire:click="openGroupActionsModal"
+                    class="w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-bold hover:shadow-lg transition">
+                    Ações em Grupo ({{ count($selectedOrderIds) }})
+                </button>
+                @endif
                 <button
                     wire:click="closeGroupModal"
                     class="w-full px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">
                     Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Modal de Ações em Grupo --}}
+    @if($showGroupActionsModal && $groupActionData)
+    <div class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden" wire:click.stop>
+            {{-- Header --}}
+            <div class="bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white">
+                <h3 class="text-2xl font-bold">Ações em Grupo</h3>
+                <p class="text-sm text-white/90 mt-1">{{ $groupActionData['count'] }} pedido(s) selecionado(s)</p>
+            </div>
+
+            {{-- Corpo --}}
+            <div class="p-6 space-y-4">
+                {{-- Resumo --}}
+                <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Produto</span>
+                        <span class="font-bold text-gray-900">{{ $groupActionData['product_name'] }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Quantidade Total</span>
+                        <span class="font-bold text-gray-900">{{ $groupActionData['total_quantity'] }}</span>
+                    </div>
+                    <div class="flex items-center justify-between border-t pt-2">
+                        <span class="text-sm font-semibold text-gray-700">Valor Total</span>
+                        <span class="text-xl font-bold text-orange-600">R$ {{ number_format($groupActionData['total_price'], 2, ',', '.') }}</span>
+                    </div>
+                </div>
+
+                {{-- Alterar Status --}}
+                @if($isCheckOpen)
+                @php
+                    // Permite transição para qualquer status (sem restrições)
+                    $allStatuses = ['pending', 'in_production', 'in_transit', 'completed'];
+                    $allowedTransitions = $allStatuses; // Permite todos os status
+                @endphp
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Alterar Status de Todos</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        @php $canGoToPending = in_array('pending', $allowedTransitions); @endphp
+                        <button
+                            wire:click="updateGroupStatus('pending')"
+                            {{ !$canGoToPending ? 'disabled' : '' }}
+                            class="px-4 py-2.5 rounded-lg font-medium transition shadow-sm
+                                {{ $canGoToPending ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed' }}">
+                            ⏳ Aguardando
+                        </button>
+                        
+                        @php $canGoToProduction = in_array('in_production', $allowedTransitions); @endphp
+                        <button
+                            wire:click="updateGroupStatus('in_production')"
+                            {{ !$canGoToProduction ? 'disabled' : '' }}
+                            class="px-4 py-2.5 rounded-lg font-medium transition shadow-sm
+                                {{ $canGoToProduction ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed' }}">
+                            🍳 Em Preparo
+                        </button>
+                        
+                        @php $canGoToTransit = in_array('in_transit', $allowedTransitions); @endphp
+                        <button
+                            wire:click="updateGroupStatus('in_transit')"
+                            {{ !$canGoToTransit ? 'disabled' : '' }}
+                            class="px-4 py-2.5 rounded-lg font-medium transition shadow-sm
+                                {{ $canGoToTransit ? 'bg-purple-500 hover:bg-purple-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed' }}">
+                            🚶 Em Trânsito
+                        </button>
+                        
+                        @php $canGoToCompleted = in_array('completed', $allowedTransitions); @endphp
+                        <button
+                            wire:click="updateGroupStatus('completed')"
+                            {{ !$canGoToCompleted ? 'disabled' : '' }}
+                            class="px-4 py-2.5 rounded-lg font-medium transition shadow-sm
+                                {{ $canGoToCompleted ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed' }}">
+                            ✓ Entregue
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Botão Cancelar Grupo --}}
+                <div class="pt-4 border-t">
+                    <button
+                        wire:click="cancelGroupOrders"
+                        class="w-full px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold transition shadow-md flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Cancelar Todos os Selecionados
+                    </button>
+                </div>
+                @endif
+            </div>
+
+            {{-- Footer --}}
+            <div class="p-6 pt-0 border-t">
+                <button
+                    wire:click="closeGroupActionsModal"
+                    class="w-full px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">
+                    Voltar
                 </button>
             </div>
         </div>
@@ -533,15 +669,9 @@
                     {{-- Botões para Alterar Status --}}
                     @if($isCheckOpen)
                     @php
-                        // Define quais status são permitidos baseado no status atual
-                        $allowedTransitions = match($orderDetails['status']) {
-                            'pending' => ['in_production'], // Aguardando só pode ir para Em Preparo
-                            'in_production' => ['pending', 'in_transit'], // Em Preparo pode voltar para Aguardando ou ir para Em Trânsito
-                            'in_transit' => ['in_production', 'completed'], // Em Trânsito pode voltar para Em Preparo ou ir para Entregue
-                            'completed' => ['in_transit'], // Entregue pode voltar para Em Trânsito
-                            'canceled' => ['pending', 'in_production', 'in_transit', 'completed'], // Cancelado pode voltar para qualquer status
-                            default => []
-                        };
+                        // Permite transição para qualquer status (sem restrições)
+                        $allStatuses = ['pending', 'in_production', 'in_transit', 'completed'];
+                        $allowedTransitions = array_diff($allStatuses, [$orderDetails['status']]); // Permite todos exceto o atual
                     @endphp
                     <div class="space-y-2">
                         <p class="text-xs text-gray-500">Alterar para:</p>
