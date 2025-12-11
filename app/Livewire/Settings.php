@@ -62,6 +62,8 @@ class Settings extends Component
         }
 
         session()->flash('success', 'Configurações salvas com sucesso!');
+        
+        return redirect()->route('tables');
     }
 
     public function render()
