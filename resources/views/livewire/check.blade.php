@@ -68,7 +68,7 @@
     <div class="max-w-sm mx-auto bg-white p-6 print:p-4 print:max-w-none">
         {{-- Cabeçalho do recibo --}}
         <div class="text-center border-b-2 border-dashed border-gray-400 pb-4 mb-4">
-            <h1 class="text-2xl font-bold text-gray-900 uppercase">Comanda</h1>
+            <h1 class="text-2xl font-bold text-gray-900 uppercase">Recibo</h1>
             <p class="text-lg font-semibold text-gray-700">#{{ $check->id }}</p>
         </div>
         
@@ -80,12 +80,12 @@
             </div>
             <div class="flex justify-between items-center">
                 <span class="text-gray-600 font-medium">Abertura:</span>
-                <span class="text-gray-900">{{ \Carbon\Carbon::parse($check->opened_at)->format('d/m/Y H:i') }}</span>
+                <span class="text-gray-900">{{ \Carbon\Carbon::parse($check->created_at)->format('d/m/y - H:i') }}</span>
             </div>
             @if($check->closed_at)
                 <div class="flex justify-between items-center">
                     <span class="text-gray-600 font-medium">Fechamento:</span>
-                    <span class="text-gray-900">{{ \Carbon\Carbon::parse($check->closed_at)->format('d/m/Y H:i') }}</span>
+                    <span class="text-gray-900">{{ \Carbon\Carbon::parse($check->updated_at)->format('d/m/y - H:i') }}</span>
                 </div>
             @endif
         </div>
