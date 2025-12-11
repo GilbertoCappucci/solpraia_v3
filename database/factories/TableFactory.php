@@ -24,7 +24,7 @@ class TableFactory extends Factory
 
         return [
             'user_id' => $userId,
-            'name' => $this->faker->optional()->word(),
+            'name' => null,
             'number' => $this->getNextUmbrellaNumber($userId),
             'status' => $this->faker->randomElement(array_column(TableStatusEnum::cases(), 'value')),
         ];

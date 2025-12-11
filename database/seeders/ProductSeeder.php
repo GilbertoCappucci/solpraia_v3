@@ -81,28 +81,6 @@ class ProductSeeder extends Seeder
             'favorite' => false,
             'active' => true,
         ]);
-
-        //id:7 - category_id:11 - Fritas - Kitchen
-        Product::factory()->create([
-            'category_id' => 11,
-            'production_local' => DepartamentEnum::KITCHEN,
-            'name' => 'Fritas',
-            'description' => 'Fritas crocantes',
-            'price' => 6.00,
-            'favorite' => true,
-            'active' => true,
-        ]);
-
-        //id:8 - category_id:12 - Bebida não alcoólica - Bar
-        Product::factory()->create([
-            'category_id' => 12,
-            'production_local' => DepartamentEnum::BAR,
-            'name' => 'Coca-Cola',
-            'description' => 'Refrigerante sabor cola',
-            'price' => 5.00,
-            'favorite' => true,
-            'active' => true,
-        ]);
         
     }
 }

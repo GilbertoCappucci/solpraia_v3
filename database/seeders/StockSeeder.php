@@ -23,49 +23,35 @@ class StockSeeder extends Seeder
         //Suco de Laranja
         Stock::factory()->create([
             'product_id' => 2,
-            'quantity' => 2,
+            'quantity' => 10,
             'price' => 100,
         ]);
 
         //Agua Mineral Sem Gas
         Stock::factory()->create([
             'product_id' => 3,
-            'quantity' => 2,
+            'quantity' => -1,
             'price' => 100,
         ]);
 
         //Agua Mineral Com Gas
         Stock::factory()->create([
             'product_id' => 4,
-            'quantity' => 0,
+            'quantity' => 20,
             'price' => null,
         ]);
 
         //Batata Frita Tradicional
         Stock::factory()->create([
             'product_id' => 5,
-            'quantity' => 1,
+            'quantity' => 10,
             'price' => 100,
         ]);
 
         //Batata Frita Cheddar e Bacon
         Stock::factory()->create([
             'product_id' => 6,
-            'quantity' => 2,
-            'price' => 100,
-        ]);
-        
-        //Fritas
-        Stock::factory()->create([
-            'product_id' => 7,
-            'quantity' => 3,
-            'price' => 100,
-        ]);
-
-        //Coca Cola
-        Stock::factory()->create([
-            'product_id' => 8,
-            'quantity' => 4,
+            'quantity' => 5,
             'price' => 100,
         ]);
         

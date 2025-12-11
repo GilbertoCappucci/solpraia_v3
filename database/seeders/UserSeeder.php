@@ -34,7 +34,7 @@ class UserSeeder extends Seeder
             'id' => 2,
             'user_id' => null,
             'name' => 'User admin',
-            'email' => 'admin@gmail.com',
+            'email' => 'sol@gmail.com',
             'remember_token' => null,
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
@@ -48,7 +48,7 @@ class UserSeeder extends Seeder
             'id' => 3,
             'user_id' => 2,
             'name' => 'Device 001',
-            'email' => 'device_001_2@sol.com.br',
+            'email' => 'sol1@gmail.com',
             'email_verified_at' => now(),
             'password' => '45rtfgvb',
             'remember_token' => null,
@@ -64,7 +64,7 @@ class UserSeeder extends Seeder
             'id' => 4,
             'user_id' => 2,
             'name' => 'Device 002',
-            'email' => 'device_002_2@sol.com.br',
+            'email' => 'sol2@gmail.com',
             'email_verified_at' => now(),
             'password' => '45rtfgvb',
             'remember_token' => null,
@@ -75,22 +75,22 @@ class UserSeeder extends Seeder
             'active' => true,
         ]);
 
-        //Create Sol
+        // Create device 003
         User::factory()->create([
             'id' => 5,
-            'user_id' => null,
-            'name' => 'Sol',
-            'email' => 'sol@gmail.com',
+            'user_id' => 2,
+            'name' => 'Device 003',
+            'email' => 'sol3@gmail.com',
             'email_verified_at' => now(),
             'password' => '45rtfgvb',
             'remember_token' => null,
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
-            'role' => RoleEnum::ADMIN->value,
+            'role' => RoleEnum::DEVICE->value,
             'active' => true,
         ]);
-
+        
         /*
         for ($i = 0; $i < 2; $i++){
             User::factory()->create();

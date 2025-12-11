@@ -27,12 +27,6 @@ class MenuSeeder extends Seeder
             'active' => false,
         ]);
 
-        //id:3 - user_id:5 - Main Menu
-        Menu::factory()->create([
-            'user_id' => 5,
-            'name' => 'Main Menu',
-            'active' => true,
-        ]);
 
         /*
         for ($i = 0; $i < 15; $i++) {
