@@ -73,8 +73,13 @@
             <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
-            <p class="text-lg font-medium">Nenhum pedido ativo</p>
-            <p class="text-sm mt-1">Clique em "Adicionar Pedidos" para começar</p>
+            @if(count($statusFilters) < 5)
+                <p class="text-lg font-medium">Nenhum pedido encontrado</p>
+                <p class="text-sm mt-1">Não há pedidos com os filtros selecionados</p>
+            @else
+                <p class="text-lg font-medium">Nenhum pedido ativo</p>
+                <p class="text-sm mt-1">Clique em "Adicionar Pedidos" para começar</p>
+            @endif
         </div>
         @else
         <div class="divide-y divide-gray-200">
