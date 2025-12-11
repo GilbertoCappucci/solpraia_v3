@@ -588,6 +588,7 @@ class Orders extends Component
         return view('livewire.orders', [
             'groupedOrders' => $groupedOrders,
             'isCheckOpen' => $isCheckOpen,
+            'orders' => $orders ?? collect(),
         ]);
     }
 }
