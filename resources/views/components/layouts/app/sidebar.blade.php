@@ -18,6 +18,7 @@
                     @endcan
                     @can('access-orders')
                         <flux:navlist.item icon="shopping-cart" :href="route('tables')" :current="request()->routeIs('tables')" wire:navigate>{{ __('Locais') }}</flux:navlist.item>
+                        <flux:navlist.item icon="cog" :href="route('settings.app')" :current="request()->routeIs('settings.app')" wire:navigate>{{ __('Configurações') }}</flux:navlist.item>
                     @endcan
                 </flux:navlist.group>
             </flux:navlist>

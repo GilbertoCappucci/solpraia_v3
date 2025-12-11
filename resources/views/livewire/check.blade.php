@@ -3,7 +3,7 @@
     <x-flash-message />
 
     {{-- Header Compacto com Info do Check --}}
-    <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 flex items-center justify-between sticky top-0 z-40 shadow-md">
+    <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 flex items-center justify-between sticky top-0 z-10 shadow-md">
         <div class="flex items-center gap-2">
             <button 
                 wire:click="goBack"
