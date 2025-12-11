@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Observers\UserObserver;
+use App\Services\SettingService;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Cache;
@@ -43,6 +44,10 @@ class AppServiceProvider extends ServiceProvider
         // Atualiza cache quando usuário faz login (sem expiração)
         Event::listen(Login::class, function (Login $event) {
             Cache::forever('user-is-online-' . $event->user->id, true);
+            
+            // Carrega as configurações do usuário na sessão
+            $settingService = app(SettingService::class);
+            $settingService->loadUserSettings($event->user);
         });
 
         // Remove cache quando usuário faz logout

@@ -10,6 +10,12 @@ use Illuminate\Support\Collection;
 
 class TableService
 {
+    protected $settingService;
+    
+    public function __construct(SettingService $settingService)
+    {
+        $this->settingService = $settingService;
+    }
     /**
      * Busca e filtra tables com seus checks e orders
      */
@@ -79,7 +85,7 @@ class TableService
             // Verifica checks fechados atrasados (status virtual)
             if ($hasDelayedClosedFilter && !$matchesCheckStatus) {
                 if ($currentCheck->status === CheckStatusEnum::CLOSED->value && $currentCheck->updated_at) {
-                    $timeLimits = config('restaurant.time_limits');
+                    $timeLimits = $this->settingService->getTimeLimits();
                     $closedMinutes = abs((int) now()->diffInMinutes($currentCheck->updated_at));
                     $matchesCheckStatus = $closedMinutes > $timeLimits['closed'];
                 }
@@ -99,7 +105,7 @@ class TableService
             }
             
             if ($hasDelayedFilter && !$matchesOrderStatus) {
-                $timeLimits = config('restaurant.time_limits');
+                $timeLimits = $this->settingService->getTimeLimits();
                 $now = now();
                 $matchesOrderStatus = $currentCheck->orders
                     ->filter(function($order) use ($now, $timeLimits) {
@@ -178,7 +184,7 @@ class TableService
     ): bool {
         $hasDelayedFilter = in_array('delayed', $filterOrderStatuses);
         $otherStatuses = array_diff($filterOrderStatuses, ['delayed']);
-        $timeLimits = config('restaurant.time_limits');
+        $timeLimits = $this->settingService->getTimeLimits();
         $now = now();
         
         // Filtra pedidos que atendem AMBOS os critérios: departamento E status (OR dentro de cada)
@@ -318,7 +324,7 @@ class TableService
             : 0;
         
         // Delayed orders (virtual status - pedidos que excederam o tempo limite)
-        $timeLimits = config('restaurant.time_limits');
+        $timeLimits = $this->settingService->getTimeLimits();
         $delayedOrders = $orders->filter(function($order) use ($now, $timeLimits) {
             if (!$order->status_changed_at) return false;
             

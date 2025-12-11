@@ -19,7 +19,7 @@ return [
         'releasing' => 5,      // Tempo limite para mesas em processo de liberação (minutos)
     ],
 
-    'table_filter_default_options' => [
+    'table_filter' => [
         'mode' => 'AND', // Opções: 'AND' ou 'OR'
         'table' => [], // Status das mesas
         'check' => [], // Status dos checks
