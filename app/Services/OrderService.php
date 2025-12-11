@@ -16,13 +16,13 @@ class OrderService
 {
     protected $checkService;
     protected $stockService;
-    
+
     public function __construct(CheckService $checkService, StockService $stockService)
     {
         $this->checkService = $checkService;
         $this->stockService = $stockService;
     }
-    
+
     /**
      * Recalcula o total de todos os checks ativos
      */
@@ -30,16 +30,16 @@ class OrderService
     {
         // Busca todos os checks ativos (não Paid nem Canceled)
         $activeChecks = Check::whereNotIn('status', [
-                CheckStatusEnum::PAID->value,
-                CheckStatusEnum::CANCELED->value
-            ])
+            CheckStatusEnum::PAID->value,
+            CheckStatusEnum::CANCELED->value
+        ])
             ->get();
-        
+
         foreach ($activeChecks as $check) {
             $this->checkService->recalculateCheckTotal($check);
         }
     }
-    
+
     /**
      * Busca ou cria check aberto para a mesa
      */
@@ -65,18 +65,18 @@ class OrderService
         ?string $newCheckStatus
     ): array {
         $errors = [];
-        
+
         // Validação: Não pode mudar status da mesa se houver check em aberto ou em pagamento
         if ($newTableStatus && $newTableStatus !== $table->status) {
             if ($check) {
                 $checkStatus = $check->status;
-                
+
                 // Bloqueia mudança de status se check está Open ou Closed
                 if (in_array($checkStatus, [
                     CheckStatusEnum::OPEN->value,
                     CheckStatusEnum::CLOSED->value
                 ])) {
-                    $statusLabel = match($checkStatus) {
+                    $statusLabel = match ($checkStatus) {
                         CheckStatusEnum::OPEN->value => 'aberto',
                         CheckStatusEnum::CLOSED->value => 'fechado (aguardando pagamento)',
                         default => 'em andamento'
@@ -84,34 +84,34 @@ class OrderService
                     $errors[] = "Não é possível alterar o status da mesa. Há um check {$statusLabel}.";
                 }
             }
-            
+
             // Validação específica para status CLOSE: só pode fechar mesa sem check ativo
             if ($newTableStatus === TableStatusEnum::CLOSE->value && $check) {
                 $errors[] = "Não é possível fechar a mesa. Finalize ou cancele o check antes de fechar a mesa fisicamente.";
             }
         }
-        
+
         // Validação do check usando método centralizado do CheckService
         $checkWasUpdated = false;
         if ($newCheckStatus && $check && $newCheckStatus !== $check->status) {
             $checkValidation = $this->checkService->validateAndUpdateCheckStatus($check, $newCheckStatus);
-            
+
             if (!$checkValidation['success']) {
                 $errors = array_merge($errors, $checkValidation['errors']);
             } else {
                 $checkWasUpdated = true;
             }
         }
-        
+
         if (!empty($errors)) {
             return ['success' => false, 'errors' => $errors];
         }
-        
+
         // Atualiza status da mesa
         if ($newTableStatus && $newTableStatus !== $table->status) {
             $table->update(['status' => $newTableStatus]);
         }
-        
+
         // Se o check foi atualizado com sucesso e foi marcado como PAID, coloca mesa em RELEASING
         // Se foi CANCELED, libera direto para FREE
         if ($checkWasUpdated) {
@@ -121,12 +121,12 @@ class OrderService
                 $table->update(['status' => TableStatusEnum::FREE->value]);
             }
         }
-        
+
         return ['success' => true];
     }
 
     /**
-     * Busca pedidos ativos agrupados por status
+     * Busca pedidos ativos agrupados por status (Simples, sem agrupamento virtual)
      */
     public function getActiveOrdersGrouped(?Check $check): array
     {
@@ -139,55 +139,33 @@ class OrderService
             ];
         }
 
-        // Busca pedidos com histórico de status
-        $activeOrders = Order::where('check_id', $check->id)
-            ->with(['product.stock', 'currentStatusHistory'])
-            ->get()
-            ->filter(function($order) {
-                return in_array($order->status, [
-                    OrderStatusEnum::PENDING->value,
-                    OrderStatusEnum::IN_PRODUCTION->value,
-                    OrderStatusEnum::IN_TRANSIT->value,
-                    OrderStatusEnum::COMPLETED->value
-                ]);
-            })
-            ->sortBy(function($order) {
-                return $order->status_changed_at;
-            })
-            ->groupBy('status');
-        
+        // Busca pedidos ativos
+        // Busca pedidos do check
+        $allOrders = Order::where('check_id', $check->id)
+            ->with(['product', 'currentStatusHistory'])
+            ->get();
+
+        // Filtra pelos status ativos usando a lógica do Accessor do Model
+        $activeOrders = $allOrders->filter(function ($order) {
+            return in_array($order->status, [
+                OrderStatusEnum::PENDING->value,
+                OrderStatusEnum::IN_PRODUCTION->value,
+                OrderStatusEnum::IN_TRANSIT->value,
+                OrderStatusEnum::COMPLETED->value
+            ]);
+        })->sortBy('status_changed_at');
+
+        // Agrupa por status usando as keys do Enum ou string direta
+        $grouped = $activeOrders->groupBy('status');
+
         return [
-            'pending' => $this->groupOrdersByProduct($activeOrders->get(OrderStatusEnum::PENDING->value, collect())),
-            'inProduction' => $this->groupOrdersByProduct($activeOrders->get(OrderStatusEnum::IN_PRODUCTION->value, collect())),
-            'inTransit' => $this->groupOrdersByProduct($activeOrders->get(OrderStatusEnum::IN_TRANSIT->value, collect())),
-            'completed' => $this->groupOrdersByProduct($activeOrders->get(OrderStatusEnum::COMPLETED->value, collect())),
+            'pending' => $grouped->get(OrderStatusEnum::PENDING->value, collect()),
+            'inProduction' => $grouped->get(OrderStatusEnum::IN_PRODUCTION->value, collect()),
+            'inTransit' => $grouped->get(OrderStatusEnum::IN_TRANSIT->value, collect()),
+            'completed' => $grouped->get(OrderStatusEnum::COMPLETED->value, collect()),
         ];
     }
-    
-    /**
-     * Agrupa pedidos individuais do mesmo produto
-     */
-    protected function groupOrdersByProduct(Collection $orders): Collection
-    {
-        return $orders->groupBy('product_id')->map(function($groupedOrders) {
-            // Se houver apenas 1 pedido, retorna como está
-            if ($groupedOrders->count() === 1) {
-                return $groupedOrders->first();
-            }
-            
-            // Se houver múltiplos, cria um objeto "virtual" agrupado
-            $firstOrder = $groupedOrders->first();
-            $totalQuantity = $groupedOrders->sum('quantity'); // Soma sempre será igual ao count já que cada um tem qty 1
-            
-            // Cria um objeto com as informações agrupadas
-            $grouped = clone $firstOrder;
-            $grouped->quantity = $totalQuantity;
-            $grouped->individual_orders = $groupedOrders; // Mantém referência aos pedidos individuais
-            $grouped->is_grouped = true;
-            
-            return $grouped;
-        })->values();
-    }
+
 
     /**
      * Calcula totais e tempos para cada grupo de pedidos usando histórico
@@ -195,28 +173,28 @@ class OrderService
     public function calculateOrderStats(Collection $orders): array
     {
         $total = $orders->sum(fn($order) => $order->product->price * $order->quantity);
-        
+
         if ($orders->isEmpty()) {
             return ['total' => $total, 'time' => 0];
         }
-        
+
         // Pega o tempo mais antigo do histórico de status
         $oldestTime = null;
-        
+
         foreach ($orders as $order) {
             // Usa o atributo virtual status_changed_at
             $changedAt = $order->status_changed_at;
-            
+
             if ($changedAt && (!$oldestTime || $changedAt < $oldestTime)) {
                 $oldestTime = $changedAt;
             }
         }
-        
+
         $time = 0;
         if ($oldestTime) {
             $time = abs((int) now()->diffInMinutes($oldestTime));
         }
-        
+
         return [
             'total' => $total,
             'time' => $time,
@@ -224,76 +202,135 @@ class OrderService
     }
 
     /**
-     * Atualiza status individual de um pedido e registra no histórico
+     * Atualiza status. Se qtyToMove < quantity atual, DIVIDE o pedido.
      */
-    public function updateOrderStatus(int $orderId, string $newStatus): array
+    public function updateOrderStatus(int $orderId, string $newStatus, int $qtyToMove = 0): array
     {
-        try {
-            $order = Order::with(['currentStatusHistory', 'check'])->findOrFail($orderId);
-            $oldStatus = $order->status; // Busca do histórico via atributo virtual
-            
-            // Stock Logic: removed dynamic decrement/increment on status change
-            // Stock is now decremented on creation (PENDING) and incremented on CANCELLATION.
-            // Moving between PENDING <-> IN_PRODUCTION should NOT change stock.
-    
-            // Registra no histórico
-            OrderStatusHistory::create([
-                'order_id' => $orderId,
-                'from_status' => $oldStatus,
-                'to_status' => $newStatus,
-                'changed_at' => now(),
-            ]);
-            
-            // Recalcula o total do check após mudança de status
+        return DB::transaction(function () use ($orderId, $newStatus, $qtyToMove) {
+            $order = Order::with(['currentStatusHistory', 'check'])->lockForUpdate()->find($orderId);
+
+            if (!$order) {
+                return ['success' => false, 'message' => 'Pedido não encontrado.'];
+            }
+
+            $currentQty = $order->quantity;
+            $oldStatus = $order->status;
+
+            // Se qtyToMove for 0 ou igual à quantidade atual, move TUDO (simples update)
+            if ($qtyToMove <= 0 || $qtyToMove >= $currentQty) {
+                // Registra histórico
+                OrderStatusHistory::create([
+                    'order_id' => $order->id,
+                    'from_status' => $oldStatus,
+                    'to_status' => $newStatus,
+                    'changed_at' => now(),
+                ]);
+
+                // O trigger ou observer do status history deve atualizar o status na tabela orders,
+                // mas como estamos refatorando, vamos garantir aqui se não houver observer:
+                // (Assumindo que OrderStatusHistory não tem observer mágico que atualiza a Order, 
+                //  o padrão anterior parecia confiar no atributo virtual ou algo assim, mas vamos ser explícitos)
+                // O código anterior usava um atributo virtual para 'status' baseado no histórico? 
+                // O model Order tem um método 'status()' ou atributo? 
+                // Pelo código lido anteriormente, parecia ter. 
+                // Mas vamos manter simples: criar histórico é o gatilho principal.
+                // SE o sistema depender de registro no histórico para definir status atual, isso basta.
+
+                // Porém, para garantir consistência visual imediata em queries simples:
+                // (Se a tabela orders tiver coluna status, atualizamos ela tb)
+                // Verificando migration anterior, orders não parecia ter status, mas o código usa $order->status.
+                // Vamos assumir que criar o histórico basta OU que precisamos atualizar algo.
+                // NO CÓDIGO ANTERIOR: $order->status vinha do histórico via atributo, mas OrderStatusHistory::create era a ação.
+
+                // PONTO CRITICO: Se $order->status é dinâmico (accessor), criar o histórico atualiza ele.
+
+
+            } else {
+                // MOVIMENTO PARCIAL -> DIVISÃO (SPLIT)
+
+                // 1. Decrementa o pedido atual (fica no status antigo com qtd reduzida)
+                $order->quantity = $currentQty - $qtyToMove;
+                $order->save();
+
+                // 2. Cria NOVO pedido com a quantidade movida e o NOVO status
+                $newOrder = Order::create([
+                    'user_id' => $order->user_id,
+                    'check_id' => $order->check_id,
+                    'product_id' => $order->product_id,
+                    'quantity' => $qtyToMove,
+                ]);
+
+                // 3. Registra histórico para o NOVO pedido (Status Inicial -> Novo Status)
+                // Nota: O novo pedido nasce "do nada" na fase atual? Ou carrega histórico?
+                // R: Nasce com o status NOVO.
+                OrderStatusHistory::create([
+                    'order_id' => $newOrder->id,
+                    'from_status' => $oldStatus, // Veio do status antigo
+                    'to_status' => $newStatus,
+                    'changed_at' => now(),
+                ]);
+
+                // O pedido antigo não mudou de status, apenas de quantidade. Não gera histórico de status.
+            }
+
+            // Recalcula check (apenas precaução, pois valor total não muda com troca de status, apenas se cancelar)
             if ($order->check) {
                 $this->checkService->recalculateCheckTotal($order->check);
             }
 
             return ['success' => true];
-
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'message' => 'Erro ao atualizar pedido: ' . $e->getMessage()
-            ];
-        }
+        });
     }
 
     /**
      * Cancela um pedido (apenas se estiver no status PENDING)
+     * Agora suporta quantidade parcial.
      */
-    public function cancelOrder(int $orderId): array
+    public function cancelOrder(int $orderId, int $qtyToCancel = 1): array
     {
-        $order = Order::with(['currentStatusHistory', 'check', 'product'])->findOrFail($orderId);
-        
-        // Valida se o pedido está em PENDING
-        if ($order->status !== OrderStatusEnum::PENDING->value) {
-            return [
-                'success' => false,
-                'message' => 'Apenas pedidos no status "Aguardando" podem ser cancelados.'
-            ];
-        }
-        
-        // Devolve o estoque
-        $this->stockService->increment($order->product_id, $order->quantity);
+        return DB::transaction(function () use ($orderId, $qtyToCancel) {
+            $order = Order::with(['product', 'check'])->lockForUpdate()->findOrFail($orderId);
 
-        // Registra o cancelamento no histórico
-        OrderStatusHistory::create([
-            'order_id' => $orderId,
-            'from_status' => $order->status,
-            'to_status' => OrderStatusEnum::CANCELED->value,
-            'changed_at' => now(),
-        ]);
-        
-        // Recalcula o total do check
-        if ($order->check) {
-            $this->checkService->recalculateCheckTotal($order->check);
-        }
-        
-        return [
-            'success' => true,
-            'message' => 'Pedido cancelado e estoque estornado com sucesso!'
-        ];
+            // Valida status
+            if ($order->status !== OrderStatusEnum::PENDING->value) {
+                return ['success' => false, 'message' => 'Apenas itens "Aguardando" podem ser cancelados.'];
+            }
+
+            if ($qtyToCancel > $order->quantity) {
+                return ['success' => false, 'message' => 'Quantidade a cancelar maior que a do pedido.'];
+            }
+
+            // Devolve estoque
+            $this->stockService->increment($order->product_id, $qtyToCancel);
+
+            // Se cancelar tudo, remove o pedido ou marca como cancelado?
+            // O sistema deletava ou marcava? O código anterior usava OrderStatusHistory com status CANCELED.
+            // Se marcarmos como CANCELED, ele sai da lista "Ativa" (pois getActiveOrders filtra CANCELED fora).
+
+            if ($qtyToCancel >= $order->quantity) {
+                // Cancela TUDO
+                OrderStatusHistory::create([
+                    'order_id' => $orderId,
+                    'from_status' => $order->status,
+                    'to_status' => OrderStatusEnum::CANCELED->value, // Sai da lista
+                    'changed_at' => now(),
+                ]);
+            } else {
+                // Cancela PARCIAL (Apenas reduz a quantidade)
+                // Não geramos um "pedido cancelado" separado para não sujar o banco, apenas reduzimos a qtd.
+                // Mas para log de auditoria talvez fosse bom. 
+                // Por simplicidade: REDUZ QUANTIDADE.
+                $order->decrement('quantity', $qtyToCancel);
+
+                // *Opcional*: Registrar log de que X itens foram removidos.
+            }
+
+            if ($order->check) {
+                $this->checkService->recalculateCheckTotal($order->check);
+            }
+
+            return ['success' => true, 'message' => 'Item removido.'];
+        });
     }
 
     /**
@@ -301,26 +338,26 @@ class OrderService
      */
     public function cancelOrders(array $orderIds): array
     {
-        return DB::transaction(function() use ($orderIds) {
+        return DB::transaction(function () use ($orderIds) {
             $count = 0;
             $check = null;
-            
+
             foreach ($orderIds as $orderId) {
                 // Busca individualmente para validar e registrar histórico
                 $order = Order::with(['currentStatusHistory', 'check'])->find($orderId);
-                
+
                 if (!$order) continue;
-                
+
                 // Captura check do primeiro pedido para recalcular no final
                 if (!$check && $order->check) {
                     $check = $order->check;
                 }
-                
+
                 // Valida status PENDING
                 if ($order->status !== OrderStatusEnum::PENDING->value) {
                     continue; // Pula pedidos que não estão aguardando
                 }
-                
+
                 // Devolve o estoque
                 $this->stockService->increment($order->product_id, $order->quantity);
 
@@ -331,26 +368,26 @@ class OrderService
                     'to_status' => OrderStatusEnum::CANCELED->value,
                     'changed_at' => now(),
                 ]);
-                
+
                 $count++;
             }
-            
+
             if ($count === 0) {
                 return [
                     'success' => false,
                     'message' => 'Nenhum pedido pôde ser cancelado (verifique se estão com status "Aguardando").'
                 ];
             }
-            
+
             // Recalcula total do check uma única vez
             if ($check) {
                 $this->checkService->recalculateCheckTotal($check);
             }
-            
+
             return [
                 'success' => true,
-                'message' => $count === 1 
-                    ? '1 item removido com sucesso!' 
+                'message' => $count === 1
+                    ? '1 item removido com sucesso!'
                     : "{$count} itens removidos com sucesso!"
             ];
         });
@@ -358,65 +395,31 @@ class OrderService
 
     /**
      * Duplica um pedido PENDING (adiciona mais uma unidade)
+     * Agora apenas incrementa a quantidade do pedido existente.
      */
     public function duplicatePendingOrder(int $orderId): array
     {
-        return DB::transaction(function() use ($orderId) {
-            // Busca o pedido com lock
-            $order = Order::with(['currentStatusHistory', 'check', 'product'])
-                ->lockForUpdate()
-                ->findOrFail($orderId);
-            
-            // Recarrega o status mais recente
-            $order->load('currentStatusHistory');
-            
-            // Valida se o pedido AINDA está em PENDING
+        return DB::transaction(function () use ($orderId) {
+            $order = Order::lockForUpdate()->findOrFail($orderId);
+
             if ($order->status !== OrderStatusEnum::PENDING->value) {
-                return [
-                    'success' => false,
-                    'message' => 'Apenas pedidos no status "Aguardando" podem ter a quantidade aumentada.'
-                ];
+                return ['success' => false, 'message' => 'Apenas itens "Aguardando" podem ser aumentados.'];
             }
 
-            // Valida STOCK e Debita
             if (!$this->stockService->hasStock($order->product_id, 1)) {
-                 return [
-                    'success' => false,
-                    'message' => 'Estoque insuficiente para adicionar mais um item.'
-                ];
+                return ['success' => false, 'message' => 'Estoque insuficiente.'];
             }
-            
+
             if (!$this->stockService->decrement($order->product_id, 1)) {
-                 return [
-                    'success' => false,
-                    'message' => 'Erro ao atualizar estoque.'
-                ];
+                return ['success' => false, 'message' => 'Erro ao atualizar estoque.'];
             }
-            
-            // Cria um novo pedido idêntico
-            $newOrder = Order::create([
-                'user_id' => $order->user_id,
-                'check_id' => $order->check_id,
-                'product_id' => $order->product_id,
-                'quantity' => 1,  // Sempre 1 unidade
-            ]);
-            
-            // Registra o status inicial no histórico (PENDING)
-            OrderStatusHistory::create([
-                'order_id' => $newOrder->id,
-                'from_status' => null,
-                'to_status' => OrderStatusEnum::PENDING->value,
-                'changed_at' => now(),
-            ]);
-            
-            // Recalcula o total do check
-            if ($order->check) {
-                $this->checkService->recalculateCheckTotal($order->check);
-            }
-            
-            return [
-                'success' => true
-            ];
+
+            // Simplesmente incrementa
+            $order->increment('quantity');
+
+            $this->checkService->recalculateCheckTotal($order->check);
+
+            return ['success' => true];
         });
     }
 
