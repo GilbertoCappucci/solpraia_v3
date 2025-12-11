@@ -67,9 +67,9 @@
         </div>
     </div>
 
-    {{-- Lista de Pedidos --}}
+    {{-- Lista de Pedidos Agrupados --}}
     <div class="bg-white">
-        @if($orders->isEmpty())
+        @if($groupedOrders->isEmpty())
         <div class="p-8 text-center text-gray-400">
             <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -79,9 +79,9 @@
         </div>
         @else
         <div class="divide-y divide-gray-200">
-            @foreach($orders as $order)
+            @foreach($groupedOrders as $group)
             @php
-                $statusConfig = match($order->status) {
+                $statusConfig = match($group->status) {
                     'pending' => ['label' => 'Aguardando', 'color' => 'bg-yellow-100 text-yellow-800 border-yellow-200'],
                     'in_production' => ['label' => 'Em Preparo', 'color' => 'bg-blue-100 text-blue-800 border-blue-200'],
                     'in_transit' => ['label' => 'Em Trânsito', 'color' => 'bg-purple-100 text-purple-800 border-purple-200'],
@@ -90,14 +90,14 @@
                     default => ['label' => 'Desconhecido', 'color' => 'bg-gray-100 text-gray-800 border-gray-200']
                 };
                 
-                // Verifica se o pedido está atrasado
+                // Verifica se o grupo está atrasado
                 $timeLimits = config('restaurant.time_limits');
                 $isDelayed = false;
                 
-                if ($order->status_changed_at) {
-                    $minutes = abs((int) now()->diffInMinutes($order->status_changed_at));
+                if ($group->status_changed_at) {
+                    $minutes = abs((int) now()->diffInMinutes($group->status_changed_at));
                     
-                    $isDelayed = match($order->status) {
+                    $isDelayed = match($group->status) {
                         'pending' => $minutes > $timeLimits['pending'],
                         'in_production' => $minutes > $timeLimits['in_production'],
                         'in_transit' => $minutes > $timeLimits['in_transit'],
@@ -108,16 +108,16 @@
                 $delayAnimation = ($isDelayed && $delayAlarmEnabled) ? 'animate-pulse-warning' : '';
             @endphp
             
-            <div wire:click="openDetailsModal({{ $order->id }})" class="p-4 hover:bg-gray-50 transition flex items-center gap-4 cursor-pointer {{ $delayAnimation }}">
-                {{-- Quantidade --}}
+            <div wire:click="openGroupModal({{ $group->product_id }}, '{{ $group->status }}')" class="p-4 hover:bg-gray-50 transition flex items-center gap-4 cursor-pointer {{ $delayAnimation }}">
+                {{-- Quantidade Total --}}
                 <div class="flex-shrink-0 w-14 text-center">
-                    <span class="text-xl font-bold text-gray-900">{{ $order->quantity }}x</span>
+                    <span class="text-xl font-bold text-gray-900">{{ $group->total_quantity }}</span>
                 </div>
                 
                 {{-- Nome do Produto --}}
                 <div class="flex-1 min-w-0">
-                    <h4 class="font-semibold text-gray-900 truncate">{{ $order->product->name }}</h4>
-                    <p class="text-sm text-gray-500">R$ {{ number_format($order->product->price * $order->quantity, 2, ',', '.') }}</p>
+                    <h4 class="font-semibold text-gray-900 truncate">{{ $group->product_name }}</h4>
+                    <p class="text-sm text-gray-500">R$ {{ number_format($group->total_price, 2, ',', '.') }}</p>
                 </div>
                 
                 {{-- Status --}}
@@ -268,6 +268,58 @@
                     wire:click="updateStatuses"
                     class="flex-1 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-medium hover:shadow-lg transition">
                     Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Modal de Grupo (Lista de Pedidos) --}}
+    @if($showGroupModal)
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeGroupModal">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col" wire:click.stop>
+            {{-- Header --}}
+            <div class="bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white flex-shrink-0">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-2xl font-bold">Pedidos do Grupo</h3>
+                        <p class="text-sm text-white/90 mt-1">{{ count($groupOrders) }} pedido(s) individual(is)</p>
+                    </div>
+                    <button wire:click="closeGroupModal" class="text-white/80 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Lista de Pedidos Individuais --}}
+            <div class="flex-1 overflow-y-auto p-6 space-y-3">
+                @foreach($groupOrders as $order)
+                @php
+                    $orderObj = (object) $order;
+                    $product = (object) $order['product'];
+                @endphp
+                <div wire:click.stop="openDetailsFromGroup({{ $orderObj->id }})" 
+                     class="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 cursor-pointer transition border-2 border-gray-200 hover:border-orange-400">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-lg font-bold text-gray-900">{{ $orderObj->quantity }}x {{ $product->name }}</span>
+                        <span class="text-sm font-semibold text-orange-600">R$ {{ number_format($product->price * $orderObj->quantity, 2, ',', '.') }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-gray-500">
+                        <span>Pedido #{{ $orderObj->id }}</span>
+                        <span>{{ \Carbon\Carbon::parse($orderObj->created_at)->format('H:i') }}</span>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            {{-- Footer --}}
+            <div class="p-6 pt-0 flex-shrink-0 border-t">
+                <button
+                    wire:click="closeGroupModal"
+                    class="w-full px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">
+                    Fechar
                 </button>
             </div>
         </div>

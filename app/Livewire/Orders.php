@@ -28,6 +28,8 @@ class Orders extends Component
     public $orderDetails = null;
     public $showFilterModal = false;
     public $statusFilters = ['pending', 'in_production', 'in_transit', 'completed', 'canceled'];
+    public $showGroupModal = false;
+    public $groupOrders = [];
 
     protected $orderService;
 
@@ -264,6 +266,43 @@ class Orders extends Component
         $this->orderDetails = null;
     }
 
+    public function openGroupModal($productId, $status)
+    {
+        // Busca todos os pedidos desse produto com esse status
+        $orders = \App\Models\Order::with('product')
+            ->where('check_id', $this->currentCheck->id)
+            ->where('product_id', $productId)
+            ->whereHas('currentStatusHistory', function($q) use ($status) {
+                $q->where('to_status', $status);
+            })
+            ->orWhere(function($query) use ($productId, $status) {
+                $query->where('check_id', $this->currentCheck->id)
+                    ->where('product_id', $productId)
+                    ->doesntHave('statusHistory')
+                    ->when($status === 'pending', function($q) {
+                        return $q;
+                    }, function($q) {
+                        return $q->whereRaw('1=0'); // Não retorna nada se status != pending
+                    });
+            })
+            ->get();
+
+        $this->groupOrders = $orders->toArray();
+        $this->showGroupModal = true;
+    }
+
+    public function closeGroupModal()
+    {
+        $this->showGroupModal = false;
+        $this->groupOrders = [];
+    }
+
+    public function openDetailsFromGroup($orderId)
+    {
+        $this->closeGroupModal();
+        $this->openDetailsModal($orderId);
+    }
+
     public function incrementQuantity()
     {
         if (!$this->orderDetails || !$this->currentCheck || $this->currentCheck->status !== 'Open') {
@@ -379,6 +418,7 @@ class Orders extends Component
     {
         // Busca todos os pedidos ativos
         $allOrders = collect();
+        $groupedOrders = collect();
         
         if ($this->currentCheck) {
             $orders = \App\Models\Order::with(['product', 'currentStatusHistory'])
@@ -400,13 +440,34 @@ class Orders extends Component
             } else {
                 $allOrders = $orders;
             }
+
+            // Agrupa por produto_id + status
+            $groupedOrders = $allOrders->groupBy(function($order) {
+                return $order->product_id . '_' . $order->status;
+            })->map(function($group) {
+                $firstOrder = $group->first();
+                $totalQuantity = $group->sum('quantity');
+                $orderCount = $group->count();
+                
+                return (object) [
+                    'product_id' => $firstOrder->product_id,
+                    'product_name' => $firstOrder->product->name,
+                    'product_price' => $firstOrder->product->price,
+                    'status' => $firstOrder->status,
+                    'total_quantity' => $totalQuantity,
+                    'order_count' => $orderCount,
+                    'orders' => $group,
+                    'total_price' => $totalQuantity * $firstOrder->product->price,
+                    'status_changed_at' => $group->max('status_changed_at'), // Pega o mais recente
+                ];
+            })->values();
         }
 
         // Permite adicionar pedidos se não há check ainda (NULL) ou se check está Open
         $isCheckOpen = !$this->currentCheck || $this->currentCheck->status === 'Open';
 
         return view('livewire.orders', [
-            'orders' => $allOrders,
+            'groupedOrders' => $groupedOrders,
             'isCheckOpen' => $isCheckOpen,
         ]);
     }
