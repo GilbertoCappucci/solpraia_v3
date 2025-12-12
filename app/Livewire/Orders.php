@@ -39,6 +39,11 @@ class Orders extends Component
     public function boot(OrderService $orderService)
     {
         $this->orderService = $orderService;
+        
+        // Recarrega configurações do banco a cada request (incluindo Livewire AJAX)
+        if (Auth::check()) {
+            app(\App\Services\SettingService::class)->loadUserSettings(Auth::user());
+        }
     }
 
     public function mount($tableId)

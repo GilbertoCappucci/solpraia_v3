@@ -39,6 +39,11 @@ class Tables extends Component
         $this->tableService = $tableService;
         $this->orderService = $orderService;
         $this->settingService = $settingService;
+        
+        // Recarrega configurações do banco a cada request (incluindo Livewire AJAX)
+        if (Auth::check()) {
+            $this->settingService->loadUserSettings(Auth::user());
+        }
     }
     
     public function mount()

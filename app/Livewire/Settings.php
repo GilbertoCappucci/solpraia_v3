@@ -22,6 +22,11 @@ class Settings extends Component
     public function boot(SettingService $settingService)
     {
         $this->settingService = $settingService;
+        
+        // Recarrega configurações do banco a cada request
+        if (Auth::check()) {
+            $this->settingService->loadUserSettings(Auth::user());
+        }
     }
     
     public function mount()

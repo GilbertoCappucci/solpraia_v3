@@ -33,6 +33,11 @@ class Menu extends Component
         $this->menuService = $menuService;
         $this->orderService = $orderService;
         $this->stockService = $stockService;
+        
+        // Recarrega configurações do banco a cada request (incluindo Livewire AJAX)
+        if (Auth::check()) {
+            app(\App\Services\SettingService::class)->loadUserSettings(Auth::user());
+        }
     }
     
     public function mount($tableId)

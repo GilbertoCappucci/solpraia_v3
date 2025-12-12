@@ -45,7 +45,8 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, function (Login $event) {
             Cache::forever('user-is-online-' . $event->user->id, true);
             
-            // Carrega as configurações do usuário na sessão
+            // Carrega as configurações do usuário na sessão (inicial)
+            // O middleware LoadUserSettings irá recarregar a cada request subsequente
             $settingService = app(SettingService::class);
             $settingService->loadUserSettings($event->user);
         });

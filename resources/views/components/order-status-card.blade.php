@@ -87,12 +87,8 @@ $animate = $color === 'purple' ? 'animate-pulse' : '';
     <div class="p-3 space-y-2">
         @foreach($orders as $order)
         @php
-        // Verifica se o pedido está atrasado (usando valores da sessão do usuário)
-        $timeLimits = [
-            'pending' => session('restaurant.time_limits.pending', config('restaurant.time_limits.pending')),
-            'in_production' => session('restaurant.time_limits.in_production', config('restaurant.time_limits.in_production')),
-            'in_transit' => session('restaurant.time_limits.in_transit', config('restaurant.time_limits.in_transit')),
-        ];
+        // Verifica se o pedido está atrasado (usando valores do banco de dados via helper)
+        $timeLimits = time_limits();
         $isDelayed = false;
 
         if ($order->status_changed_at) {

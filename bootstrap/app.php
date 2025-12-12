@@ -4,6 +4,7 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\CheckDeviceToken;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\LoadUserSettings;
 use App\Http\Middleware\TrackUserActivity;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             TrackUserActivity::class,
             EnsureUserIsActive::class,
+            LoadUserSettings::class,
         ]);
         
         $middleware->alias([
