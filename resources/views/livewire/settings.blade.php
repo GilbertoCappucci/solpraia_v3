@@ -48,90 +48,180 @@
                     <p class="text-sm text-gray-600">Configure quando os alertas visuais devem aparecer para pedidos e mesas</p>
                 </div>
 
-                <div class="space-y-8">
+                <div class="space-y-4">
                     {{-- Pedido Pendente --}}
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <div>
-                                <label class="text-base font-semibold text-gray-700">Pedido Pendente</label>
+                    <div class="bg-gray-50 rounded-xl p-4 shadow-sm border-2 border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <label class="text-sm font-bold text-gray-800">Pedido Pendente</label>
                                 <p class="text-xs text-gray-500 mt-0.5">Aguardando início do preparo</p>
                             </div>
-                            <span class="text-2xl font-bold text-blue-600">{{ $timeLimitPending }} min</span>
+                            <div class="flex items-center gap-2">
+                                <button 
+                                    wire:click="$set('timeLimitPending', {{ max(1, $timeLimitPending - 1) }})"
+                                    class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition shadow-sm active:scale-95">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4"/>
+                                    </svg>
+                                </button>
+                                <div class="w-20 text-center">
+                                    <input 
+                                        type="number"
+                                        wire:model.blur="timeLimitPending"
+                                        min="1"
+                                        max="120"
+                                        class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
+                                    <span class="text-xs text-gray-500">min</span>
+                                </div>
+                                <button 
+                                    wire:click="$set('timeLimitPending', {{ min(120, $timeLimitPending + 1) }})"
+                                    class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition shadow-sm active:scale-95">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <input 
-                            type="range" 
-                            wire:model.live="timeLimitPending"
-                            min="1"
-                            max="120"
-                            class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-blue">
                     </div>
 
                     {{-- Pedido Em Produção --}}
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <div>
-                                <label class="text-base font-semibold text-gray-700">Pedido Em Produção</label>
+                    <div class="bg-gray-50 rounded-xl p-4 shadow-sm border-2 border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <label class="text-sm font-bold text-gray-800">Pedido Em Produção</label>
                                 <p class="text-xs text-gray-500 mt-0.5">Em preparo na cozinha</p>
                             </div>
-                            <span class="text-2xl font-bold text-yellow-600">{{ $timeLimitInProduction }} min</span>
+                            <div class="flex items-center gap-2">
+                                <button 
+                                    wire:click="$set('timeLimitInProduction', {{ max(1, $timeLimitInProduction - 1) }})"
+                                    class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition shadow-sm active:scale-95">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4"/>
+                                    </svg>
+                                </button>
+                                <div class="w-20 text-center">
+                                    <input 
+                                        type="number"
+                                        wire:model.blur="timeLimitInProduction"
+                                        min="1"
+                                        max="120"
+                                        class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
+                                    <span class="text-xs text-gray-500">min</span>
+                                </div>
+                                <button 
+                                    wire:click="$set('timeLimitInProduction', {{ min(120, $timeLimitInProduction + 1) }})"
+                                    class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition shadow-sm active:scale-95">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <input 
-                            type="range" 
-                            wire:model.live="timeLimitInProduction"
-                            min="1"
-                            max="120"
-                            class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-yellow">
                     </div>
 
                     {{-- Pedido Em Trânsito --}}
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <div>
-                                <label class="text-base font-semibold text-gray-700">Pedido Em Trânsito</label>
+                    <div class="bg-gray-50 rounded-xl p-4 shadow-sm border-2 border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <label class="text-sm font-bold text-gray-800">Pedido Em Trânsito</label>
                                 <p class="text-xs text-gray-500 mt-0.5">A caminho da mesa</p>
                             </div>
-                            <span class="text-2xl font-bold text-purple-600">{{ $timeLimitInTransit }} min</span>
+                            <div class="flex items-center gap-2">
+                                <button 
+                                    wire:click="$set('timeLimitInTransit', {{ max(1, $timeLimitInTransit - 1) }})"
+                                    class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition shadow-sm active:scale-95">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4"/>
+                                    </svg>
+                                </button>
+                                <div class="w-20 text-center">
+                                    <input 
+                                        type="number"
+                                        wire:model.blur="timeLimitInTransit"
+                                        min="1"
+                                        max="120"
+                                        class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
+                                    <span class="text-xs text-gray-500">min</span>
+                                </div>
+                                <button 
+                                    wire:click="$set('timeLimitInTransit', {{ min(120, $timeLimitInTransit + 1) }})"
+                                    class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition shadow-sm active:scale-95">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <input 
-                            type="range" 
-                            wire:model.live="timeLimitInTransit"
-                            min="1"
-                            max="120"
-                            class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-purple">
                     </div>
 
                     {{-- Check Fechado --}}
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <div>
-                                <label class="text-base font-semibold text-gray-700">Check Fechado</label>
+                    <div class="bg-gray-50 rounded-xl p-4 shadow-sm border-2 border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <label class="text-sm font-bold text-gray-800">Check Fechado</label>
                                 <p class="text-xs text-gray-500 mt-0.5">Aguardando pagamento</p>
                             </div>
-                            <span class="text-2xl font-bold text-green-600">{{ $timeLimitClosed }} min</span>
+                            <div class="flex items-center gap-2">
+                                <button 
+                                    wire:click="$set('timeLimitClosed', {{ max(1, $timeLimitClosed - 1) }})"
+                                    class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition shadow-sm active:scale-95">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4"/>
+                                    </svg>
+                                </button>
+                                <div class="w-20 text-center">
+                                    <input 
+                                        type="number"
+                                        wire:model.blur="timeLimitClosed"
+                                        min="1"
+                                        max="120"
+                                        class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
+                                    <span class="text-xs text-gray-500">min</span>
+                                </div>
+                                <button 
+                                    wire:click="$set('timeLimitClosed', {{ min(120, $timeLimitClosed + 1) }})"
+                                    class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition shadow-sm active:scale-95">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <input 
-                            type="range" 
-                            wire:model.live="timeLimitClosed"
-                            min="1"
-                            max="120"
-                            class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-green">
                     </div>
 
                     {{-- Mesa Liberando --}}
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <div>
-                                <label class="text-base font-semibold text-gray-700">Mesa Liberando</label>
+                    <div class="bg-gray-50 rounded-xl p-4 shadow-sm border-2 border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <label class="text-sm font-bold text-gray-800">Mesa Liberando</label>
                                 <p class="text-xs text-gray-500 mt-0.5">Aguardando limpeza</p>
                             </div>
-                            <span class="text-2xl font-bold text-teal-600">{{ $timeLimitReleasing }} min</span>
+                            <div class="flex items-center gap-2">
+                                <button 
+                                    wire:click="$set('timeLimitReleasing', {{ max(1, $timeLimitReleasing - 1) }})"
+                                    class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition shadow-sm active:scale-95">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4"/>
+                                    </svg>
+                                </button>
+                                <div class="w-20 text-center">
+                                    <input 
+                                        type="number"
+                                        wire:model.blur="timeLimitReleasing"
+                                        min="1"
+                                        max="120"
+                                        class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
+                                    <span class="text-xs text-gray-500">min</span>
+                                </div>
+                                <button 
+                                    wire:click="$set('timeLimitReleasing', {{ min(120, $timeLimitReleasing + 1) }})"
+                                    class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition shadow-sm active:scale-95">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <input 
-                            type="range" 
-                            wire:model.live="timeLimitReleasing"
-                            min="1"
-                            max="120"
-                            class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-teal">
                     </div>
                 </div>
 
