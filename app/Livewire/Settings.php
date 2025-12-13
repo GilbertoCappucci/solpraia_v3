@@ -77,10 +77,10 @@ class Settings extends Component
             'timeLimitInTransit' => 'required|integer|min:1|max:120',
             'timeLimitClosed' => 'required|integer|min:1|max:120',
             'timeLimitReleasing' => 'required|integer|min:1|max:120',
-            'pixKey' => 'nullable|string',
+            'pixKey' => 'required|string',
             'pixKeyType' => 'required|string|in:CPF,CNPJ,PHONE,EMAIL,RANDOM',
-            'pixName' => 'nullable|string',
-            'pixCity' => 'nullable|string',
+            'pixName' => 'required|string',
+            'pixCity' => 'required|string',
         ]);
 
         $user = Auth::user();
