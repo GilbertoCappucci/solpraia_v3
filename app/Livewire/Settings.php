@@ -2,57 +2,75 @@
 
 namespace App\Livewire;
 
-use App\Services\SettingService;
+use App\Services\GlobalSettingService;
+use App\Services\UserPreferenceService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Settings extends Component
 {
     public $title = 'Configurações';
-    public $activeTab = 'alerts'; // 'alerts' ou 'display'
+    public $activeTab = 'alerts'; // 'alerts' ou 'pix'
 
+    // Global Settings (apenas admin)
     public $timeLimitPending;
     public $timeLimitInProduction;
     public $timeLimitInTransit;
     public $timeLimitClosed;
     public $timeLimitReleasing;
 
-    // PIX Fields
+    // PIX Fields (apenas admin)
     public $pixKey;
     public $pixKeyType;
     public $pixName;
     public $pixCity;
 
-    protected $settingService;
+    protected $globalSettingService;
+    protected $userPreferenceService;
 
-    public function boot(SettingService $settingService)
+    public function boot(GlobalSettingService $globalSettingService, UserPreferenceService $userPreferenceService)
     {
-        $this->settingService = $settingService;
+        $this->globalSettingService = $globalSettingService;
+        $this->userPreferenceService = $userPreferenceService;
 
         // Recarrega configurações do banco a cada request
         if (Auth::check()) {
-            $this->settingService->loadUserSettings(Auth::user());
+            $this->globalSettingService->loadGlobalSettings(Auth::user());
+            $this->userPreferenceService->loadUserPreferences(Auth::user());
         }
     }
 
     public function mount()
     {
-        // Carrega time limits
-        $this->timeLimitPending = $this->settingService->getSetting('time_limits.pending', 15);
-        $this->timeLimitInProduction = $this->settingService->getSetting('time_limits.in_production', 30);
-        $this->timeLimitInTransit = $this->settingService->getSetting('time_limits.in_transit', 10);
-        $this->timeLimitClosed = $this->settingService->getSetting('time_limits.closed', 5);
-        $this->timeLimitReleasing = $this->settingService->getSetting('time_limits.releasing', 10);
+        // Verifica se o usuário é admin
+        if (Auth::user()->user_id !== null) {
+            // Usuário comum não pode acessar configurações globais
+            session()->flash('error', 'Apenas administradores podem acessar as configurações.');
+            return redirect()->route('tables');
+        }
+
+        // Carrega Global Settings (time limits)
+        $this->timeLimitPending = $this->globalSettingService->getSetting('time_limits.pending', 15);
+        $this->timeLimitInProduction = $this->globalSettingService->getSetting('time_limits.in_production', 30);
+        $this->timeLimitInTransit = $this->globalSettingService->getSetting('time_limits.in_transit', 10);
+        $this->timeLimitClosed = $this->globalSettingService->getSetting('time_limits.closed', 5);
+        $this->timeLimitReleasing = $this->globalSettingService->getSetting('time_limits.releasing', 10);
 
         // Load PIX Settings
-        $this->pixKey = $this->settingService->getSetting('pix.key');
-        $this->pixKeyType = $this->settingService->getSetting('pix.key_type', 'CPF'); // Default to CPF
-        $this->pixName = $this->settingService->getSetting('pix.name');
-        $this->pixCity = $this->settingService->getSetting('pix.city');
+        $this->pixKey = $this->globalSettingService->getSetting('pix.key');
+        $this->pixKeyType = $this->globalSettingService->getSetting('pix.key_type', 'CPF');
+        $this->pixName = $this->globalSettingService->getSetting('pix.name');
+        $this->pixCity = $this->globalSettingService->getSetting('pix.city');
     }
 
     public function saveSettings()
     {
+        // Verifica se o usuário é admin
+        if (Auth::user()->user_id !== null) {
+            session()->flash('error', 'Apenas administradores podem alterar configurações globais.');
+            return;
+        }
+
         $this->validate([
             'timeLimitPending' => 'required|integer|min:1|max:120',
             'timeLimitInProduction' => 'required|integer|min:1|max:120',
@@ -67,28 +85,26 @@ class Settings extends Component
 
         $user = Auth::user();
 
-        // Atualiza as configurações no banco e sessão
-        $this->settingService->updateSettings($user, [
-            'time_limits.pending' => $this->timeLimitPending,
-            'time_limits.in_production' => $this->timeLimitInProduction,
-            'time_limits.in_transit' => $this->timeLimitInTransit,
-            'time_limits.closed' => $this->timeLimitClosed,
-            'time_limits.releasing' => $this->timeLimitReleasing,
+        try {
+            // Atualiza as configurações globais no banco e sessão
+            $this->globalSettingService->updateSettings($user, [
+                'time_limits.pending' => $this->timeLimitPending,
+                'time_limits.in_production' => $this->timeLimitInProduction,
+                'time_limits.in_transit' => $this->timeLimitInTransit,
+                'time_limits.closed' => $this->timeLimitClosed,
+                'time_limits.releasing' => $this->timeLimitReleasing,
 
-            // PIX
-            'pix.key' => $this->pixKey,
-            'pix.key_type' => $this->pixKeyType,
-            'pix.name' => $this->pixName,
-            'pix.city' => $this->pixCity,
-        ]);
+                // PIX
+                'pix.key' => $this->pixKey,
+                'pix.key_type' => $this->pixKeyType,
+                'pix.name' => $this->pixName,
+                'pix.city' => $this->pixCity,
+            ]);
 
-        // Recarrega as configurações da sessão a partir do banco
-        $settings = \App\Models\Setting::where('user_id', $user->id)->first();
-        if ($settings) {
-            $this->settingService->syncToSession($settings);
+            session()->flash('success', 'Configurações salvas com sucesso!');
+        } catch (\Exception $e) {
+            session()->flash('error', $e->getMessage());
         }
-
-        session()->flash('success', 'Configurações salvas com sucesso!');
 
         return redirect()->route('tables');
     }
