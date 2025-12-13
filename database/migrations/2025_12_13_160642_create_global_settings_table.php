@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('settings', function (Blueprint $table) {
+        Schema::create('global_settings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('pix_key')->nullable();
@@ -23,11 +23,6 @@ return new class extends Migration
             $table->integer('time_limit_in_transit')->nullable();
             $table->integer('time_limit_closed')->nullable();
             $table->integer('time_limit_releasing')->nullable();
-            $table->string('table_filter_mode')->default('AND');
-            $table->json('table_filter_table')->nullable();
-            $table->json('table_filter_check')->nullable();
-            $table->json('table_filter_order')->nullable();
-            $table->json('table_filter_departament')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -38,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('settings');
+        Schema::dropIfExists('global_settings');
     }
 };
