@@ -207,39 +207,39 @@
                         </p>
                     </div>
                     @endif
-                    <div class="flex flex-wrap gap-2">
+                    <div class="grid grid-cols-2 gap-3">
                         <button
                             wire:click="$set('newTableStatus', 'free')"
                             @if($hasActiveCheck) disabled @endif
-                            class="px-3 py-2 rounded-lg text-sm font-medium transition
+                            class="px-4 py-3 rounded-lg text-sm font-semibold transition
                                     {{ $newTableStatus === 'free' ? 'bg-gray-500 text-white ring-2 ring-gray-600' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                             Livre
                         </button>
                         <button
                             wire:click="$set('newTableStatus', 'occupied')"
                             @if($hasActiveCheck) disabled @endif
-                            class="px-3 py-2 rounded-lg text-sm font-medium transition
+                            class="px-4 py-3 rounded-lg text-sm font-semibold transition
                                     {{ $newTableStatus === 'occupied' ? 'bg-blue-500 text-white ring-2 ring-blue-600' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                             Ocupada
                         </button>
                         <button
                             wire:click="$set('newTableStatus', 'reserved')"
                             @if($hasActiveCheck) disabled @endif
-                            class="px-3 py-2 rounded-lg text-sm font-medium transition
+                            class="px-4 py-3 rounded-lg text-sm font-semibold transition
                                     {{ $newTableStatus === 'reserved' ? 'bg-purple-500 text-white ring-2 ring-purple-600' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                             Reservada
                         </button>
                         <button
                             wire:click="$set('newTableStatus', 'releasing')"
                             @if($hasActiveCheck) disabled @endif
-                            class="px-3 py-2 rounded-lg text-sm font-medium transition
+                            class="px-4 py-3 rounded-lg text-sm font-semibold transition
                                     {{ $newTableStatus === 'releasing' ? 'bg-teal-500 text-white ring-2 ring-teal-600' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                             Liberando
                         </button>
                         <button
                             wire:click="$set('newTableStatus', 'close')"
                             @if($hasActiveCheck) disabled @endif
-                            class="px-3 py-2 rounded-lg text-sm font-medium transition
+                            class="px-4 py-3 rounded-lg text-sm font-semibold transition col-span-2
                                     {{ $newTableStatus === 'close' ? 'bg-red-600 text-white ring-2 ring-red-700' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                             Fechada
                         </button>
@@ -262,15 +262,15 @@
                 @endif
             </div>
 
-            <div class="flex gap-2 mt-6">
+            <div class="flex gap-3 mt-6">
                 <button
                     wire:click="closeStatusModal"
-                    class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">
+                    class="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
                     Cancelar
                 </button>
                 <button
                     wire:click="updateStatuses"
-                    class="flex-1 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-medium hover:shadow-lg transition">
+                    class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-bold hover:shadow-lg transition">
                     Salvar
                 </button>
             </div>
