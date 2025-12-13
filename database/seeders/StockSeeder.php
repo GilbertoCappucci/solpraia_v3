@@ -44,14 +44,14 @@ class StockSeeder extends Seeder
         //Batata Frita Tradicional
         Stock::factory()->create([
             'product_id' => 5,
-            'quantity' => 10,
+            'quantity' => 3,
             'price' => 100,
         ]);
 
         //Batata Frita Cheddar e Bacon
         Stock::factory()->create([
             'product_id' => 6,
-            'quantity' => 5,
+            'quantity' => 1,
             'price' => 100,
         ]);
         
