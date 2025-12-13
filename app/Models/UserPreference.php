@@ -17,6 +17,7 @@ class UserPreference extends Model
         'table_filter_check',
         'table_filter_order',
         'table_filter_departament',
+        'table_filter_mode',
     ];
 
     protected $casts = [

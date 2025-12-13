@@ -18,6 +18,7 @@ return new class extends Migration
             $table->json('table_filter_check')->nullable();
             $table->json('table_filter_order')->nullable();
             $table->json('table_filter_departament')->nullable();
+            $table->string('table_filter_mode')->default('AND');
             $table->timestamps();
             $table->softDeletes();
         });

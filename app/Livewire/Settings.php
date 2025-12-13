@@ -50,17 +50,17 @@ class Settings extends Component
         }
 
         // Carrega Global Settings (time limits)
-        $this->timeLimitPending = $this->globalSettingService->getSetting('time_limits.pending', 15);
-        $this->timeLimitInProduction = $this->globalSettingService->getSetting('time_limits.in_production', 30);
-        $this->timeLimitInTransit = $this->globalSettingService->getSetting('time_limits.in_transit', 10);
-        $this->timeLimitClosed = $this->globalSettingService->getSetting('time_limits.closed', 5);
-        $this->timeLimitReleasing = $this->globalSettingService->getSetting('time_limits.releasing', 10);
+        $this->timeLimitPending = $this->globalSettingService->getSetting('time_limit_pending', 15);
+        $this->timeLimitInProduction = $this->globalSettingService->getSetting('time_limit_in_production', 30);
+        $this->timeLimitInTransit = $this->globalSettingService->getSetting('time_limit_in_transit', 10);
+        $this->timeLimitClosed = $this->globalSettingService->getSetting('time_limit_closed', 5);
+        $this->timeLimitReleasing = $this->globalSettingService->getSetting('time_limit_releasing', 10);
 
         // Load PIX Settings
-        $this->pixKey = $this->globalSettingService->getSetting('pix.key');
-        $this->pixKeyType = $this->globalSettingService->getSetting('pix.key_type', 'CPF');
-        $this->pixName = $this->globalSettingService->getSetting('pix.name');
-        $this->pixCity = $this->globalSettingService->getSetting('pix.city');
+        $this->pixKey = $this->globalSettingService->getSetting('pix_key');
+        $this->pixKeyType = $this->globalSettingService->getSetting('pix_key_type', 'CPF');
+        $this->pixName = $this->globalSettingService->getSetting('pix_name');
+        $this->pixCity = $this->globalSettingService->getSetting('pix_city');
     }
 
     public function saveSettings()
@@ -77,10 +77,10 @@ class Settings extends Component
             'timeLimitInTransit' => 'required|integer|min:1|max:120',
             'timeLimitClosed' => 'required|integer|min:1|max:120',
             'timeLimitReleasing' => 'required|integer|min:1|max:120',
-            'pixKey' => 'required|string',
-            'pixKeyType' => 'required|string|in:CPF,CNPJ,PHONE,EMAIL,RANDOM',
-            'pixName' => 'required|string',
-            'pixCity' => 'required|string',
+            'pixKey' => 'nullable|string',
+            'pixKeyType' => 'nullable|string|in:CPF,CNPJ,PHONE,EMAIL,RANDOM',
+            'pixName' => 'nullable|string',
+            'pixCity' => 'nullable|string',
         ]);
 
         $user = Auth::user();
@@ -88,17 +88,17 @@ class Settings extends Component
         try {
             // Atualiza as configurações globais no banco e sessão
             $this->globalSettingService->updateSettings($user, [
-                'time_limits.pending' => $this->timeLimitPending,
-                'time_limits.in_production' => $this->timeLimitInProduction,
-                'time_limits.in_transit' => $this->timeLimitInTransit,
-                'time_limits.closed' => $this->timeLimitClosed,
-                'time_limits.releasing' => $this->timeLimitReleasing,
+                'time_limit_pending' => $this->timeLimitPending,
+                'time_limit_in_production' => $this->timeLimitInProduction,
+                'time_limit_in_transit' => $this->timeLimitInTransit,
+                'time_limit_closed' => $this->timeLimitClosed,
+                'time_limit_releasing' => $this->timeLimitReleasing,
 
                 // PIX
-                'pix.key' => $this->pixKey,
-                'pix.key_type' => $this->pixKeyType ?: 'CPF',
-                'pix.name' => $this->pixName,
-                'pix.city' => $this->pixCity,
+                'pix_key' => $this->pixKey,
+                'pix_key_type' => $this->pixKeyType ?: 'CPF',
+                'pix_name' => $this->pixName,
+                'pix_city' => $this->pixCity,
             ]);
 
             session()->flash('success', 'Configurações salvas com sucesso!');

@@ -49,6 +49,7 @@ class UserPreferenceService
             'table_filter_check' => $config['table_filter']['check'] ?? [],
             'table_filter_order' => $config['table_filter']['order'] ?? [],
             'table_filter_departament' => $config['table_filter']['departament'] ?? [],
+            'table_filter_mode' => 'AND',
         ]);
     }
 
@@ -61,10 +62,11 @@ class UserPreferenceService
     public function syncToSession(UserPreference $preferences): void
     {
         // Table filters
-        Session::put(self::SESSION_PREFIX . 'table_filter.table', $preferences->table_filter_table);
-        Session::put(self::SESSION_PREFIX . 'table_filter.check', $preferences->table_filter_check);
-        Session::put(self::SESSION_PREFIX . 'table_filter.order', $preferences->table_filter_order);
-        Session::put(self::SESSION_PREFIX . 'table_filter.departament', $preferences->table_filter_departament);
+        Session::put(self::SESSION_PREFIX . 'table_filter_table', $preferences->table_filter_table);
+        Session::put(self::SESSION_PREFIX . 'table_filter_check', $preferences->table_filter_check);
+        Session::put(self::SESSION_PREFIX . 'table_filter_order', $preferences->table_filter_order);
+        Session::put(self::SESSION_PREFIX . 'table_filter_departament', $preferences->table_filter_departament);
+        Session::put(self::SESSION_PREFIX . 'table_filter_mode', $preferences->table_filter_mode ?? 'AND');
     }
 
     /**
@@ -88,10 +90,9 @@ class UserPreferenceService
             // Atualiza na sessão
             Session::put(self::SESSION_PREFIX . $key, $value);
 
-            // Prepara dados para o banco
-            $dbField = $this->mapSessionKeyToDbField($key);
-            if ($dbField) {
-                $dbData[$dbField] = $value;
+            // Se a chave corresponde a um campo do banco, adiciona
+            if (in_array($key, ['table_filter_table', 'table_filter_check', 'table_filter_order', 'table_filter_departament', 'table_filter_mode'])) {
+                $dbData[$key] = $value;
             }
         }
 
@@ -114,36 +115,5 @@ class UserPreferenceService
         return Session::get(self::SESSION_PREFIX . $key, $default);
     }
 
-    /**
-     * Obtém todos os filtros de tabela da sessão
-     * 
-     * @return array
-     */
-    public function getTableFilters(): array
-    {
-        return [
-            'table' => $this->getPreference('table_filter.table', []),
-            'check' => $this->getPreference('table_filter.check', []),
-            'order' => $this->getPreference('table_filter.order', []),
-            'departament' => $this->getPreference('table_filter.departament', []),
-        ];
-    }
 
-    /**
-     * Mapeia a chave da sessão para o campo do banco de dados
-     * 
-     * @param string $sessionKey
-     * @return string|null
-     */
-    private function mapSessionKeyToDbField(string $sessionKey): ?string
-    {
-        $map = [
-            'table_filter.table' => 'table_filter_table',
-            'table_filter.check' => 'table_filter_check',
-            'table_filter.order' => 'table_filter_order',
-            'table_filter.departament' => 'table_filter_departament',
-        ];
-
-        return $map[$sessionKey] ?? null;
-    }
 }
