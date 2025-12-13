@@ -23,6 +23,10 @@ class Setting extends Model
         'table_filter_check',
         'table_filter_order',
         'table_filter_departament',
+        'pix_key',
+        'pix_key_type',
+        'pix_name',
+        'pix_city',
     ];
 
     protected $casts = [

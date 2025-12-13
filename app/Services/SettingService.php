@@ -12,7 +12,7 @@ class SettingService
      * Chaves das configurações na sessão
      */
     const SESSION_PREFIX = 'restaurant.';
-    
+
     /**
      * Carrega as configurações do usuário para a sessão
      * Se não existir no banco, cria usando os valores padrão do config
@@ -24,16 +24,16 @@ class SettingService
     {
         // Busca configurações do usuário no banco
         $settings = Setting::where('user_id', $user->id)->first();
-        
+
         if (!$settings) {
             // Se não existe, cria com valores padrão do config
             $settings = $this->createDefaultSettings($user);
         }
-        
+
         // Carrega na sessão
         $this->syncToSession($settings);
     }
-    
+
     /**
      * Cria as configurações padrão para o usuário a partir do config/restaurant.php
      * 
@@ -43,7 +43,7 @@ class SettingService
     public function createDefaultSettings(User $user): Setting
     {
         $config = config('restaurant');
-        
+
         return Setting::create([
             'user_id' => $user->id,
             'time_limit_pending' => $config['time_limits']['pending'],
@@ -58,7 +58,7 @@ class SettingService
             'table_filter_departament' => $config['table_filter']['departament'],
         ]);
     }
-    
+
     /**
      * Sincroniza os dados do banco para a sessão
      * 
@@ -73,15 +73,21 @@ class SettingService
         Session::put(self::SESSION_PREFIX . 'time_limits.in_transit', $settings->time_limit_in_transit);
         Session::put(self::SESSION_PREFIX . 'time_limits.closed', $settings->time_limit_closed);
         Session::put(self::SESSION_PREFIX . 'time_limits.releasing', $settings->time_limit_releasing);
-        
+
         // Table filters
         Session::put(self::SESSION_PREFIX . 'table_filter.mode', $settings->table_filter_mode);
         Session::put(self::SESSION_PREFIX . 'table_filter.table', $settings->table_filter_table);
         Session::put(self::SESSION_PREFIX . 'table_filter.check', $settings->table_filter_check);
         Session::put(self::SESSION_PREFIX . 'table_filter.order', $settings->table_filter_order);
         Session::put(self::SESSION_PREFIX . 'table_filter.departament', $settings->table_filter_departament);
+
+        // PIX Settings
+        Session::put(self::SESSION_PREFIX . 'pix.key', $settings->pix_key);
+        Session::put(self::SESSION_PREFIX . 'pix.key_type', $settings->pix_key_type);
+        Session::put(self::SESSION_PREFIX . 'pix.name', $settings->pix_name);
+        Session::put(self::SESSION_PREFIX . 'pix.city', $settings->pix_city);
     }
-    
+
     /**
      * Atualiza uma configuração específica na sessão e no banco
      * 
@@ -94,27 +100,27 @@ class SettingService
     {
         // Atualiza na sessão
         Session::put(self::SESSION_PREFIX . $key, $value);
-        
+
         // Mapeia a chave para o campo do banco
         $dbField = $this->mapSessionKeyToDbField($key);
-        
+
         if (!$dbField) {
             return false;
         }
-        
+
         // Atualiza no banco
         $settings = Setting::where('user_id', $user->id)->first();
-        
+
         if (!$settings) {
             // Se não existe, cria primeiro
             $settings = $this->createDefaultSettings($user);
         }
-        
+
         $settings->update([$dbField => $value]);
-        
+
         return true;
     }
-    
+
     /**
      * Atualiza múltiplas configurações de uma vez
      * 
@@ -125,31 +131,31 @@ class SettingService
     public function updateSettings(User $user, array $data): bool
     {
         $settings = Setting::where('user_id', $user->id)->first();
-        
+
         if (!$settings) {
             $settings = $this->createDefaultSettings($user);
         }
-        
+
         $dbData = [];
-        
+
         foreach ($data as $key => $value) {
             // Atualiza na sessão
             Session::put(self::SESSION_PREFIX . $key, $value);
-            
+
             // Prepara dados para o banco
             $dbField = $this->mapSessionKeyToDbField($key);
             if ($dbField) {
                 $dbData[$dbField] = $value;
             }
         }
-        
+
         if (!empty($dbData)) {
             $settings->update($dbData);
         }
-        
+
         return true;
     }
-    
+
     /**
      * Obtém uma configuração da sessão
      * 
@@ -161,7 +167,7 @@ class SettingService
     {
         return Session::get(self::SESSION_PREFIX . $key, $default);
     }
-    
+
     /**
      * Obtém todas as configurações da sessão
      * 
@@ -186,7 +192,7 @@ class SettingService
             ],
         ];
     }
-    
+
     /**
      * Obtém os time limits da sessão como array
      * 
@@ -202,7 +208,7 @@ class SettingService
             'releasing' => $this->getSetting('time_limits.releasing', config('restaurant.time_limits.releasing')),
         ];
     }
-    
+
     /**
      * Mapeia a chave da sessão para o campo do banco de dados
      * 
@@ -222,8 +228,12 @@ class SettingService
             'table_filter.check' => 'table_filter_check',
             'table_filter.order' => 'table_filter_order',
             'table_filter.departament' => 'table_filter_departament',
+            'pix.key' => 'pix_key',
+            'pix.key_type' => 'pix_key_type',
+            'pix.name' => 'pix_name',
+            'pix.city' => 'pix_city',
         ];
-        
+
         return $map[$sessionKey] ?? null;
     }
 }

@@ -16,100 +16,102 @@ class CheckComponent extends Component
     public $table;
     public $title = 'Comanda';
     public $pollingInterval = 5000;
-    
+
     public $showStatusModal = false;
     public $newCheckStatus = null;
-    
+
     protected $checkService;
     protected $orderService;
-    
-    public function boot(CheckService $checkService, OrderService $orderService)
+    protected $pixService;
+
+    public function boot(CheckService $checkService, OrderService $orderService, \App\Services\PixService $pixService)
     {
         $this->checkService = $checkService;
         $this->orderService = $orderService;
-        
+        $this->pixService = $pixService;
+
         // Recarrega configurações do banco a cada request (incluindo Livewire AJAX)
         if (Auth::check()) {
             app(\App\Services\SettingService::class)->loadUserSettings(Auth::user());
         }
     }
-    
+
     public function mount($checkId)
     {
         $this->checkId = $checkId;
         $this->loadCheck();
     }
-    
+
     public function loadCheck()
     {
         $this->check = Check::with(['table', 'orders.product', 'orders.currentStatusHistory'])
             ->findOrFail($this->checkId);
-        
+
         $this->table = $this->check->table;
-        
+
         // Recalcula o total do check
         $this->checkService->recalculateCheckTotal($this->check);
     }
-    
+
     public function openStatusModal()
     {
         $this->newCheckStatus = $this->check->status;
         $this->showStatusModal = true;
     }
-    
+
     public function closeStatusModal()
     {
         $this->showStatusModal = false;
         $this->newCheckStatus = null;
     }
-    
+
     public function updateCheckStatus()
     {
         if (!$this->newCheckStatus) {
             return;
         }
-        
+
         // Usa método centralizado do CheckService para validar e atualizar
         $result = $this->checkService->validateAndUpdateCheckStatus($this->check, $this->newCheckStatus);
-        
+
         if (!$result['success']) {
             session()->flash('error', implode(' ', $result['errors']));
             return;
         }
-        
+
         // Se o check foi marcado como PAID, coloca mesa em RELEASING e volta para tables
         if ($this->newCheckStatus === 'Paid') {
             $this->table->update(['status' => TableStatusEnum::RELEASING->value]);
             session()->flash('success', 'Pagamento finalizado!');
             return redirect()->route('tables');
         }
-        
+
         // Se foi CANCELED, libera direto para FREE
         if ($this->newCheckStatus === 'Canceled') {
             $this->table->update(['status' => TableStatusEnum::FREE->value]);
         }
-        
+
         // Se voltou para Open, redireciona para orders
         if ($this->newCheckStatus === 'Open') {
             session()->flash('success', 'Check reaberto!');
             return redirect()->route('orders', ['tableId' => $this->table->id]);
         }
-        
+
         session()->flash('success', 'Status da comanda atualizado com sucesso!');
         $this->closeStatusModal();
         $this->loadCheck();
     }
-    
+
     public function goBack()
     {
         return redirect()->route('tables');
     }
-    
+
     public function goToOrders()
     {
         return redirect()->route('orders', ['tableId' => $this->table->id]);
     }
-    
+
     public function render()
     {
         // Se o check estiver fechado, mostra apenas pedidos entregues
@@ -131,15 +133,46 @@ class CheckComponent extends Component
                 'canceled' => $this->check->orders->where('status', 'canceled'),
             ];
         }
-        
+
         // Regra simplificada: só pode alterar se TODOS os pedidos (exceto cancelados) estão entregues
         $activeOrders = $this->check->orders->whereNotIn('status', ['canceled']);
         $allDelivered = $activeOrders->every(fn($order) => $order->status === 'completed');
         $hasIncompleteOrders = !$allDelivered && $activeOrders->count() > 0;
-        
+
+        // PIX Generation
+        $pixPayload = null;
+        $settingService = app(\App\Services\SettingService::class);
+        $pixKey = $settingService->getSetting('pix.key');
+
+        if ($pixKey) {
+            // Calculate total based on the same logic as view
+            if ($this->check->status === 'Closed' || $this->check->status === 'Paid') {
+                $checkOrders = $this->check->orders->where('status', 'completed');
+            } else {
+                $checkOrders = $this->check->orders->whereNotIn('status', ['pending', 'canceled']);
+            }
+            $checkTotal = $checkOrders->sum(fn($order) => $order->product->price);
+
+            if ($checkTotal > 0) {
+                $pixKeyType = $settingService->getSetting('pix.key_type', 'CPF');
+                $pixName = $settingService->getSetting('pix.name', 'Restaurant');
+                $pixCity = $settingService->getSetting('pix.city', 'City');
+
+                $pixPayload = $this->pixService->generatePayload(
+                    $pixKey,
+                    $pixKeyType,
+                    $pixName,
+                    $pixCity,
+                    $checkTotal,
+                    $this->check->id // Use Check ID as transaction ID
+                );
+            }
+        }
+
         return view('livewire.check', [
             'groupedOrders' => $groupedOrders,
             'hasIncompleteOrders' => $hasIncompleteOrders,
+            'pixPayload' => $pixPayload,
         ]);
     }
 }
