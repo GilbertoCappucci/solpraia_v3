@@ -78,7 +78,7 @@ class Settings extends Component
             'timeLimitClosed' => 'required|integer|min:1|max:120',
             'timeLimitReleasing' => 'required|integer|min:1|max:120',
             'pixKey' => 'nullable|string',
-            'pixKeyType' => 'nullable|string',
+            'pixKeyType' => 'required|string|in:CPF,CNPJ,PHONE,EMAIL,RANDOM',
             'pixName' => 'nullable|string',
             'pixCity' => 'nullable|string',
         ]);
@@ -96,7 +96,7 @@ class Settings extends Component
 
                 // PIX
                 'pix.key' => $this->pixKey,
-                'pix.key_type' => $this->pixKeyType,
+                'pix.key_type' => $this->pixKeyType ?: 'CPF',
                 'pix.name' => $this->pixName,
                 'pix.city' => $this->pixCity,
             ]);

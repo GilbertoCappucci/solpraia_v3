@@ -54,6 +54,10 @@ class GlobalSettingService
             'time_limit_in_transit' => $config['time_limits']['in_transit'] ?? 10,
             'time_limit_closed' => $config['time_limits']['closed'] ?? 5,
             'time_limit_releasing' => $config['time_limits']['releasing'] ?? 10,
+            'pix_key' => null,
+            'pix_key_type' => 'CPF',
+            'pix_name' => null,
+            'pix_city' => null,
         ]);
     }
 
