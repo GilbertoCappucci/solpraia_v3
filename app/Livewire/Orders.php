@@ -60,6 +60,11 @@ class Orders extends Component
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
         $this->delayAlarmEnabled = session('orders.delayAlarmEnabled', true);
         $this->statusFilters = session('orders.statusFilters', ['pending', 'in_production', 'in_transit', 'completed', 'canceled']);
+
+        // Abre o modal de status automaticamente se a mesa estiver em Liberação ou Fechada
+        if (in_array($this->selectedTable->status, [\App\Enums\TableStatusEnum::RELEASING->value, \App\Enums\TableStatusEnum::CLOSE->value])) {
+            $this->openStatusModal();
+        }
     }
 
     public function toggleDelayAlarm()
@@ -451,8 +456,9 @@ class Orders extends Component
         }
 
         session()->flash('success', 'Quantidade aumentada!');
-        $this->closeDetailsModal();
         $this->refreshData();
+        // Recarrega os detalhes do pedido atualizado
+        $this->openDetailsModal($this->orderDetails['id']);
     }
 
     public function decrementQuantity()
@@ -480,8 +486,9 @@ class Orders extends Component
         }
 
         session()->flash('success', 'Quantidade reduzida!');
-        $this->closeDetailsModal();
         $this->refreshData();
+        // Recarrega os detalhes do pedido atualizado
+        $this->openDetailsModal($this->orderDetails['id']);
     }
 
     public function updateOrderStatusFromModal($newStatus)

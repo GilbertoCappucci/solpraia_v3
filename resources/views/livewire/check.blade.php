@@ -146,15 +146,23 @@
                 }
             </script>
 
-            <div wire:key="pix-{{ md5($pixPayload) }}"
+            <div wire:ignore
+                wire:key="pix-{{ md5($pixPayload) }}"
                 x-data="{ 
+                        qrInitialized: false,
                         initQR() {
+                            // Evita reinicializar se já foi criado
+                            if (this.qrInitialized) {
+                                return;
+                            }
+                            
                             if (window.QRious) {
                                 new QRious({
                                     element: this.$refs.qrcode,
                                     value: '{{ $pixPayload }}',
                                     size: 150
                                 });
+                                this.qrInitialized = true;
                             } else {
                                 setTimeout(() => this.initQR(), 100);
                             }
