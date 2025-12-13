@@ -39,7 +39,7 @@ class Orders extends Component
     public function boot(OrderService $orderService)
     {
         $this->orderService = $orderService;
-        
+
         // Recarrega configurações do banco a cada request (incluindo Livewire AJAX)
         if (Auth::check()) {
             app(\App\Services\SettingService::class)->loadUserSettings(Auth::user());
@@ -48,9 +48,12 @@ class Orders extends Component
 
     public function mount($tableId)
     {
-        $this->userId = Auth::user()->isAdmin()
-            ? Auth::id()
-            : Auth::user()->user_id;
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $this->userId = $user->isAdmin()
+            ? $user->id
+            : $user->user_id;
 
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
@@ -249,7 +252,7 @@ class Orders extends Component
     public function openDetailsModal($orderId)
     {
         $order = \App\Models\Order::with('product')->find($orderId);
-        
+
         if (!$order) {
             session()->flash('error', 'Pedido não encontrado.');
             return;
@@ -282,9 +285,6 @@ class Orders extends Component
 
     public function openGroupModal($productId, $status)
     {
-        // Limpa seleções anteriores
-        $this->selectedOrderIds = [];
-        
         // Busca todos os pedidos do check atual
         $allOrders = \App\Models\Order::with(['product', 'currentStatusHistory'])
             ->where('check_id', $this->currentCheck->id)
@@ -292,11 +292,15 @@ class Orders extends Component
             ->get();
 
         // Filtra manualmente por status usando o atributo virtual
-        $orders = $allOrders->filter(function($order) use ($status) {
+        $orders = $allOrders->filter(function ($order) use ($status) {
             return $order->status === $status;
         });
 
         $this->groupOrders = $orders->values()->toArray();
+
+        // Seleciona todos os pedidos por padrão
+        $this->selectedOrderIds = $orders->pluck('id')->toArray();
+
         $this->showGroupModal = true;
     }
 
@@ -340,7 +344,7 @@ class Orders extends Component
 
         $selectedOrders = collect($this->groupOrders)->whereIn('id', $this->selectedOrderIds);
         $firstOrder = $selectedOrders->first();
-        
+
         $this->groupActionData = [
             'order_ids' => $this->selectedOrderIds,
             'count' => count($this->selectedOrderIds),
@@ -528,7 +532,7 @@ class Orders extends Component
         } else {
             $this->statusFilters[] = $status;
         }
-        
+
         session(['orders.statusFilters' => $this->statusFilters]);
     }
 
@@ -543,22 +547,22 @@ class Orders extends Component
         // Busca todos os pedidos ativos
         $allOrders = collect();
         $groupedOrders = collect();
-        
+
         if ($this->currentCheck) {
             $orders = \App\Models\Order::with(['product', 'currentStatusHistory'])
                 ->where('check_id', $this->currentCheck->id)
-                ->where(function($query) {
-                    $query->whereHas('currentStatusHistory', function($q) {
+                ->where(function ($query) {
+                    $query->whereHas('currentStatusHistory', function ($q) {
                         $q->whereIn('to_status', ['pending', 'in_production', 'in_transit', 'completed', 'canceled']);
                     })
-                    ->orDoesntHave('statusHistory');
+                        ->orDoesntHave('statusHistory');
                 })
                 ->orderBy('created_at', 'desc')
                 ->get();
-            
+
             // Aplica filtro de status
             if (!empty($this->statusFilters)) {
-                $allOrders = $orders->filter(function($order) {
+                $allOrders = $orders->filter(function ($order) {
                     return in_array($order->status, $this->statusFilters);
                 });
             } else {
@@ -566,13 +570,13 @@ class Orders extends Component
             }
 
             // Agrupa por produto_id + status
-            $groupedOrders = $allOrders->groupBy(function($order) {
+            $groupedOrders = $allOrders->groupBy(function ($order) {
                 return $order->product_id . '_' . $order->status;
-            })->map(function($group) {
+            })->map(function ($group) {
                 $firstOrder = $group->first();
                 $totalQuantity = $group->sum('quantity');
                 $orderCount = $group->count();
-                
+
                 return (object) [
                     'product_id' => $firstOrder->product_id,
                     'product_name' => $firstOrder->product->name,
