@@ -42,7 +42,8 @@ class Orders extends Component
 
         // Recarrega configurações do banco a cada request (incluindo Livewire AJAX)
         if (Auth::check()) {
-            app(\App\Services\SettingService::class)->loadUserSettings(Auth::user());
+            app(\App\Services\GlobalSettingService::class)->loadGlobalSettings(Auth::user());
+            app(\App\Services\UserPreferenceService::class)->loadUserPreferences(Auth::user());
         }
     }
 

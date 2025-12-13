@@ -4,7 +4,8 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Observers\UserObserver;
-use App\Services\SettingService;
+use App\Services\GlobalSettingService;
+use App\Services\UserPreferenceService;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Cache;
@@ -47,8 +48,10 @@ class AppServiceProvider extends ServiceProvider
             
             // Carrega as configurações do usuário na sessão (inicial)
             // O middleware LoadUserSettings irá recarregar a cada request subsequente
-            $settingService = app(SettingService::class);
-            $settingService->loadUserSettings($event->user);
+            $globalSettingService = app(GlobalSettingService::class);
+            $userPreferenceService = app(UserPreferenceService::class);
+            $globalSettingService->loadGlobalSettings($event->user);
+            $userPreferenceService->loadUserPreferences($event->user);
         });
 
         // Remove cache quando usuário faz logout

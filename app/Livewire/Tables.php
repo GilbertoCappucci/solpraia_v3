@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use App\Enums\DepartamentEnum;
 use App\Services\OrderService;
-use App\Services\SettingService;
+use App\Services\UserPreferenceService;
 use App\Services\TableService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -32,17 +32,17 @@ class Tables extends Component
     
     protected $tableService;
     protected $orderService;
-    protected $settingService;
+    protected $userPreferenceService;
     
-    public function boot(TableService $tableService, OrderService $orderService, SettingService $settingService)
+    public function boot(TableService $tableService, OrderService $orderService, UserPreferenceService $userPreferenceService)
     {
         $this->tableService = $tableService;
         $this->orderService = $orderService;
-        $this->settingService = $settingService;
+        $this->userPreferenceService = $userPreferenceService;
         
         // Recarrega configurações do banco a cada request (incluindo Livewire AJAX)
         if (Auth::check()) {
-            $this->settingService->loadUserSettings(Auth::user());
+            $this->userPreferenceService->loadUserPreferences(Auth::user());
         }
     }
     
@@ -52,12 +52,12 @@ class Tables extends Component
             ? Auth::id() 
             : Auth::user()->user_id;
         
-        // Carrega filtros da sessão (já foram carregados pelo SettingService no login)
-        $this->filterTableStatuses = $this->settingService->getSetting('table_filter.table', []);
-        $this->filterCheckStatuses = $this->settingService->getSetting('table_filter.check', []);
-        $this->filterOrderStatuses = $this->settingService->getSetting('table_filter.order', []);
-        $this->filterDepartaments = $this->settingService->getSetting('table_filter.departament', []);
-        $this->globalFilterMode = $this->settingService->getSetting('table_filter.mode', 'AND');
+        // Carrega filtros da sessão (já foram carregados pelo UserPreferenceService no login)
+        $this->filterTableStatuses = $this->userPreferenceService->getPreference('table_filter_table', []);
+        $this->filterCheckStatuses = $this->userPreferenceService->getPreference('table_filter_check', []);
+        $this->filterOrderStatuses = $this->userPreferenceService->getPreference('table_filter_order', []);
+        $this->filterDepartaments = $this->userPreferenceService->getPreference('table_filter_departament', []);
+        $this->globalFilterMode = $this->userPreferenceService->getPreference('table_filter_mode', 'AND');
         $this->showFilters = session('tables.showFilters', false);
         $this->delayAlarmEnabled = session('tables.delayAlarmEnabled', true);
     }
@@ -130,12 +130,12 @@ class Tables extends Component
         
         // Limpa no banco e sessão
         $user = Auth::user();
-        $this->settingService->updateSettings($user, [
-            'table_filter.table' => [],
-            'table_filter.check' => [],
-            'table_filter.order' => [],
-            'table_filter.departament' => [],
-            'table_filter.mode' => 'AND',
+        $this->userPreferenceService->updatePreferences($user, [
+            'table_filter_table' => [],
+            'table_filter_check' => [],
+            'table_filter_order' => [],
+            'table_filter_departament' => [],
+            'table_filter_mode' => 'AND',
         ]);
         
         session()->forget('tables.showFilters');
@@ -146,12 +146,12 @@ class Tables extends Component
         $user = Auth::user();
         
         // Atualiza no banco de dados e na sessão
-        $this->settingService->updateSettings($user, [
-            'table_filter.table' => $this->filterTableStatuses,
-            'table_filter.check' => $this->filterCheckStatuses,
-            'table_filter.order' => $this->filterOrderStatuses,
-            'table_filter.departament' => $this->filterDepartaments,
-            'table_filter.mode' => $this->globalFilterMode,
+        $this->userPreferenceService->updatePreferences($user, [
+            'table_filter_table' => $this->filterTableStatuses,
+            'table_filter_check' => $this->filterCheckStatuses,
+            'table_filter_order' => $this->filterOrderStatuses,
+            'table_filter_departament' => $this->filterDepartaments,
+            'table_filter_mode' => $this->globalFilterMode,
         ]);
         
         // Mantém configurações locais da view
