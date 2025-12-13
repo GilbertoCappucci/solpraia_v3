@@ -17,10 +17,10 @@
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
 
             {{-- Tabs de Navegação --}}
-            <div class="flex border-b border-gray-200">
+            <div class="flex border-b border-gray-200 overflow-x-auto no-scrollbar">
                 <button
                     wire:click="$set('activeTab', 'alerts')"
-                    class="flex-1 py-4 px-6 font-semibold text-sm md:text-base transition border-b-4 {{ $activeTab === 'alerts' ? 'text-orange-600 border-orange-600 bg-orange-50' : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50' }}">
+                    class="shrink-0 flex-1 min-w-[120px] py-4 px-6 font-semibold text-sm md:text-base transition border-b-4 whitespace-nowrap {{ $activeTab === 'alerts' ? 'text-orange-600 border-orange-600 bg-orange-50' : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50' }}">
                     <div class="flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -30,7 +30,7 @@
                 </button>
                 <button
                     wire:click="$set('activeTab', 'display')"
-                    class="flex-1 py-4 px-6 font-semibold text-sm md:text-base transition border-b-4 {{ $activeTab === 'display' ? 'text-orange-600 border-orange-600 bg-orange-50' : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50' }}">
+                    class="shrink-0 flex-1 min-w-[120px] py-4 px-6 font-semibold text-sm md:text-base transition border-b-4 whitespace-nowrap {{ $activeTab === 'display' ? 'text-orange-600 border-orange-600 bg-orange-50' : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50' }}">
                     <div class="flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -40,7 +40,7 @@
                 </button>
                 <button
                     wire:click="$set('activeTab', 'pix')"
-                    class="flex-1 py-4 px-6 font-semibold text-sm md:text-base transition border-b-4 {{ $activeTab === 'pix' ? 'text-orange-600 border-orange-600 bg-orange-50' : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50' }}">
+                    class="shrink-0 flex-1 min-w-[120px] py-4 px-6 font-semibold text-sm md:text-base transition border-b-4 whitespace-nowrap {{ $activeTab === 'pix' ? 'text-orange-600 border-orange-600 bg-orange-50' : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50' }}">
                     <div class="flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
