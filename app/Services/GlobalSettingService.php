@@ -55,7 +55,7 @@ class GlobalSettingService
             'time_limit_closed' => $config['time_limits']['closed'] ?? 5,
             'time_limit_releasing' => $config['time_limits']['releasing'] ?? 10,
             'pix_key' => null,
-            'pix_key_type' => 'CPF',
+            'pix_key_type' => null,
             'pix_name' => null,
             'pix_city' => null,
         ]);
@@ -70,17 +70,17 @@ class GlobalSettingService
     public function syncToSession(GlobalSetting $settings): void
     {
         // Time limits
-        Session::put(self::SESSION_PREFIX . 'time_limit_pending', $settings->time_limit_pending);
-        Session::put(self::SESSION_PREFIX . 'time_limit_in_production', $settings->time_limit_in_production);
-        Session::put(self::SESSION_PREFIX . 'time_limit_in_transit', $settings->time_limit_in_transit);
-        Session::put(self::SESSION_PREFIX . 'time_limit_closed', $settings->time_limit_closed);
-        Session::put(self::SESSION_PREFIX . 'time_limit_releasing', $settings->time_limit_releasing);
+        Session::put(self::SESSION_PREFIX . 'time_limits.pending', $settings->time_limit_pending);
+        Session::put(self::SESSION_PREFIX . 'time_limits.in_production', $settings->time_limit_in_production);
+        Session::put(self::SESSION_PREFIX . 'time_limits.in_transit', $settings->time_limit_in_transit);
+        Session::put(self::SESSION_PREFIX . 'time_limits.closed', $settings->time_limit_closed);
+        Session::put(self::SESSION_PREFIX . 'time_limits.releasing', $settings->time_limit_releasing);
 
         // PIX Settings
-        Session::put(self::SESSION_PREFIX . 'pix_key', $settings->pix_key);
-        Session::put(self::SESSION_PREFIX . 'pix_key_type', $settings->pix_key_type);
-        Session::put(self::SESSION_PREFIX . 'pix_name', $settings->pix_name);
-        Session::put(self::SESSION_PREFIX . 'pix_city', $settings->pix_city);
+        Session::put(self::SESSION_PREFIX . 'pix.key', $settings->pix_key);
+        Session::put(self::SESSION_PREFIX . 'pix.key_type', $settings->pix_key_type);
+        Session::put(self::SESSION_PREFIX . 'pix.name', $settings->pix_name);
+        Session::put(self::SESSION_PREFIX . 'pix.city', $settings->pix_city);
     }
 
     /**
@@ -110,9 +110,10 @@ class GlobalSettingService
             // Atualiza na sessão
             Session::put(self::SESSION_PREFIX . $key, $value);
 
-            // Se a chave corresponde a um campo do banco, adiciona
-            if (in_array($key, ['time_limit_pending', 'time_limit_in_production', 'time_limit_in_transit', 'time_limit_closed', 'time_limit_releasing', 'pix_key', 'pix_key_type', 'pix_name', 'pix_city'])) {
-                $dbData[$key] = $value;
+            // Prepara dados para o banco
+            $dbField = $this->mapSessionKeyToDbField($key);
+            if ($dbField) {
+                $dbData[$dbField] = $value;
             }
         }
 
@@ -143,11 +144,34 @@ class GlobalSettingService
     public function getTimeLimits(): array
     {
         return [
-            'pending' => $this->getSetting('time_limit_pending', config('restaurant.time_limits.pending')),
-            'in_production' => $this->getSetting('time_limit_in_production', config('restaurant.time_limits.in_production')),
-            'in_transit' => $this->getSetting('time_limit_in_transit', config('restaurant.time_limits.in_transit')),
-            'closed' => $this->getSetting('time_limit_closed', config('restaurant.time_limits.closed')),
-            'releasing' => $this->getSetting('time_limit_releasing', config('restaurant.time_limits.releasing')),
+            'pending' => $this->getSetting('time_limits.pending', config('restaurant.time_limits.pending')),
+            'in_production' => $this->getSetting('time_limits.in_production', config('restaurant.time_limits.in_production')),
+            'in_transit' => $this->getSetting('time_limits.in_transit', config('restaurant.time_limits.in_transit')),
+            'closed' => $this->getSetting('time_limits.closed', config('restaurant.time_limits.closed')),
+            'releasing' => $this->getSetting('time_limits.releasing', config('restaurant.time_limits.releasing')),
         ];
+    }
+
+    /**
+     * Mapeia a chave da sessão para o campo do banco de dados
+     * 
+     * @param string $sessionKey
+     * @return string|null
+     */
+    private function mapSessionKeyToDbField(string $sessionKey): ?string
+    {
+        $map = [
+            'time_limits.pending' => 'time_limit_pending',
+            'time_limits.in_production' => 'time_limit_in_production',
+            'time_limits.in_transit' => 'time_limit_in_transit',
+            'time_limits.closed' => 'time_limit_closed',
+            'time_limits.releasing' => 'time_limit_releasing',
+            'pix.key' => 'pix_key',
+            'pix.key_type' => 'pix_key_type',
+            'pix.name' => 'pix_name',
+            'pix.city' => 'pix_city',
+        ];
+
+        return $map[$sessionKey] ?? null;
     }
 }
