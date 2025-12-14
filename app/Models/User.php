@@ -56,6 +56,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'active' => 'boolean',
+            'role' => RoleEnum::class,
         ];
     }
 
@@ -76,7 +77,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
      */
     public function isAdmin(): bool
     {
-        return $this->role === RoleEnum::ADMIN->value;
+        return $this->role === RoleEnum::ADMIN;
     }
 
     /**
@@ -84,7 +85,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
      */
     public function isDevice(): bool
     {
-        return $this->role === RoleEnum::DEVICE->value;
+        return $this->role === RoleEnum::DEVICE;
     }
 
     /**
@@ -110,7 +111,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     {
         // Apenas usuários com role ADMIN podem acessar o painel admin
         if ($panel->getId() === 'admin') {
-            return $this->role === RoleEnum::ADMIN->value;
+            return $this->role === RoleEnum::ADMIN;
         }
 
         return false;
@@ -139,6 +140,11 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     public function tables()
     {
         return $this->hasMany(Table::class, 'user_id');
+    }
+
+    public function userPreference()
+    {
+        return $this->hasOne(UserPreference::class);
     }
 
     /**

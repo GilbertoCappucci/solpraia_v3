@@ -17,17 +17,20 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (!Auth::check()) {
+        $user = $request->user();
+
+        if (!$user) {
             return redirect()->route('login');
         }
 
-        // Admin tem acesso a tudo
-        if (Auth::user()->role === 'admin') {
+        // O método `isAdmin()` foi corrigido para usar o enum, então esta verificação é confiável.
+        // A regra de negócio existente é que o admin tem acesso a tudo.
+        if ($user->isAdmin()) {
             return $next($request);
         }
 
-        // Outros usuários precisam ter a role específica
-        if (Auth::user()->role !== $role) {
+        // Para outros usuários, comparamos o valor do enum com a string da rota.
+        if ($user->role->value !== $role) {
             abort(403, 'Você não tem permissão para acessar esta página.');
         }
 

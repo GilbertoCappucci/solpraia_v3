@@ -7,6 +7,9 @@
                 <flux:navlist.item :href="route('two-factor.show')" wire:navigate>{{ __('Two-Factor Auth') }}</flux:navlist.item>
             @endif
             <flux:navlist.item :href="route('appearance.edit')" wire:navigate>{{ __('Appearance') }}</flux:navlist.item>
+            @can('access-global-settings')
+                <flux:navlist.item :href="route('settings.global')" wire:navigate>{{ __('Configurações Globais') }}</flux:navlist.item>
+            @endcan
         </flux:navlist>
     </div>
 

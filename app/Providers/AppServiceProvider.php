@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use App\Enums\RoleEnum; // Import RoleEnum
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -41,6 +42,11 @@ class AppServiceProvider extends ServiceProvider
         
         Gate::define('access-dashboard', fn (User $user) => $user->canAccessDashboard());
         Gate::define('access-orders', fn (User $user) => $user->canAccessOrders());
+        
+        // Novo Gate para configurações globais - apenas para administradores explicitamente
+        Gate::define('access-global-settings', function (User $user) {
+            return $user->role === RoleEnum::ADMIN;
+        });
 
         // Atualiza cache quando usuário faz login (sem expiração)
         Event::listen(Login::class, function (Login $event) {

@@ -11,6 +11,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
+use App\Http\Middleware\LoadGlobalSettings; // Import the new middleware
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             TrackUserActivity::class,
             EnsureUserIsActive::class,
             LoadUserSettings::class,
+            LoadGlobalSettings::class, // Add the new middleware here
         ]);
         
         $middleware->alias([
