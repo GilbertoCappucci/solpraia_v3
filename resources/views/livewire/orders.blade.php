@@ -144,43 +144,49 @@
     </div>
 
     {{-- Total e Botão Adicionar Pedidos --}}
-    <div class="p-4 bg-white space-y-3">
-        @if($currentCheck)
-        <div wire:key="total-display-{{ $currentCheck->id }}-{{ $currentCheck->total }}">
-            <x-total-display :total="$currentCheck->total" />
-        </div>
-        @endif
+    <div class="p-4 bg-white">
+        <div class="flex items-center justify-between gap-4">
+            {{-- Total Display (Esquerda) --}}
+            <div>
+                <div>
+                    <x-total-display :total="$currentCheck->total??0" />
+                </div>
+            </div>
 
-        <div wire:loading wire:target="refreshData, updateOrderStatus, updateAllOrderStatus" class="w-full text-center py-2">
+            {{-- Botão ou Mensagem de Status (Direita) --}}
+            <div class="flex-shrink-0">
+                @if($selectedTable->status === 'close')
+                <div class="bg-red-100 border-2 border-red-300 text-red-700 py-3 px-6 rounded-xl font-bold text-center text-sm">
+                    Mesa Fechada
+                </div>
+                @elseif($selectedTable->status === 'releasing')
+                <div class="bg-teal-100 border-2 border-teal-300 text-teal-800 py-3 px-6 rounded-xl font-bold text-center text-sm">
+                    Mesa em Liberação
+                </div>
+                @elseif($selectedTable->status === 'reserved')
+                <div class="bg-purple-100 border-2 border-purple-300 text-purple-800 py-3 px-6 rounded-xl font-bold text-center text-sm">
+                    Mesa Reservada
+                </div>
+                @elseif(!$isCheckOpen)
+                <div class="bg-yellow-100 border-2 border-yellow-300 text-yellow-800 py-3 px-6 rounded-xl font-bold text-center text-sm">
+                    Check Fechado
+                </div>
+                @else
+                <button
+                    wire:click="goToMenu"
+                    class="bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-6 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:shadow-lg transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width-2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Adicionar Pedidos
+                </button>
+                @endif
+            </div>
+        </div>
+
+        <div wire:loading wire:target="refreshData, updateOrderStatus, updateAllOrderStatus" class="w-full text-center py-2 mt-3">
             <span class="text-sm text-gray-500 animate-pulse">Atualizando totais...</span>
         </div>
-
-        @if($selectedTable->status === 'close')
-        <div class="w-full bg-red-100 border-2 border-red-300 text-red-700 py-4 rounded-xl font-bold text-center">
-            Mesa Fechada - Não é possível adicionar pedidos
-        </div>
-        @elseif($selectedTable->status === 'releasing')
-        <div class="w-full bg-teal-100 border-2 border-teal-300 text-teal-800 py-4 rounded-xl font-bold text-center">
-            Mesa em Liberação - Não é possível adicionar pedidos
-        </div>
-        @elseif($selectedTable->status === 'reserved')
-        <div class="w-full bg-purple-100 border-2 border-purple-300 text-purple-800 py-4 rounded-xl font-bold text-center">
-            Mesa Reservada - Não é possível adicionar pedidos
-        </div>
-        @elseif(!$isCheckOpen)
-        <div class="w-full bg-yellow-100 border-2 border-yellow-300 text-yellow-800 py-4 rounded-xl font-bold text-center">
-            Check não está Aberto - Altere o status para adicionar pedidos
-        </div>
-        @else
-        <button
-            wire:click="goToMenu"
-            class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:shadow-lg transition">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Adicionar Pedidos
-        </button>
-        @endif
     </div>
 
     {{-- Modal Alterar Status --}}
