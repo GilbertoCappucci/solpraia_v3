@@ -45,7 +45,7 @@
                     wire:click="openMergeModal"
                     @if(count($selectedTables) < 2) disabled @endif
                     class="flex items-center gap-2 px-3 py-1.5 bg-white/20 hover:bg-white/30 border-2 border-white text-white rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
-                    Unir Selecionadas ({{ count($selectedTables) }})
+                    Unir ({{ count($selectedTables) }})
                 </button>
             @else
                 {{-- Ações Padrão --}}
@@ -56,7 +56,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
-                    Unir Mesas
+                    Unir
                 </button>
 
                 <button 
