@@ -32,6 +32,7 @@ class Tables extends Component
     public $selectedTables = [];
     public $showMergeModal = false;
     public $mergeDestinationTableId = null;
+    public $canMerge = false;
     
     protected $listeners = ['table-updated' => '$refresh'];
     
@@ -396,6 +397,8 @@ class Tables extends Component
             $this->filterDepartaments,
             $this->globalFilterMode
         );
+
+        $this->canMerge = $tables->whereNotNull('checkId')->count() >= 2;
 
         return view('livewire.tables', [
             'tables' => $tables,

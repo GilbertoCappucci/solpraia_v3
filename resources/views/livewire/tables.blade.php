@@ -51,7 +51,8 @@
                 {{-- Ações Padrão --}}
                 <button 
                     wire:click="toggleSelectionMode"
-                    class="flex items-center gap-2 px-3 py-1.5 border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 rounded-lg text-sm font-medium transition">
+                    @if(!$canMerge) disabled @endif
+                    class="flex items-center gap-2 px-3 py-1.5 border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
@@ -444,7 +445,7 @@
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeMergeModal">
             <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" wire:click.stop>
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xl font-bold text-gray-900">Unir Mesas</h3>
+                    <h3 class="text-xl font-bold text-gray-900">Unir</h3>
                     <button wire:click="closeMergeModal" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
