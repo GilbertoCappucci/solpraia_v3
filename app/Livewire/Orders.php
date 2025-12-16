@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Enums\OrderStatusEnum;
 use App\Services\OrderService;
 use App\Models\Table;
+use App\Services\CheckService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -15,7 +16,7 @@ class Orders extends Component
     public $tableId;
     public $selectedTable = null;
     public $currentCheck = null;
-    public $showStatusModal = false;
+    public $showStatusCheckModal = false;
     public $newTableStatus = null;
     public $newCheckStatus = null;
     public $showCancelModal = false;
@@ -33,12 +34,15 @@ class Orders extends Component
     public $selectedOrderIds = [];
     public $showGroupActionsModal = false;
     public $groupActionData = null;
-
+    public $checkStatusAllowed = [];
+    
     protected $orderService;
+    protected $checkService;
 
-    public function boot(OrderService $orderService)
+    public function boot(OrderService $orderService, CheckService $checkService)
     {
         $this->orderService = $orderService;
+        $this->checkService = $checkService;
 
         // Recarrega configurações do banco a cada request (incluindo Livewire AJAX)
         if (Auth::check()) {
@@ -65,7 +69,20 @@ class Orders extends Component
         if (in_array($this->selectedTable->status, [\App\Enums\TableStatusEnum::RELEASING->value, \App\Enums\TableStatusEnum::CLOSE->value, \App\Enums\TableStatusEnum::RESERVED->value])) {
             $this->openStatusModal();
         }
+
+        // Define status permitidos para o check com base no status da mesa
+        $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($this->currentCheck?->status ?? '');
     }
+
+    public function updatedCheckStatus($value)
+    {
+        // Atualiza os status permitidos para o check com base no novo status selecionado
+        $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($value);
+    }
+
+     /**
+     * Atualiza os status da mesa e do check com validações
+     */
 
     public function backToTables()
     {
@@ -97,14 +114,14 @@ class Orders extends Component
         // Verifica se há check ativo (Open ou Closed)
         $this->hasActiveCheck = $this->currentCheck && in_array($this->currentCheck->status, ['Open', 'Closed']);
 
-        $this->showStatusModal = true;
+        $this->showStatusCheckModal = true;
         $this->newTableStatus = $this->selectedTable->status;
         $this->newCheckStatus = $this->currentCheck?->status;
     }
 
     public function closeStatusModal()
     {
-        $this->showStatusModal = false;
+        $this->showStatusCheckModal = false;
         $this->newTableStatus = null;
         $this->newCheckStatus = null;
     }

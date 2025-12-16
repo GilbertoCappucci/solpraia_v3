@@ -95,4 +95,35 @@ class CheckService
         
         return ['success' => true, 'errors' => []];
     }
+
+    /**
+     * Retorna qual status pode ser atribuído a um check com base no status atual
+     */
+
+    public function getAllowedCheckStatuses(string $currentStatus): array
+    {
+        $allowedStatuses = [];
+        switch ($currentStatus) {
+            case CheckStatusEnum::OPEN->value:
+                $allowedStatuses = [
+                    CheckStatusEnum::CLOSED->value,
+                    //CheckStatusEnum::CANCELED->value,
+                ];
+                break;
+            case CheckStatusEnum::CLOSED->value:
+                $allowedStatuses = [
+                    CheckStatusEnum::OPEN->value,
+                    CheckStatusEnum::PAID->value,
+                ];
+                break;
+            case CheckStatusEnum::PAID->value:
+            case CheckStatusEnum::CANCELED->value:
+                // Nenhum status permitido
+                $allowedStatuses = [];
+                break;
+        }
+
+        return $allowedStatuses;
+    }
+
 }

@@ -4,6 +4,7 @@
     'pendingCount' => 0,
     'inProductionCount' => 0,
     'inTransitCount' => 0,
+    'checkStatusAllowed' => [],
 ])
 
 @php

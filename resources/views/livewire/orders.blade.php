@@ -130,7 +130,7 @@
         @endif
     </div>
 
-    {{-- Total e Botão Adicionar Pedidos --}}
+    {{-- Botão Adicionar Pedidos --}}
     <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 sticky bottom-0 z-10 shadow-lg">
         <div class="flex items-center justify-between gap-4">
             {{-- Botão ou Mensagem de Status (Direita) --}}
@@ -168,11 +168,12 @@
             <span class="text-sm text-gray-500 animate-pulse">Atualizando totais...</span>
         </div>
     </div>
-
-    {{-- Modal Alterar Status --}}
-    @if($showStatusModal)
+    
+    {{-- Modal Alterar Status do check --}}
+    @if($showStatusCheckModal)
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeStatusModal">
         <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" wire:click.stop>
+            {{--  Title and Close button --}}
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-bold text-gray-900">Alterar Status</h3>
                 <button wire:click="closeStatusModal" class="text-gray-400 hover:text-gray-600">
@@ -183,55 +184,6 @@
             </div>
 
             <div class="space-y-4">
-                {{-- Status da Mesa --}}
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status da Mesa</label>
-                    @if($hasActiveCheck)
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
-                        <p class="text-sm text-yellow-800">
-                            <span class="font-semibold">⚠️ Atenção:</span> Não é possível alterar o status da mesa enquanto houver um check em andamento. Para fechar a mesa fisicamente, finalize ou cancele o check primeiro.
-                        </p>
-                    </div>
-                    @endif
-                    <div class="grid grid-cols-2 gap-3">
-                        <button
-                            wire:click="$set('newTableStatus', 'free')"
-                            @if($hasActiveCheck) disabled @endif
-                            class="px-4 py-3 rounded-lg text-sm font-semibold transition
-                                    {{ $newTableStatus === 'free' ? 'bg-gray-500 text-white ring-2 ring-gray-600' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
-                            Livre
-                        </button>
-                        <button
-                            wire:click="$set('newTableStatus', 'occupied')"
-                            @if($hasActiveCheck) disabled @endif
-                            class="px-4 py-3 rounded-lg text-sm font-semibold transition
-                                    {{ $newTableStatus === 'occupied' ? 'bg-blue-500 text-white ring-2 ring-blue-600' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
-                            Ocupada
-                        </button>
-                        <button
-                            wire:click="$set('newTableStatus', 'reserved')"
-                            @if($hasActiveCheck) disabled @endif
-                            class="px-4 py-3 rounded-lg text-sm font-semibold transition
-                                    {{ $newTableStatus === 'reserved' ? 'bg-purple-500 text-white ring-2 ring-purple-600' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
-                            Reservada
-                        </button>
-                        <button
-                            wire:click="$set('newTableStatus', 'releasing')"
-                            @if($hasActiveCheck) disabled @endif
-                            class="px-4 py-3 rounded-lg text-sm font-semibold transition
-                                    {{ $newTableStatus === 'releasing' ? 'bg-teal-500 text-white ring-2 ring-teal-600' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
-                            Liberando
-                        </button>
-                        <button
-                            wire:click="$set('newTableStatus', 'close')"
-                            @if($hasActiveCheck) disabled @endif
-                            class="px-4 py-3 rounded-lg text-sm font-semibold transition col-span-2
-                                    {{ $newTableStatus === 'close' ? 'bg-red-600 text-white ring-2 ring-red-700' : ($hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
-                            Fechada
-                        </button>
-                    </div>
-                </div>
-
                 {{-- Status do Check --}}
                 @if($currentCheck)
                 @php
@@ -244,7 +196,8 @@
                     :newCheckStatus="$newCheckStatus"
                     :pendingCount="$pendingCount"
                     :inProductionCount="$inProductionCount"
-                    :inTransitCount="$inTransitCount" />
+                    :inTransitCount="$inTransitCount"
+                    :checkStatusAllowed="$checkStatusAllowed" />
                 @endif
             </div>
 
