@@ -23,7 +23,6 @@ class Orders extends Component
     public $orderIdsToCancel = [];
     public $orderToCancelData = null;
     public $hasActiveCheck = false;
-    public $delayAlarmEnabled = true;
     public $pollingInterval = 5000;
     public $showDetailsModal = false;
     public $orderDetails = null;
@@ -60,19 +59,12 @@ class Orders extends Component
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
-        $this->delayAlarmEnabled = session('orders.delayAlarmEnabled', true);
         $this->statusFilters = session('orders.statusFilters', OrderStatusEnum::getValues());
 
         // Abre o modal de status automaticamente se a mesa estiver em Liberação, Fechada ou Reservada
         if (in_array($this->selectedTable->status, [\App\Enums\TableStatusEnum::RELEASING->value, \App\Enums\TableStatusEnum::CLOSE->value, \App\Enums\TableStatusEnum::RESERVED->value])) {
             $this->openStatusModal();
         }
-    }
-
-    public function toggleDelayAlarm()
-    {
-        $this->delayAlarmEnabled = !$this->delayAlarmEnabled;
-        session(['orders.delayAlarmEnabled' => $this->delayAlarmEnabled]);
     }
 
     public function backToTables()

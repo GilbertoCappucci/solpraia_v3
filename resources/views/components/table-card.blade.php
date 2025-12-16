@@ -60,7 +60,7 @@
     if (isset($table->closedMinutes) && $table->closedMinutes > $timeLimits['closed']) $hasDelay = true;
     if (isset($table->releasingMinutes) && $table->releasingMinutes > $timeLimits['releasing']) $hasDelay = true;
     
-    $delayAnimation = ($hasDelay && $delayAlarmEnabled) ? 'animate-pulse-warning' : '';
+    $delayAnimation = ($hasDelay) ? 'animate-pulse-warning' : '';
 
     // Estilos de Seleção
     $selectionClasses = '';

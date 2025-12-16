@@ -19,23 +19,6 @@
             {{-- Número da Mesa --}}
             <span class="text-2xl font-bold">{{ $selectedTable->number }}</span>
 
-            {{-- Toggle Alarme --}}
-            <button
-                wire:click="toggleDelayAlarm"
-                class="flex items-center gap-1.5 px-2 py-1 border-2 rounded-lg text-sm font-medium transition
-                    {{ $delayAlarmEnabled ? 'border-red-300 bg-red-500/20 text-white' : 'border-white/30 bg-white/10 text-white/60' }}"
-                title="{{ $delayAlarmEnabled ? 'Desativar' : 'Ativar' }} alarme de atraso">
-                @if($delayAlarmEnabled)
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-                </svg>
-                @else
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-                    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 4l12 12" />
-                </svg>
-                @endif
-            </button>
         </div>
 
         {{-- Lado Direito --}}
@@ -109,7 +92,7 @@
             };
             }
 
-            $delayAnimation = ($isDelayed && $delayAlarmEnabled) ? 'animate-pulse-warning' : '';
+            $delayAnimation = ($isDelayed) ? 'animate-pulse-warning' : '';
             @endphp
 
             <div wire:click="{{ $group->order_count === 1 ? 'openDetailsModal(' . $group->orders->first()->id . ')' : 'openGroupModal(' . $group->product_id . ', \'' . $group->status . '\')' }}" class="p-4 hover:bg-gray-50 transition flex items-center gap-4 cursor-pointer {{ $delayAnimation }}">

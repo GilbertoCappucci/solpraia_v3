@@ -19,7 +19,6 @@ class Tables extends Component
     public $filterDepartaments = [];
     public $globalFilterMode = 'AND';
     public $showFilters = false;
-    public $delayAlarmEnabled = true;
     public $showNewTableModal = false;
     public $newTableName = '';
     public $newTableNumber = '';
@@ -65,19 +64,12 @@ class Tables extends Component
         $this->filterDepartaments = $this->userPreferenceService->getPreference('table_filter_departament', []);
         $this->globalFilterMode = $this->userPreferenceService->getPreference('table_filter_mode', 'AND');
         $this->showFilters = session('tables.showFilters', false);
-        $this->delayAlarmEnabled = session('tables.delayAlarmEnabled', true);
     }
 
     public function toggleFilters()
     {
         $this->showFilters = !$this->showFilters;
         $this->saveFiltersToSession();
-    }
-
-    public function toggleDelayAlarm()
-    {
-        $this->delayAlarmEnabled = !$this->delayAlarmEnabled;
-        session(['tables.delayAlarmEnabled' => $this->delayAlarmEnabled]);
     }
 
     public function toggleTableStatusFilter($status)
