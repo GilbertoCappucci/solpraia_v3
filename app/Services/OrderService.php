@@ -49,7 +49,8 @@ class OrderService
         return Check::where('table_id', $tableId)
             ->whereNotIn('status', [
                 CheckStatusEnum::PAID->value,
-                CheckStatusEnum::CANCELED->value
+                CheckStatusEnum::CANCELED->value,
+                CheckStatusEnum::MERGED->value,
             ])
             ->orderBy('created_at', 'desc')
             ->first();
@@ -413,6 +414,61 @@ class OrderService
             $this->checkService->recalculateCheckTotal($order->check);
 
             return ['success' => true];
+        });
+    }
+
+    /**
+     * Une múltiplas comandas de origem em uma comanda de destino.
+     * Move todos os pedidos e marca as comandas de origem como 'merged'.
+     *
+     * @param array $sourceCheckIds IDs das comandas a serem unidas (origem).
+     * @param int $destinationCheckId ID da comanda que receberá os pedidos (destino).
+     * @return array ['success' => bool, 'message' => string]
+     */
+    public function mergeChecks(array $sourceCheckIds, int $destinationCheckId): array
+    {
+        return DB::transaction(function () use ($sourceCheckIds, $destinationCheckId) {
+            // 1. Valida a comanda de destino
+            $destinationCheck = Check::with('table')->find($destinationCheckId);
+            if (!$destinationCheck) {
+                return ['success' => false, 'message' => 'Comanda de destino não encontrada.'];
+            }
+            if (!in_array($destinationCheck->status, [CheckStatusEnum::OPEN->value, CheckStatusEnum::CLOSED->value])) {
+                 return ['success' => false, 'message' => 'A comanda de destino não está em um status válido (Aberta ou Fechada) para receber pedidos.'];
+            }
+            // Garante que o destino não está entre as origens e remove duplicatas
+            $sourceCheckIds = array_unique(array_diff($sourceCheckIds, [$destinationCheckId]));
+            if (empty($sourceCheckIds)) {
+                return ['success' => false, 'message' => 'Nenhuma comanda de origem válida para unir.'];
+            }
+
+
+            // 2. Processa cada comanda de origem
+            foreach ($sourceCheckIds as $sourceCheckId) {
+                $sourceCheck = Check::with('table')->find($sourceCheckId);
+
+                if (!$sourceCheck) {
+                    // Logar erro, mas continuar com as outras
+                    continue; 
+                }
+
+                if (!in_array($sourceCheck->status, [CheckStatusEnum::OPEN->value, CheckStatusEnum::CLOSED->value])) {
+                    // Comandas de origem precisam estar abertas ou fechadas para serem unidas
+                    return ['success' => false, 'message' => "Comanda {$sourceCheck->id} (Mesa {$sourceCheck->table->number}) não pode ser unida, status inválido."];
+                }
+
+                // Move os pedidos
+                Order::where('check_id', $sourceCheckId)->update(['check_id' => $destinationCheckId]);
+
+                // Atualiza o status da comanda de origem para MERGED
+                $sourceCheck->status = CheckStatusEnum::MERGED->value;
+                $sourceCheck->save();
+            }
+
+            // 3. Recalcula o total da comanda de destino
+            $this->checkService->recalculateCheckTotal($destinationCheck);
+
+            return ['success' => true, 'message' => 'Mesas unidas com sucesso!'];
         });
     }
 

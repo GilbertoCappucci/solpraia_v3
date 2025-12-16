@@ -28,6 +28,11 @@ class Tables extends Component
     public $newTableStatus = null;
     public $hasActiveCheck = false;
     
+    public $selectionMode = false;
+    public $selectedTables = [];
+    public $showMergeModal = false;
+    public $mergeDestinationTableId = null;
+    
     protected $listeners = ['table-updated' => '$refresh'];
     
     protected $tableService;
@@ -196,7 +201,141 @@ class Tables extends Component
 
     public function selectTable($tableId)
     {
+        // Se estiver em modo de seleção, o clique seleciona para unir.
+        if ($this->selectionMode) {
+            $this->selectTableForMerge($tableId);
+            return;
+        }
+
+        // Comportamento padrão: redireciona para a página de pedidos
         return redirect()->route('orders', ['tableId' => $tableId]);
+    }
+
+    public function toggleSelectionMode()
+    {
+        $this->selectionMode = !$this->selectionMode;
+        // Reseta a seleção ao sair do modo
+        if (!$this->selectionMode) {
+            $this->selectedTables = [];
+            $this->showMergeModal = false;
+        }
+    }
+
+    public function selectTableForMerge($tableId)
+    {
+        // Verifica se a mesa já está selecionada
+        if (in_array($tableId, $this->selectedTables)) {
+            // Remove da seleção
+            $this->selectedTables = array_diff($this->selectedTables, [$tableId]);
+        } else {
+            // Adiciona na seleção
+            $this->selectedTables[] = $tableId;
+        }
+    }
+
+    public function openMergeModal()
+    {
+        // Garante que há pelo menos 2 mesas para unir
+        if (count($this->selectedTables) < 2) {
+            session()->flash('error', 'Selecione pelo menos duas mesas para unir.');
+            return;
+        }
+        
+        // Define um destino padrão (a primeira mesa selecionada)
+        $this->mergeDestinationTableId = $this->selectedTables[0] ?? null;
+        $this->showMergeModal = true;
+    }
+
+    public function closeMergeModal()
+    {
+        $this->showMergeModal = false;
+        $this->mergeDestinationTableId = null;
+    }
+
+    public function mergeTables()
+    {
+        // 1. Validações finais
+        if (count($this->selectedTables) < 2) {
+            session()->flash('error', 'Selecione pelo menos duas mesas para unir.');
+            $this->closeMergeModal();
+            return;
+        }
+        if (!$this->mergeDestinationTableId) {
+            session()->flash('error', 'Selecione uma mesa de destino para a união.');
+            $this->closeMergeModal();
+            return;
+        }
+
+        // 2. Coletar IDs das comandas
+        $allSelectedTableIds = $this->selectedTables;
+        $destinationTableId = $this->mergeDestinationTableId;
+
+        // Garante que a mesa de destino é uma das selecionadas
+        if (!in_array($destinationTableId, $allSelectedTableIds)) {
+            session()->flash('error', 'A mesa de destino deve ser uma das mesas selecionadas.');
+            $this->closeMergeModal();
+            return;
+        }
+
+        // Encontra as mesas e seus checks ativos
+        $selectedTablesData = $this->tableService->getFilteredTables(
+            $this->userId, [], [], [], [], 'OR'
+        )->whereIn('id', $allSelectedTableIds);
+
+        $destinationTable = $selectedTablesData->where('id', $destinationTableId)->first();
+        if (!$destinationTable || !$destinationTable->checkId) {
+            session()->flash('error', "A mesa de destino (Mesa {$destinationTable->number}) não possui uma comanda ativa para receber os pedidos.");
+            $this->closeMergeModal();
+            return;
+        }
+        $destinationCheckId = $destinationTable->checkId;
+
+        $sourceTableIds = array_diff($allSelectedTableIds, [$destinationTableId]);
+        $sourceCheckIds = [];
+        $tablesToFree = [];
+
+        foreach ($sourceTableIds as $tableId) {
+            $table = $selectedTablesData->where('id', $tableId)->first();
+            if ($table && $table->checkId) {
+                $sourceCheckIds[] = $table->checkId;
+                $tablesToFree[] = $table->id;
+            } else {
+                // Caso alguma mesa de origem não tenha check ativo, apenas liberamos ela
+                if ($table) {
+                     $tablesToFree[] = $table->id;
+                }
+            }
+        }
+        
+        // Se não houver comandas de origem válidas para unir, mas houver mesas para liberar, liberamos.
+        if (empty($sourceCheckIds) && !empty($tablesToFree)) {
+            $this->tableService->releaseTables($tablesToFree);
+            session()->flash('success', 'As mesas selecionadas foram liberadas.');
+            $this->closeMergeModal();
+            $this->toggleSelectionMode();
+            $this->dispatch('table-updated');
+            return;
+        } elseif (empty($sourceCheckIds)) {
+            session()->flash('error', 'Nenhuma comanda de origem válida encontrada para unir.');
+            $this->closeMergeModal();
+            return;
+        }
+
+        // 3. Chamar o serviço de união
+        $mergeResult = $this->orderService->mergeChecks($sourceCheckIds, $destinationCheckId);
+
+        if ($mergeResult['success']) {
+            // 4. Liberar mesas de origem
+            $this->tableService->releaseTables($tablesToFree);
+            session()->flash('success', $mergeResult['message']);
+        } else {
+            session()->flash('error', $mergeResult['message']);
+        }
+        
+        // 5. Resetar estado e atualizar UI
+        $this->closeMergeModal();
+        $this->toggleSelectionMode();
+        $this->dispatch('table-updated');
     }
 
     public function openTableStatusModal($tableId)

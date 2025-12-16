@@ -238,7 +238,8 @@ class TableService
         $checkIsActive = $currentCheck && 
                         !in_array($currentCheck->status, [
                             CheckStatusEnum::PAID->value,
-                            CheckStatusEnum::CANCELED->value
+                            CheckStatusEnum::CANCELED->value,
+                            CheckStatusEnum::MERGED->value, // Adicionado MERGED
                         ]);
         
         if ($checkIsActive) {
@@ -263,6 +264,7 @@ class TableService
             CheckStatusEnum::CLOSED->value => 'Fechado',
             CheckStatusEnum::PAID->value => 'Pago',
             CheckStatusEnum::CANCELED->value => 'Cancelado',
+            CheckStatusEnum::MERGED->value => 'Unida', // Adicionado MERGED
             default => 'Livre'
         };
         $table->checkStatusColor = match($currentCheck->status) {
@@ -270,8 +272,10 @@ class TableService
             CheckStatusEnum::CLOSED->value => 'red',
             CheckStatusEnum::PAID->value => 'gray',
             CheckStatusEnum::CANCELED->value => 'orange',
+            CheckStatusEnum::MERGED->value => 'purple', // Adicionado MERGED
             default => 'gray'
         };
+
         $table->checkTotal = $currentCheck->total ?? 0;
         
         // Calcula tempo desde que o check foi fechado
@@ -447,5 +451,17 @@ class TableService
 
         $table->status = $newStatus;
         return $table->save();
+    }
+
+    /**
+     * Libera múltiplas mesas, definindo seu status para FREE.
+     * Usado após a união de mesas para liberar as mesas de origem.
+     *
+     * @param array $tableIds IDs das mesas a serem liberadas.
+     * @return void
+     */
+    public function releaseTables(array $tableIds): void
+    {
+        Table::whereIn('id', $tableIds)->update(['status' => TableStatusEnum::FREE->value]);
     }
 }

@@ -8,4 +8,5 @@ enum CheckStatusEnum: string
     case CLOSED = 'Closed';
     case PAID = 'Paid';
     case CANCELED = 'Canceled';
+    case MERGED = 'merged';
 }
