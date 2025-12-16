@@ -22,4 +22,9 @@ enum OrderStatusEnum: string
             self::DELAYED => 'Delayed',
         };
     }
+
+    public static function getValues(): array
+    {
+        return array_column(self::cases(), 'value');
+    }
 }

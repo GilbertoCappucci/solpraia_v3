@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\OrderStatusEnum;
 use App\Services\OrderService;
 use App\Models\Table;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +28,7 @@ class Orders extends Component
     public $showDetailsModal = false;
     public $orderDetails = null;
     public $showFilterModal = false;
-    public $statusFilters = ['pending', 'in_production', 'in_transit', 'completed', 'canceled'];
+    public $statusFilters = [];
     public $showGroupModal = false;
     public $groupOrders = [];
     public $selectedOrderIds = [];
@@ -60,7 +61,7 @@ class Orders extends Component
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
         $this->delayAlarmEnabled = session('orders.delayAlarmEnabled', true);
-        $this->statusFilters = session('orders.statusFilters', ['pending', 'in_production', 'in_transit', 'completed', 'canceled']);
+        $this->statusFilters = session('orders.statusFilters', OrderStatusEnum::getValues());
 
         // Abre o modal de status automaticamente se a mesa estiver em Liberação, Fechada ou Reservada
         if (in_array($this->selectedTable->status, [\App\Enums\TableStatusEnum::RELEASING->value, \App\Enums\TableStatusEnum::CLOSE->value, \App\Enums\TableStatusEnum::RESERVED->value])) {
