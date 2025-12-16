@@ -122,20 +122,17 @@
                 </div>
             </div>
             @endforeach
+                <div class="flex items-center justify-between">
+                    <span class="text-lg font-semibold text-gray-700">Total Geral:</span>
+                    <span class="text-2xl font-bold text-gray-700">R$ {{ number_format(($currentCheck->total??0), 2, ',', '.') }}</span>
+                </div>
         </div>
         @endif
     </div>
 
     {{-- Total e Botão Adicionar Pedidos --}}
-    <div class="p-4 bg-white">
+    <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 sticky bottom-0 z-10 shadow-lg">
         <div class="flex items-center justify-between gap-4">
-            {{-- Total Display (Esquerda) --}}
-            <div>
-                <div>
-                    <x-total-display :total="$currentCheck->total??0" />
-                </div>
-            </div>
-
             {{-- Botão ou Mensagem de Status (Direita) --}}
             <div class="flex-shrink-0">
                 @if($selectedTable->status === 'close')

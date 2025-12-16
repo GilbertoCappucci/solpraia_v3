@@ -4,7 +4,7 @@
     {{-- Header com fundo laranja --}}
     <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 flex items-center justify-between sticky top-0 z-10 shadow-md">
         <div class="flex items-center gap-2">
-            <h2 class="text-2xl font-bold">
+            <h2 class="text-1xl font-bold">
                 @if($selectionMode)
                     Selecionar Locais
                 @else
