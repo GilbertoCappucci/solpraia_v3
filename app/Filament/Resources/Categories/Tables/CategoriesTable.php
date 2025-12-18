@@ -17,12 +17,11 @@ class CategoriesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('user_id', \Illuminate\Support\Facades\Auth::id()))
             ->columns([
-                TextColumn::make('user_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('category_id')
-                    ->numeric()
+                TextColumn::make('category.name')
+                    ->label('Category')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('name')
                     ->searchable(),

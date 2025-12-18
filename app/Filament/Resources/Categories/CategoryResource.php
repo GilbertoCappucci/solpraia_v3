@@ -48,9 +48,19 @@ class CategoryResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('user_id', \Illuminate\Support\Facades\Auth::id())
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
+            ->where('user_id', \Illuminate\Support\Facades\Auth::id())
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);

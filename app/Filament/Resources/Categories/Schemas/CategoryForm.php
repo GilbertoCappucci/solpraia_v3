@@ -6,6 +6,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 
 class CategoryForm
 {
@@ -13,12 +14,10 @@ class CategoryForm
     {
         return $schema
             ->components([
-                TextInput::make('user_id')
-                    ->required()
-                    ->numeric(),
-                TextInput::make('category_id')
-                    ->numeric()
-                    ->default(null),
+                \Filament\Forms\Components\Select::make('category_id')
+                    ->relationship('category', 'name', fn($query) => $query->whereNull('category_id')->where('user_id', Auth::id()))
+                    ->searchable()
+                    ->preload(),
                 TextInput::make('name')
                     ->required(),
                 Textarea::make('description')
