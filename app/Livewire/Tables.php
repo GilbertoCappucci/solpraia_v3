@@ -3,6 +3,8 @@
 namespace App\Livewire;
 
 use App\Enums\DepartamentEnum;
+use App\Enums\CheckStatusEnum;
+use App\Models\Check;
 use App\Services\OrderService;
 use App\Services\UserPreferenceService;
 use App\Services\TableService;
@@ -26,37 +28,37 @@ class Tables extends Component
     public $selectedTableId = null;
     public $newTableStatus = null;
     public $hasActiveCheck = false;
-    
+
     public $selectionMode = false;
     public $selectedTables = [];
     public $showMergeModal = false;
     public $mergeDestinationTableId = null;
     public $canMerge = false;
-    
+
     protected $listeners = ['table-updated' => '$refresh'];
-    
+
     protected $tableService;
     protected $orderService;
     protected $userPreferenceService;
-    
+
     public function boot(TableService $tableService, OrderService $orderService, UserPreferenceService $userPreferenceService)
     {
         $this->tableService = $tableService;
         $this->orderService = $orderService;
         $this->userPreferenceService = $userPreferenceService;
-        
+
         // Recarrega configurações do banco a cada request (incluindo Livewire AJAX)
         if (Auth::check()) {
             $this->userPreferenceService->loadUserPreferences(Auth::user());
         }
     }
-    
+
     public function mount()
     {
-        $this->userId = Auth::user()->isAdmin() 
-            ? Auth::id() 
+        $this->userId = Auth::user()->isAdmin()
+            ? Auth::id()
             : Auth::user()->user_id;
-        
+
         // Carrega filtros da sessão (já foram carregados pelo UserPreferenceService no login)
         $this->filterTableStatuses = $this->userPreferenceService->getPreference('table_filter_table', []);
         $this->filterCheckStatuses = $this->userPreferenceService->getPreference('table_filter_check', []);
@@ -125,7 +127,7 @@ class Tables extends Component
         $this->filterOrderStatuses = [];
         $this->filterDepartaments = [];
         $this->globalFilterMode = 'AND';
-        
+
         // Limpa no banco e sessão
         $user = Auth::user();
         $this->userPreferenceService->updatePreferences($user, [
@@ -135,14 +137,14 @@ class Tables extends Component
             'table_filter_departament' => [],
             'table_filter_mode' => 'AND',
         ]);
-        
+
         session()->forget('tables.showFilters');
     }
 
     protected function saveFiltersToSession()
     {
         $user = Auth::user();
-        
+
         // Atualiza no banco de dados e na sessão
         $this->userPreferenceService->updatePreferences($user, [
             'table_filter_table' => $this->filterTableStatuses,
@@ -151,7 +153,7 @@ class Tables extends Component
             'table_filter_departament' => $this->filterDepartaments,
             'table_filter_mode' => $this->globalFilterMode,
         ]);
-        
+
         // Mantém configurações locais da view
         session([
             'tables.showFilters' => $this->showFilters,
@@ -179,7 +181,7 @@ class Tables extends Component
             'newTableNumber' => $this->newTableNumber,
             'userId' => $this->userId,
         ]);
-        
+
         $this->validate($validation['rules'], $validation['messages']);
 
         $this->tableService->createTable(
@@ -198,6 +200,25 @@ class Tables extends Component
         if ($this->selectionMode) {
             $this->selectTableForMerge($tableId);
             return;
+        }
+
+        // Busca o check mais recente para decidir o redirecionamento
+        // Consideramos apenas o check mais recente para esta mesa
+        $latestCheck = Check::where('table_id', $tableId)
+            ->whereIn('status', [
+                CheckStatusEnum::OPEN->value,
+                CheckStatusEnum::CLOSED->value,
+                CheckStatusEnum::PAID->value
+            ])
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Se o check está Fechado ou Pago, redireciona para a rota de conferência do check
+        if ($latestCheck && in_array($latestCheck->status, [
+            CheckStatusEnum::CLOSED->value,
+            //CheckStatusEnum::PAID->value
+        ])) {
+            return redirect()->route('check', ['checkId' => $latestCheck->id]);
         }
 
         // Comportamento padrão: redireciona para a página de pedidos
@@ -233,7 +254,7 @@ class Tables extends Component
             session()->flash('error', 'Selecione pelo menos duas mesas para unir.');
             return;
         }
-        
+
         // Define um destino padrão (a primeira mesa selecionada)
         $this->mergeDestinationTableId = $this->selectedTables[0] ?? null;
         $this->showMergeModal = true;
@@ -272,7 +293,12 @@ class Tables extends Component
 
         // Encontra as mesas e seus checks ativos
         $selectedTablesData = $this->tableService->getFilteredTables(
-            $this->userId, [], [], [], [], 'OR'
+            $this->userId,
+            [],
+            [],
+            [],
+            [],
+            'OR'
         )->whereIn('id', $allSelectedTableIds);
 
         $destinationTable = $selectedTablesData->where('id', $destinationTableId)->first();
@@ -295,11 +321,11 @@ class Tables extends Component
             } else {
                 // Caso alguma mesa de origem não tenha check ativo, apenas liberamos ela
                 if ($table) {
-                     $tablesToFree[] = $table->id;
+                    $tablesToFree[] = $table->id;
                 }
             }
         }
-        
+
         // Se não houver comandas de origem válidas para unir, mas houver mesas para liberar, liberamos.
         if (empty($sourceCheckIds) && !empty($tablesToFree)) {
             $this->tableService->releaseTables($tablesToFree);
@@ -324,7 +350,7 @@ class Tables extends Component
         } else {
             session()->flash('error', $mergeResult['message']);
         }
-        
+
         // 5. Resetar estado e atualizar UI
         $this->closeMergeModal();
         $this->toggleSelectionMode();
@@ -336,11 +362,11 @@ class Tables extends Component
         $table = $this->tableService->getTableById($tableId);
         $this->selectedTableId = $tableId;
         $this->newTableStatus = $table->status;
-        
+
         // Verifica se há check ativo (não Paid nem Canceled)
         $activeCheck = $this->orderService->findOrCreateCheck($tableId);
         $this->hasActiveCheck = $activeCheck && in_array($activeCheck->status, ['Open', 'Closed']);
-        
+
         $this->showTableStatusModal = true;
     }
 
@@ -365,7 +391,7 @@ class Tables extends Component
         }
 
         $this->tableService->updateTableStatus($this->selectedTableId, $this->newTableStatus);
-        
+
         session()->flash('success', 'Status da mesa atualizado com sucesso!');
         $this->closeTableStatusModal();
         $this->dispatch('table-updated');
@@ -380,7 +406,7 @@ class Tables extends Component
     {
         // Recalcula todos os checks ativos antes de carregar a view
         $this->orderService->recalculateAllActiveChecks();
-        
+
         $tables = $this->tableService->getFilteredTables(
             $this->userId,
             $this->filterTableStatuses,
