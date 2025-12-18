@@ -14,6 +14,8 @@ class CategoryForm
     {
         return $schema
             ->components([
+                \Filament\Forms\Components\Hidden::make('user_id')
+                    ->default(Auth::id()),
                 \Filament\Forms\Components\Select::make('category_id')
                     ->relationship('category', 'name', fn($query) => $query->whereNull('category_id')->where('user_id', Auth::id()))
                     ->searchable()
