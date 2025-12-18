@@ -31,20 +31,12 @@ class Check extends Component
         $this->checkService = $checkService;
         $this->orderService = $orderService;
         $this->pixService = $pixService;
-
-        // Recarrega configurações do banco a cada request (incluindo Livewire AJAX)
-        if (Auth::check()) {
-            app(\App\Services\GlobalSettingService::class)->loadGlobalSettings(Auth::user());
-            app(\App\Services\UserPreferenceService::class)->loadUserPreferences(Auth::user());
-        }
     }
 
     public function mount($checkId)
     {
         $this->checkId = $checkId;
         $this->loadCheck();
-
-
     }
 
     public function loadCheck()
@@ -153,7 +145,7 @@ class Check extends Component
         $pixPayload = null;
         $globalSettingService = app(\App\Services\GlobalSettingService::class);
         $pixKey = $globalSettingService->getSetting('pix_key');
-        
+
         if ($pixKey) {
             // Calculate total based on the same logic as view
             if ($this->check->status === 'Closed' || $this->check->status === 'Paid') {
@@ -162,13 +154,13 @@ class Check extends Component
                 $checkOrders = $this->check->orders->whereNotIn('status', ['pending', 'canceled']);
             }
             $checkTotal = $checkOrders->sum(fn($order) => $order->product->price);
-            
+
             if ($checkTotal > 0) {
                 $pixKeyType = $globalSettingService->getSetting('pix_key_type', 'CPF');
                 $pixName = $globalSettingService->getSetting('pix_name');
                 $pixCity = $globalSettingService->getSetting('pix_city');
 
-                
+
                 $pixPayload = $this->pixService->generatePayload(
                     $pixKey,
                     $pixKeyType,

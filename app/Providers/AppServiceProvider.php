@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Registrar Observer do User
         User::observe(UserObserver::class);
-        
+
         // Definir Gates de autorização
         // Admin sempre tem acesso a tudo
         Gate::before(function (User $user, string $ability) {
@@ -39,10 +39,10 @@ class AppServiceProvider extends ServiceProvider
                 return true;
             }
         });
-        
-        Gate::define('access-dashboard', fn (User $user) => $user->canAccessDashboard());
-        Gate::define('access-orders', fn (User $user) => $user->canAccessOrders());
-        
+
+        Gate::define('access-dashboard', fn(User $user) => $user->canAccessDashboard());
+        Gate::define('access-orders', fn(User $user) => $user->canAccessOrders());
+
         // Novo Gate para configurações globais - apenas para administradores explicitamente
         Gate::define('access-global-settings', function (User $user) {
             return $user->role === RoleEnum::ADMIN;
@@ -51,13 +51,6 @@ class AppServiceProvider extends ServiceProvider
         // Atualiza cache quando usuário faz login (sem expiração)
         Event::listen(Login::class, function (Login $event) {
             Cache::forever('user-is-online-' . $event->user->id, true);
-            
-            // Carrega as configurações do usuário na sessão (inicial)
-            // O middleware LoadUserSettings irá recarregar a cada request subsequente
-            $globalSettingService = app(GlobalSettingService::class);
-            $userPreferenceService = app(UserPreferenceService::class);
-            $globalSettingService->loadGlobalSettings($event->user);
-            $userPreferenceService->loadUserPreferences($event->user);
         });
 
         // Remove cache quando usuário faz logout

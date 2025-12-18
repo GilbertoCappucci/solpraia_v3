@@ -23,34 +23,28 @@ class Menu extends Component
     public $showFavoritesOnly = false;
     public $cart = [];
     public $searchTerm = '';
-    
+
     protected $menuService;
     protected $orderService;
     protected $stockService;
-    
+
     public function boot(\App\Services\MenuService $menuService, \App\Services\OrderService $orderService, \App\Services\StockService $stockService)
     {
         $this->menuService = $menuService;
         $this->orderService = $orderService;
         $this->stockService = $stockService;
-        
-        // Recarrega configurações do banco a cada request (incluindo Livewire AJAX)
-        if (Auth::check()) {
-            app(\App\Services\GlobalSettingService::class)->loadGlobalSettings(Auth::user());
-            app(\App\Services\UserPreferenceService::class)->loadUserPreferences(Auth::user());
-        }
     }
-    
+
     public function mount($tableId)
     {
-        $this->userId = Auth::user()->isAdmin() 
-            ? Auth::id() 
+        $this->userId = Auth::user()->isAdmin()
+            ? Auth::id()
             : Auth::user()->user_id;
-        
+
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
-        
+
         $this->loadParentCategories();
         $this->loadProducts();
     }
@@ -112,7 +106,7 @@ class Menu extends Component
     public function addToCart($productId)
     {
         $product = \App\Models\Product::find($productId);
-        
+
         if (isset($this->cart[$productId])) {
             $currentQty = $this->cart[$productId]['quantity'];
             if (!$this->stockService->hasStock($productId, $currentQty + 1)) {
@@ -122,8 +116,8 @@ class Menu extends Component
             $this->cart[$productId]['quantity']++;
         } else {
             if (!$this->stockService->hasStock($productId, 1)) {
-                 session()->flash('error', 'Produto sem estoque.');
-                 return;
+                session()->flash('error', 'Produto sem estoque.');
+                return;
             }
             $this->cart[$productId] = [
                 'product' => $product,
