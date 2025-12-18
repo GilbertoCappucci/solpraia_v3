@@ -8,13 +8,21 @@ use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\TwoFactor;
 use App\Livewire\Settings\GlobalSettings;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
     return view('welcome');
-
 })->name('home');
+
+// Rota de logout customizada para o Filament (redireciona para /)
+Route::post('/admin/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/');
+})->name('filament.admin.auth.logout');
 
 // Rota que redireciona baseado na role
 Route::get('/home', function () {
