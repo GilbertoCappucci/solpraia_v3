@@ -35,7 +35,7 @@ class Orders extends Component
     public $showGroupActionsModal = false;
     public $groupActionData = null;
     public $checkStatusAllowed = [];
-    
+
     protected $orderService;
     protected $checkService;
 
@@ -71,7 +71,7 @@ class Orders extends Component
         }
 
         // Define status permitidos para o check com base no status da mesa
-        $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($this->currentCheck?->status ?? '');
+        $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($this->currentCheck?->status ?? '', $this->currentCheck);
     }
 
     public function updatedCheckStatus($value)
@@ -80,7 +80,7 @@ class Orders extends Component
         $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($value);
     }
 
-     /**
+    /**
      * Atualiza os status da mesa e do check com validações
      */
 
@@ -111,12 +111,10 @@ class Orders extends Component
         // Recarrega dados do banco antes de abrir modal
         $this->refreshData();
 
-        // Verifica se há check ativo (Open ou Closed)
-        $this->hasActiveCheck = $this->currentCheck && in_array($this->currentCheck->status, ['Open', 'Closed']);
-
         $this->showStatusCheckModal = true;
         $this->newTableStatus = $this->selectedTable->status;
         $this->newCheckStatus = $this->currentCheck?->status;
+        $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($this->newCheckStatus ?? '', $this->currentCheck);
     }
 
     public function closeStatusModal()
@@ -132,10 +130,13 @@ class Orders extends Component
         $this->selectedTable->refresh();
         $this->currentCheck = $this->orderService->findOrCreateCheck($this->tableId);
 
-        // Garante que o objeto esteja fresco
+        // Garante que o objeto esteja fresco (evita problemas de cache do Eloquent)
         if ($this->currentCheck) {
             $this->currentCheck->refresh();
         }
+
+        // Verifica se há check ativo (Open ou Closed) que bloqueia mudança de status da mesa
+        $this->hasActiveCheck = $this->currentCheck && in_array($this->currentCheck->status, ['Open', 'Closed']);
     }
 
     public function updateStatuses()

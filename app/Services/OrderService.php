@@ -434,7 +434,7 @@ class OrderService
                 return ['success' => false, 'message' => 'Comanda de destino não encontrada.'];
             }
             if (!in_array($destinationCheck->status, [CheckStatusEnum::OPEN->value, CheckStatusEnum::CLOSED->value])) {
-                 return ['success' => false, 'message' => 'A comanda de destino não está em um status válido (Aberta ou Fechada) para receber pedidos.'];
+                return ['success' => false, 'message' => 'A comanda de destino não está em um status válido (Aberta ou Fechada) para receber pedidos.'];
             }
             // Garante que o destino não está entre as origens e remove duplicatas
             $sourceCheckIds = array_unique(array_diff($sourceCheckIds, [$destinationCheckId]));
@@ -449,7 +449,7 @@ class OrderService
 
                 if (!$sourceCheck) {
                     // Logar erro, mas continuar com as outras
-                    continue; 
+                    continue;
                 }
 
                 if (!in_array($sourceCheck->status, [CheckStatusEnum::OPEN->value, CheckStatusEnum::CLOSED->value])) {
@@ -473,6 +473,44 @@ class OrderService
     }
 
     /**
-     * Atualiza apenas o status do check
+     * Verifca se existe algum pedido aguardando
      */
+    public static function hasPendingOrders(Check $check): bool
+    {
+        return $check->orders()
+            ->where(function ($query) {
+                // Pedidos sem histórico são considerados 'pending'
+                $query->whereDoesntHave('statusHistory')
+                    // Ou pedidos cujo último histórico é 'pending'
+                    ->orWhereHas('currentStatusHistory', function ($q) {
+                        $q->where('to_status', OrderStatusEnum::PENDING->value);
+                    });
+            })
+            ->exists();
+    }
+
+    /**
+     * Verifica se todos os pedidos foram entregues ou cancelados
+     * Retorna true se NÃO existir nenhum pedido incompleto (Aguardando, Em Produção, No Caminho, etc.)
+     */
+    public static function areAllOrdersCompletedOrCanceled(Check $check): bool
+    {
+        $hasIncompleteOrders = $check->orders()
+            ->where(function ($query) {
+                // Um pedido é considerado "incompleto" se:
+                // 1. Não tem histórico (é PENDING por padrão)
+                $query->whereDoesntHave('statusHistory')
+                    // 2. OU o status atual NÃO é COMPLETED nem CANCELED
+                    ->orWhereHas('currentStatusHistory', function ($q) {
+                        $q->whereNotIn('to_status', [
+                            OrderStatusEnum::COMPLETED->value,
+                            OrderStatusEnum::CANCELED->value
+                        ]);
+                    });
+            })
+            ->exists();
+
+        // Se encontrou algum incompleto, retorna false. Se não encontrou nada incompleto, retorna true.
+        return !$hasIncompleteOrders;
+    }
 }

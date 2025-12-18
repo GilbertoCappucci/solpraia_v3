@@ -236,7 +236,7 @@
 <body>
     <header>
         <div class="container">
-            <div class="logo">Sol<span>&</span>Areia</div>
+            <div class="logo">Sol<span>&</span>Praia</div>
             <nav>
                 @if (Route::has('login'))
                 @auth
@@ -293,7 +293,7 @@
 
     <footer>
         <div class="container">
-            <p>&copy; {{ date('Y') }} Sol & Areia - App para Vendedores de Praia.</p>
+            <p>&copy; {{ date('Y') }} Sol & Praia - App para Vendedores de Praia.</p>
         </div>
     </footer>
 </body>

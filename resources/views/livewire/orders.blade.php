@@ -122,10 +122,10 @@
                 </div>
             </div>
             @endforeach
-                <div class="flex items-center justify-between">
-                    <span class="text-lg font-semibold text-gray-700">Total Geral:</span>
-                    <span class="text-2xl font-bold text-gray-700">R$ {{ number_format(($currentCheck->total??0), 2, ',', '.') }}</span>
-                </div>
+            <div class="flex items-center justify-between">
+                <span class="text-lg font-semibold text-gray-700">Total Geral:</span>
+                <span class="text-2xl font-bold text-gray-700">R$ {{ number_format(($currentCheck->total??0), 2, ',', '.') }}</span>
+            </div>
         </div>
         @endif
     </div>
@@ -168,12 +168,12 @@
             <span class="text-sm text-gray-500 animate-pulse">Atualizando totais...</span>
         </div>
     </div>
-    
+
     {{-- Modal Alterar Status do check --}}
     @if($showStatusCheckModal)
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeStatusModal">
         <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" wire:click.stop>
-            {{--  Title and Close button --}}
+            {{-- Title and Close button --}}
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-bold text-gray-900">Alterar Status</h3>
                 <button wire:click="closeStatusModal" class="text-gray-400 hover:text-gray-600">
@@ -183,8 +183,16 @@
                 </button>
             </div>
 
+            {{-- Status da Mesa --}}
+            <div class="space-y-4 mb-6">
+                <x-table-status-selector
+                    :table="$selectedTable"
+                    :newTableStatus="$newTableStatus"
+                    :hasActiveCheck="$hasActiveCheck" />
+            </div>
+
+            {{-- Status do Check --}}
             <div class="space-y-4">
-                {{-- Status do Check --}}
                 @if($currentCheck)
                 @php
                 $pendingCount = $orders->where('status', 'pending')->count();

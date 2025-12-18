@@ -3,13 +3,12 @@
 namespace App\Livewire;
 
 use App\Enums\TableStatusEnum;
-use App\Models\Check;
 use App\Services\CheckService;
 use App\Services\OrderService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-class CheckComponent extends Component
+class Check extends Component
 {
     public $checkId;
     public $check;
@@ -18,7 +17,10 @@ class CheckComponent extends Component
     public $pollingInterval = 5000;
 
     public $showStatusModal = false;
+    public $currentCheck = null;
     public $newCheckStatus = null;
+
+    public $checkStatusAllowed = [];
 
     protected $checkService;
     protected $orderService;
@@ -41,17 +43,24 @@ class CheckComponent extends Component
     {
         $this->checkId = $checkId;
         $this->loadCheck();
+
+
     }
 
     public function loadCheck()
     {
-        $this->check = Check::with(['table', 'orders.product', 'orders.currentStatusHistory'])
+        $this->check = \App\Models\Check::with(['table', 'orders.product', 'orders.currentStatusHistory'])
             ->findOrFail($this->checkId);
 
         $this->table = $this->check->table;
 
         // Recalcula o total do check
         $this->checkService->recalculateCheckTotal($this->check);
+
+        $this->currentCheck = $this->check;
+
+        // Define status permitidos para o check com base no status da mesa
+        $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($this->currentCheck?->status ?? '', $this->check);
     }
 
     public function openStatusModal()

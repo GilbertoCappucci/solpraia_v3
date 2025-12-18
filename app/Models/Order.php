@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -27,7 +28,7 @@ class Order extends Model
     public function getStatusAttribute()
     {
         // Usa a relação já carregada ou retorna 'pending' se não houver histórico
-        return $this->currentStatusHistory ? $this->currentStatusHistory->to_status : 'pending';
+        return $this->currentStatusHistory ? $this->currentStatusHistory->to_status : OrderStatusEnum::PENDING->value;
     }
 
     public function user()
@@ -52,9 +53,9 @@ class Order extends Model
 
     public function currentStatusHistory()
     {
-        return $this->hasOne(OrderStatusHistory::class)
-            ->latest('changed_at');
+        return $this->hasOne(OrderStatusHistory::class)->latestOfMany();
     }
+
 
     /**
      * Retorna o timestamp da última mudança de status
