@@ -19,6 +19,9 @@
                     @can('access-orders')
                         <flux:navlist.item icon="shopping-cart" :href="route('tables')" :current="request()->routeIs('tables')" wire:navigate>{{ __('Locais') }}</flux:navlist.item>
                     @endcan
+                    @can('access-admin')
+                        <flux:navlist.item icon="shopping-cart" :href="route('filament.admin.pages.dashboard')" :current="request()->routeIs('admin')" wire:navigate>{{ __('Admin') }}</flux:navlist.item>
+                    @endcan
                 </flux:navlist.group>
             </flux:navlist>
 
