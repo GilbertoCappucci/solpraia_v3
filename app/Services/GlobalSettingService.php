@@ -58,6 +58,7 @@ class GlobalSettingService
             'pix_key_type' => null,
             'pix_name' => null,
             'pix_city' => null,
+            'menu_id' => null,
         ]);
     }
 
@@ -81,6 +82,7 @@ class GlobalSettingService
         Session::put(self::SESSION_PREFIX . 'pix_key_type', $settings->pix_key_type);
         Session::put(self::SESSION_PREFIX . 'pix_name', $settings->pix_name);
         Session::put(self::SESSION_PREFIX . 'pix_city', $settings->pix_city);
+        Session::put(self::SESSION_PREFIX . 'menu_id', $settings->menu_id);
     }
 
     /**
@@ -170,6 +172,7 @@ class GlobalSettingService
             'pix_key_type' => 'pix_key_type',
             'pix_name' => 'pix_name',
             'pix_city' => 'pix_city',
+            'menu_id' => 'menu_id',
         ];
 
         return $map[$sessionKey] ?? null;

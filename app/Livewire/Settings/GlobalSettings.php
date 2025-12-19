@@ -20,6 +20,8 @@ class GlobalSettings extends Component
     public $pixKey;
     public $pixName;
     public $pixCity;
+    public $menuId;
+    public $menus = [];
 
     public function mount()
     {
@@ -29,6 +31,9 @@ class GlobalSettings extends Component
 
         $settings = GlobalSetting::firstOrNew(['user_id' => Auth::id()]);
         $this->loadSettings($settings);
+        $this->menus = \App\Models\Menu::where('user_id', Auth::id())
+            ->whereNull('menu_id')
+            ->get();
     }
 
     public function loadSettings(GlobalSetting $settings)
@@ -42,6 +47,7 @@ class GlobalSettings extends Component
         $this->pixKey = $settings->pix_key ?? '';
         $this->pixName = $settings->pix_name ?? '';
         $this->pixCity = $settings->pix_city ?? '';
+        $this->menuId = $settings->menu_id;
     }
 
     public function save()
@@ -60,6 +66,7 @@ class GlobalSettings extends Component
             'pixKey' => 'required|string|max:255',
             'pixName' => 'required|string|max:255',
             'pixCity' => 'nullable|string|max:255',
+            'menuId' => 'nullable|exists:menus,id',
         ]);
 
         GlobalSetting::updateOrCreate(
@@ -74,7 +81,13 @@ class GlobalSettings extends Component
                 'pix_key' => $this->pixKey,
                 'pix_name' => $this->pixName,
                 'pix_city' => $this->pixCity,
+                'menu_id' => $this->menuId,
             ]
+        );
+
+        // Atualiza na sessão imediatamente
+        app(\App\Services\GlobalSettingService::class)->syncToSession(
+            GlobalSetting::where('user_id', Auth::id())->first()
         );
 
         session()->flash('message', 'Salvo com sucesso!');

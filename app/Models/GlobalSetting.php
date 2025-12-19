@@ -22,6 +22,7 @@ class GlobalSetting extends Model
         'time_limit_in_transit',
         'time_limit_closed',
         'time_limit_releasing',
+        'menu_id',
     ];
 
     /**
@@ -30,5 +31,13 @@ class GlobalSetting extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relacionamento com o menu ativo
+     */
+    public function menu()
+    {
+        return $this->belongsTo(Menu::class);
     }
 }

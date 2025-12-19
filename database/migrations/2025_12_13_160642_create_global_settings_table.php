@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('global_settings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('menu_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('pix_key')->nullable();
             $table->string('pix_key_type')->nullable();
             $table->string('pix_name')->nullable();

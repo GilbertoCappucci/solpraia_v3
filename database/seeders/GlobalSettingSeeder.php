@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\GlobalSetting;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +13,9 @@ class GlobalSettingSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        GlobalSetting::factory()->create([
+            'user_id' => 2,
+            'menu_id' => null,
+        ]);
     }
 }

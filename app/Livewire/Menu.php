@@ -23,6 +23,7 @@ class Menu extends Component
     public $showFavoritesOnly = false;
     public $cart = [];
     public $searchTerm = '';
+    public $activeMenuId = null;
 
     protected $menuService;
     protected $orderService;
@@ -44,6 +45,7 @@ class Menu extends Component
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
+        $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
 
         $this->loadParentCategories();
         $this->loadProducts();
@@ -105,7 +107,7 @@ class Menu extends Component
 
     public function addToCart($productId)
     {
-        $product = \App\Models\Product::find($productId);
+        $product = $this->menuService->getProductWithMenuPrice($this->userId, $productId);
 
         if (isset($this->cart[$productId])) {
             $currentQty = $this->cart[$productId]['quantity'];
