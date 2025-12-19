@@ -37,8 +37,6 @@ class Tables extends Component
 
     public $pollingInterval;
 
-    protected $listeners = ['table-updated' => '$refresh'];
-
     protected $tableService;
     protected $orderService;
     protected $userPreferenceService;

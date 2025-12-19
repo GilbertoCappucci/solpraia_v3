@@ -30,6 +30,8 @@ class Menu extends Component
     protected $orderService;
     protected $stockService;
 
+    protected $listeners = ['global-settings-updated' => '$refresh'];
+
     public function boot(\App\Services\MenuService $menuService, \App\Services\OrderService $orderService, \App\Services\StockService $stockService)
     {
         $this->menuService = $menuService;
@@ -52,6 +54,8 @@ class Menu extends Component
         $this->loadParentCategories();
         $this->loadProducts();
     }
+
+    
 
     public function loadParentCategories()
     {
