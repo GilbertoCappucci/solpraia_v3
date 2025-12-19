@@ -24,6 +24,7 @@ class Menu extends Component
     public $cart = [];
     public $searchTerm = '';
     public $activeMenuId = null;
+    public $pollingInterval;
 
     protected $menuService;
     protected $orderService;
@@ -34,6 +35,7 @@ class Menu extends Component
         $this->menuService = $menuService;
         $this->orderService = $orderService;
         $this->stockService = $stockService;
+        $this->pollingInterval = config('restaurant.polling_interval');
     }
 
     public function mount($tableId)

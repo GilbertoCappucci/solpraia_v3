@@ -14,7 +14,7 @@ class Check extends Component
     public $check;
     public $table;
     public $title = 'Comanda';
-    public $pollingInterval = 5000;
+    public $pollingInterval;
 
     public $showStatusModal = false;
     public $currentCheck = null;
@@ -31,6 +31,7 @@ class Check extends Component
         $this->checkService = $checkService;
         $this->orderService = $orderService;
         $this->pixService = $pixService;
+        $this->pollingInterval = config('restaurant.polling_interval');
     }
 
     public function mount($checkId)

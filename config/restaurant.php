@@ -11,7 +11,7 @@ return [
     |
     */
 
-    'polling_interval' => 5000, // Intervalo de atualização em milissegundos (padrão: 5 segundos)
+    'polling_interval' => 10000, // Intervalo de atualização em milissegundos (padrão: 5 segundos)
 
     'time_limits' => [
         'pending' => 1,        // Tempo limite para pedidos aguardando (minutos)

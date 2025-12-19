@@ -24,7 +24,7 @@ class Orders extends Component
     public $orderIdsToCancel = [];
     public $orderToCancelData = null;
     public $hasActiveCheck = false;
-    public $pollingInterval = 5000;
+    public $pollingInterval;
     public $showDetailsModal = false;
     public $orderDetails = null;
     public $showFilterModal = false;
@@ -43,6 +43,7 @@ class Orders extends Component
     {
         $this->orderService = $orderService;
         $this->checkService = $checkService;
+        $this->pollingInterval = config('restaurant.polling_interval');
     }
 
     public function mount($tableId)

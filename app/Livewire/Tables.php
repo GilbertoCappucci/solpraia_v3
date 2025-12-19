@@ -35,17 +35,21 @@ class Tables extends Component
     public $mergeDestinationTableId = null;
     public $canMerge = false;
 
+    public $pollingInterval;
+
     protected $listeners = ['table-updated' => '$refresh'];
 
     protected $tableService;
     protected $orderService;
     protected $userPreferenceService;
 
+
     public function boot(TableService $tableService, OrderService $orderService, UserPreferenceService $userPreferenceService)
     {
         $this->tableService = $tableService;
         $this->orderService = $orderService;
         $this->userPreferenceService = $userPreferenceService;
+        $this->pollingInterval = config('restaurant.polling_interval');
     }
 
     public function mount()
