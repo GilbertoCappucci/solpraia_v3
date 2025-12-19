@@ -12,11 +12,14 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use App\Models\MenuItem;
+use App\Models\Category;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Actions\Action;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class MenusTable
 {
@@ -57,6 +60,11 @@ class MenusTable
                     ->color('info')
                     ->visible(fn($record) => $record->menu_id !== null)
                     ->form([
+                        Select::make('category_id')
+                            ->label('Categoria Específica')
+                            ->options(Category::where('user_id', Auth::id())->pluck('name', 'id'))
+                            ->placeholder('Todas as Categorias')
+                            ->searchable(),
                         TextInput::make('factor')
                             ->label('Fator de Ajuste (%)')
                             ->placeholder('Ex: 10 ou -5')
@@ -66,28 +74,42 @@ class MenusTable
                             ->required(),
                         Toggle::make('clear_existing')
                             ->label('Remover itens atuais antes de sincronizar?')
+                            ->helperText('Se uma categoria for selecionada, apenas os itens dessa categoria serão removidos.')
                             ->default(true),
                     ])
                     ->action(function ($record, array $data) {
                         $factor = 1 + ($data['factor'] / 100);
-                        $parentItems = MenuItem::where('menu_id', $record->menu_id)->get();
+                        $categoryId = $data['category_id'] ?? null;
+
+                        $query = MenuItem::where('menu_id', $record->menu_id);
+
+                        if ($categoryId) {
+                            $query->whereHas('product', fn($q) => $q->where('category_id', $categoryId));
+                        }
+
+                        $parentItems = $query->get();
 
                         if ($parentItems->isEmpty()) {
                             Notification::make()
                                 ->title('Aviso')
-                                ->body('O menu pai não possui itens para sincronizar.')
+                                ->body('Não há itens' . ($categoryId ? ' desta categoria' : '') . ' no menu pai para sincronizar.')
                                 ->warning()
                                 ->send();
                             return;
                         }
 
-                        DB::transaction(function () use ($record, $parentItems, $factor, $data) {
+                        DB::transaction(function () use ($record, $parentItems, $factor, $data, $categoryId) {
                             if ($data['clear_existing']) {
-                                $record->menuItems()->delete();
+                                if ($categoryId) {
+                                    $record->menuItems()
+                                        ->whereHas('product', fn($q) => $q->where('category_id', $categoryId))
+                                        ->delete();
+                                } else {
+                                    $record->menuItems()->delete();
+                                }
                             }
 
                             foreach ($parentItems as $item) {
-                                // Pega o preço do item no pai ou o preço base do produto
                                 $originalPrice = $item->price ?? $item->product?->price ?? 0;
 
                                 MenuItem::create([
