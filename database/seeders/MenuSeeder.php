@@ -16,17 +16,26 @@ class MenuSeeder extends Seeder
         //id:1 - user_id:2 - Main Menu
         Menu::factory()->create([
             'user_id' => 2,
-            'name' => 'Main Menu',
+            'menu_id' => null,
+            'name' => 'Principal',
             'active' => true,
         ]);
 
         //id:2 - user_id:2 - Secondary Menu
         Menu::factory()->create([
             'user_id' => 2,
-            'name' => 'Secondary Menu',
-            'active' => false,
+            'menu_id' => 1,
+            'name' => 'Alta temporada',
+            'active' => true,
         ]);
 
+        //id:3 - user_id:2 - Secondary Menu
+        Menu::factory()->create([
+            'user_id' => 2,
+            'menu_id' => 1,
+            'name' => 'Baixa temporada',
+            'active' => true,
+        ]);
 
         /*
         for ($i = 0; $i < 15; $i++) {

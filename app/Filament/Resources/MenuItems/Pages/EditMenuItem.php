@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Resources\Menus\Pages;
+namespace App\Filament\Resources\MenuItems\Pages;
 
-use App\Filament\Resources\Menus\MenuResource;
+use App\Filament\Resources\MenuItems\MenuItemResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 
-class EditMenu extends EditRecord
+class EditMenuItem extends EditRecord
 {
-    protected static string $resource = MenuResource::class;
+    protected static string $resource = MenuItemResource::class;
 
     protected function getHeaderActions(): array
     {
@@ -20,10 +20,4 @@ class EditMenu extends EditRecord
             RestoreAction::make(),
         ];
     }
-
-    protected function getRedirectUrl(): string
-    {
-        return $this->getResource()::getUrl('index');
-    }
-
 }

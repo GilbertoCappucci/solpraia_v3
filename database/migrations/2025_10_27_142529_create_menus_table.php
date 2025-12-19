@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('menus', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('menu_id')->nullable()->constrained('menus')->onDelete('cascade');
             $table->string('name');
             $table->boolean('active')->default(true);
             $table->timestamps();

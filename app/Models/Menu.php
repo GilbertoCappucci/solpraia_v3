@@ -13,7 +13,7 @@ class Menu extends Model
 
     protected $fillable = [
         'user_id',
-        'product_id',
+        'menu_id',
         'name',
         'active',
     ];
@@ -21,5 +21,10 @@ class Menu extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function menu()
+    {
+        return $this->belongsTo(Menu::class, 'menu_id');
     }
 }

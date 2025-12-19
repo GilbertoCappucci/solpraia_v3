@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Menus\Tables;
+namespace App\Filament\Resources\MenuItems\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -12,16 +12,18 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
-class MenusTable
+class MenuItemsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('name')
-                    ->searchable(),
                 TextColumn::make('menu.name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('product.name')
+                    ->searchable()
+                    ->sortable(),
                 IconColumn::make('active')
                     ->boolean(),
                 TextColumn::make('created_at')

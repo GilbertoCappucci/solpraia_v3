@@ -64,4 +64,6 @@ class MenuResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
+
 }
