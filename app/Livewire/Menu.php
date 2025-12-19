@@ -55,7 +55,10 @@ class Menu extends Component
         $this->loadProducts();
     }
 
-    
+    public function hydrate()
+    {
+        $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
+    }
 
     public function loadParentCategories()
     {
@@ -187,6 +190,8 @@ class Menu extends Component
 
     public function render()
     {
-        return view('livewire.menu');
+        return view('livewire.menu', [
+            'activeMenuId' => $this->activeMenuId,
+        ]);
     }
 }

@@ -34,7 +34,7 @@
     </div>
 
     {{-- Menu Content --}}
-    @if($activeMenuId)
+@if($activeMenuId)
     {{-- Barra de Busca --}}
     <div class="bg-white p-4 sticky top-14 z-30 shadow-sm">
         <input
@@ -173,7 +173,7 @@
         </div>
         @endif
     </div>
-    @else
+@else
     <div class="flex flex-col items-center justify-center py-20 px-6 text-center">
         <div class="bg-orange-100 p-4 rounded-full mb-4">
             <svg class="w-12 h-12 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,7 +188,7 @@
         </a>
         @endif
     </div>
-    @endif
+@endif
 
     {{-- Carrinho Fixo (Bottom Sheet) --}}
     @if(count($cart) > 0)

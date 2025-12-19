@@ -329,7 +329,6 @@ class Tables extends Component
             session()->flash('success', 'As mesas selecionadas foram liberadas.');
             $this->closeMergeModal();
             $this->toggleSelectionMode();
-            $this->dispatch('table-updated');
             return;
         } elseif (empty($sourceCheckIds)) {
             session()->flash('error', 'Nenhuma comanda de origem válida encontrada para unir.');
@@ -351,7 +350,6 @@ class Tables extends Component
         // 5. Resetar estado e atualizar UI
         $this->closeMergeModal();
         $this->toggleSelectionMode();
-        $this->dispatch('table-updated');
     }
 
     public function openTableStatusModal($tableId)
@@ -391,7 +389,6 @@ class Tables extends Component
 
         session()->flash('success', 'Status da mesa atualizado com sucesso!');
         $this->closeTableStatusModal();
-        $this->dispatch('table-updated');
     }
 
     public function getPollingIntervalProperty()

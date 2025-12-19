@@ -155,7 +155,6 @@ class Orders extends Component
         }
 
         session()->flash('success', 'Status atualizado com sucesso!');
-        $this->dispatch('table-updated'); // Dispara evento para outros componentes
         $this->closeStatusModal();
         $this->refreshData();
     }
