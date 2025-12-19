@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('menu_id')->constrained('menus')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->float('price')->nullable();
             $table->boolean('active')->default(true);
             $table->timestamps();
             $table->softDeletes();

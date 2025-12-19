@@ -15,6 +15,7 @@ class MenuItem extends Model
     protected $fillable = [
         'menu_id',
         'product_id',
+        'price',
         'active',
     ];
 

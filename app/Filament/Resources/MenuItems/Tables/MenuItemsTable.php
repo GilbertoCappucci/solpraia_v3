@@ -24,6 +24,10 @@ class MenuItemsTable
                 TextColumn::make('product.name')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('price')
+                    ->numeric()
+                    ->money('BRL')
+                    ->sortable(),
                 IconColumn::make('active')
                     ->boolean(),
                 TextColumn::make('created_at')
