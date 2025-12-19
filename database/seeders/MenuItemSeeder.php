@@ -57,21 +57,6 @@ class MenuItemSeeder extends Seeder
                 'product_id' => 2,
                 'active' => true,
             ],
-            [
-                'menu_id' => 2,
-                'product_id' => 3,
-                'active' => true,
-            ],
-            [
-                'menu_id' => 2,
-                'product_id' => 4,
-                'active' => true,
-            ],
-            [
-                'menu_id' => 2,
-                'product_id' => 5,
-                'active' => true,
-            ],
         ]);
 
         

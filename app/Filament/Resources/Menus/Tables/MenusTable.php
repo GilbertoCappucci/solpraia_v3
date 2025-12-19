@@ -84,7 +84,12 @@ class MenusTable
                         $query = MenuItem::where('menu_id', $record->menu_id);
 
                         if ($categoryId) {
-                            $query->whereHas('product', fn($q) => $q->where('category_id', $categoryId));
+                            $categoryIds = Category::where('id', $categoryId)
+                                ->orWhere('category_id', $categoryId)
+                                ->pluck('id')
+                                ->toArray();
+
+                            $query->whereHas('product', fn($q) => $q->whereIn('category_id', $categoryIds));
                         }
 
                         $parentItems = $query->get();
@@ -92,7 +97,7 @@ class MenusTable
                         if ($parentItems->isEmpty()) {
                             Notification::make()
                                 ->title('Aviso')
-                                ->body('Não há itens' . ($categoryId ? ' desta categoria' : '') . ' no menu pai para sincronizar.')
+                                ->body('Não há itens' . ($categoryId ? ' desta categoria (ou subcategorias)' : '') . ' no menu pai para sincronizar.')
                                 ->warning()
                                 ->send();
                             return;
@@ -101,8 +106,13 @@ class MenusTable
                         DB::transaction(function () use ($record, $parentItems, $factor, $data, $categoryId) {
                             if ($data['clear_existing']) {
                                 if ($categoryId) {
+                                    $categoryIds = Category::where('id', $categoryId)
+                                        ->orWhere('category_id', $categoryId)
+                                        ->pluck('id')
+                                        ->toArray();
+
                                     $record->menuItems()
-                                        ->whereHas('product', fn($q) => $q->where('category_id', $categoryId))
+                                        ->whereHas('product', fn($q) => $q->whereIn('category_id', $categoryIds))
                                         ->delete();
                                 } else {
                                     $record->menuItems()->delete();

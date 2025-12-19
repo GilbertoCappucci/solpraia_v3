@@ -29,4 +29,9 @@ class Product extends Model
     {
         return $this->hasOne(Stock::class);
     }
+
+    public function menuItems()
+    {
+        return $this->hasMany(MenuItem::class);
+    }
 }
