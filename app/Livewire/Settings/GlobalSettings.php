@@ -20,7 +20,7 @@ class GlobalSettings extends Component
     public $pixKey;
     public $pixName;
     public $pixCity;
-    public $menuId;
+    public $menuId = null;
     public $menus = [];
 
     public function mount()

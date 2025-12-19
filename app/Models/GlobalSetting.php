@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class GlobalSetting extends Model
@@ -24,6 +25,16 @@ class GlobalSetting extends Model
         'time_limit_releasing',
         'menu_id',
     ];
+
+    /**
+     * Garante que o menu_id seja um inteiro ou nulo.
+     */
+    protected function menuId(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($value) => filter_var($value, FILTER_VALIDATE_INT) !== false ? (int) $value : null,
+        );
+    }
 
     /**
      * Relacionamento com o usuário (admin)
