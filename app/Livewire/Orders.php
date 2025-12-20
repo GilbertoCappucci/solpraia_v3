@@ -562,6 +562,10 @@ class Orders extends Component
 
     public function render()
     {
+        // Garante que o check atual e seus pedidos estejam sempre atualizados no momento do render
+        // Isso resolve problemas de cache do Eloquent ou de dados desatualizados após ações que modificam o check/orders.
+        $this->refreshData();
+
         // Busca todos os pedidos ativos
         $allOrders = collect();
         $groupedOrders = collect();
