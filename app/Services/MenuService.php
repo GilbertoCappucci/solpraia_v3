@@ -136,6 +136,9 @@ class MenuService
 
     /**
      * Busca um produto específico com o preço do menu ativo
+     * Caso não tenha menu ativo, retorna o preço normal do produto
+     * Caso tenha preço no menu, retorna o preço do menu
+     * Caso não tenha preço no menu, retorna o preço normal do produto
      */
     public function getProductWithMenuPrice(int $userId, int $productId): ?Product
     {
@@ -145,13 +148,15 @@ class MenuService
             return Product::find($productId);
         }
 
-        return Product::where('products.id', $productId)
+        $product = Product::where('products.id', $productId)
             ->select('products.*', DB::raw('COALESCE(menu_items.price, products.price) as price'))
             ->leftJoin('menu_items', function ($join) use ($activeMenuId) {
                 $join->on('products.id', '=', 'menu_items.product_id')
                     ->where('menu_items.menu_id', '=', $activeMenuId);
             })
             ->first();
+
+        return $product;
     }
 
     /**
@@ -213,11 +218,18 @@ class MenuService
 
                 // Cria múltiplos pedidos individuais baseados na quantidade
                 for ($i = 0; $i < $item['quantity']; $i++) {
+                    // Busca o produto novamente para garantir que o preço do menu seja usado
+                    $productWithCorrectPrice = $this->getProductWithMenuPrice($userId, $productId);
+
+                    if (!$productWithCorrectPrice) {
+                        throw new \Exception("Produto não encontrado ao confirmar o pedido: {$item['product']->name}");
+                    }
+
                     $order = Order::create([
                         'user_id' => $userId,
                         'check_id' => $check->id,
                         'product_id' => $productId,
-                        'price' => $item['product']->price,
+                        'price' => $productWithCorrectPrice->price, // Usa o preço correto
                         'quantity' => 1, // Ordens são individuais
                         // status padrão é PENDING
                     ]);
