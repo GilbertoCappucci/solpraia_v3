@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('menu_id')->nullable()->constrained()->onDelete('cascade');
+            $table->boolean('pix_enabled')->default(false);
             $table->string('pix_key')->nullable();
             $table->string('pix_key_type')->nullable();
             $table->string('pix_name')->nullable();
@@ -24,6 +25,7 @@ return new class extends Migration
             $table->integer('time_limit_in_transit')->nullable();
             $table->integer('time_limit_closed')->nullable();
             $table->integer('time_limit_releasing')->nullable();
+            $table->integer('polling_interval')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

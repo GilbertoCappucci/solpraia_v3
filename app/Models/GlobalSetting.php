@@ -14,6 +14,8 @@ class GlobalSetting extends Model
 
     protected $fillable = [
         'user_id',
+        'menu_id',
+        'pix_enabled',
         'pix_key',
         'pix_key_type',
         'pix_name',
@@ -23,7 +25,7 @@ class GlobalSetting extends Model
         'time_limit_in_transit',
         'time_limit_closed',
         'time_limit_releasing',
-        'menu_id',
+        'polling_interval',
     ];
 
     /**

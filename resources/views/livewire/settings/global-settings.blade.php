@@ -67,7 +67,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4" />
                                     </svg></button>
                                 <div class="w-20 text-center">
-                                    <input type="number" wire:model="timeLimitPending" min="1" max="120" class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
+                                    <input type="number" wire:model.live="timeLimitPending" min="1" max="120" class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
                                     <span class="text-xs text-gray-500">min</span>
                                     @error('timeLimitPending') <span class="block text-red-500 text-[10px] mt-1">{{ $message }}</span> @enderror
                                 </div>
@@ -90,7 +90,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4" />
                                     </svg></button>
                                 <div class="w-20 text-center">
-                                    <input type="number" wire:model="timeLimitInProduction" min="1" max="120" class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
+                                    <input type="number" wire:model.live="timeLimitInProduction" min="1" max="120" class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
                                     <span class="text-xs text-gray-500">min</span>
                                     @error('timeLimitInProduction') <span class="block text-red-500 text-[10px] mt-1">{{ $message }}</span> @enderror
                                 </div>
@@ -113,7 +113,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4" />
                                     </svg></button>
                                 <div class="w-20 text-center">
-                                    <input type="number" wire:model="timeLimitInTransit" min="1" max="120" class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
+                                    <input type="number" wire:model.live="timeLimitInTransit" min="1" max="120" class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
                                     <span class="text-xs text-gray-500">min</span>
                                     @error('timeLimitInTransit') <span class="block text-red-500 text-[10px] mt-1">{{ $message }}</span> @enderror
                                 </div>
@@ -136,7 +136,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4" />
                                     </svg></button>
                                 <div class="w-20 text-center">
-                                    <input type="number" wire:model="timeLimitClosed" min="1" max="120" class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
+                                    <input type="number" wire:model.live="timeLimitClosed" min="1" max="120" class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
                                     <span class="text-xs text-gray-500">min</span>
                                     @error('timeLimitClosed') <span class="block text-red-500 text-[10px] mt-1">{{ $message }}</span> @enderror
                                 </div>
@@ -159,7 +159,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4" />
                                     </svg></button>
                                 <div class="w-20 text-center">
-                                    <input type="number" wire:model="timeLimitReleasing" min="1" max="120" class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
+                                    <input type="number" wire:model.live="timeLimitReleasing" min="1" max="120" class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-center text-lg font-bold text-gray-800 focus:border-gray-400 focus:ring-0">
                                     <span class="text-xs text-gray-500">min</span>
                                     @error('timeLimitReleasing') <span class="block text-red-500 text-[10px] mt-1">{{ $message }}</span> @enderror
                                 </div>
@@ -169,16 +169,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="pt-6">
-                        <button wire:click="save" wire:loading.attr="disabled" class="w-full flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-lg active:scale-95 disabled:opacity-50">
-                            <span wire:loading.remove wire:target="save">Salvar Alertas</span>
-                            <span wire:loading wire:target="save">Salvando...</span>
-                            <svg wire:loading.remove wire:target="save" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </button>
-                    </div>
                 </div>
             </div>
             @endif
@@ -186,10 +176,19 @@
             @if($activeTab === 'pix')
             <div class="p-6 md:p-8">
                 <div class="space-y-4">
+                    {{-- PIX Ativado --}}
+                    <div class="flex items-center justify-between">
+                        <label for="pix_enabled" class="block text-sm font-bold text-gray-700">Ativar Pagamento por PIX</label>
+                        <label for="pix_enabled" class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" wire:model.live="pix_enabled" id="pix_enabled" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-orange-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                        </label>
+                    </div>
+
                     {{-- Tipo de Chave --}}
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Tipo de Chave</label>
-                        <select wire:model="pixKeyType" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-gray-900 font-medium focus:border-orange-500 focus:ring-0">
+                        <select wire:model.live="pixKeyType" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-gray-900 font-medium focus:border-orange-500 focus:ring-0">
                             <option default value="">Selecione</option>
                             <option value="CPF">CPF</option>
                             <option value="CNPJ">CNPJ</option>
@@ -203,32 +202,22 @@
                     {{-- Chave PIX --}}
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Chave PIX</label>
-                        <input type="text" wire:model="pixKey" placeholder="Digite sua chave PIX" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-gray-900 font-medium placeholder-gray-400 focus:border-orange-500 focus:ring-0">
+                        <input type="text" wire:model.live="pixKey" placeholder="Digite sua chave PIX" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-gray-900 font-medium placeholder-gray-400 focus:border-orange-500 focus:ring-0">
                         @error('pixKey') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
 
                     {{-- Nome do Beneficiário --}}
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Nome do Beneficiário</label>
-                        <input type="text" wire:model="pixName" placeholder="Nome que aparecerá no banco" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-gray-900 font-medium placeholder-gray-400 focus:border-orange-500 focus:ring-0">
+                        <input type="text" wire:model.live="pixName" placeholder="Nome que aparecerá no banco" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-gray-900 font-medium placeholder-gray-400 focus:border-orange-500 focus:ring-0">
                         @error('pixName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
 
                     {{-- Cidade do Beneficiário --}}
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Cidade do Beneficiário</label>
-                        <input type="text" wire:model="pixCity" placeholder="Cidade da conta bancária" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-gray-900 font-medium placeholder-gray-400 focus:border-orange-500 focus:ring-0">
+                        <input type="text" wire:model.live="pixCity" placeholder="Cidade da conta bancária" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-gray-900 font-medium placeholder-gray-400 focus:border-orange-500 focus:ring-0">
                         @error('pixCity') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="pt-6">
-                        <button wire:click="save" wire:loading.attr="disabled" class="w-full flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-lg active:scale-95 disabled:opacity-50">
-                            <span wire:loading.remove wire:target="save">Salvar Configurações PIX</span>
-                            <span wire:loading wire:target="save">Salvando...</span>
-                            <svg wire:loading.remove wire:target="save" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -243,7 +232,7 @@
                         <p class="text-xs text-gray-500 mb-4">Selecione qual menu (cardápio) será utilizado no sistema para exibição e preços.</p>
 
                         <div class="relative">
-                            <select wire:model="menuId" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium focus:border-orange-500 focus:ring-0 appearance-none bg-white">
+                            <select wire:model.live="menuId" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium focus:border-orange-500 focus:ring-0 appearance-none bg-white">
                                 <option value="">Nenhum menu selecionado</option>
                                 @foreach($menus as $menu)
                                 <option value="{{ $menu->id }}">{{ $menu->name }}</option>
@@ -255,17 +244,6 @@
                                 </svg>
                             </div>
                         </div>
-                        @error('menuId') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="pt-6">
-                        <button wire:click="save" wire:loading.attr="disabled" class="w-full flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-lg active:scale-95 disabled:opacity-50">
-                            <span wire:loading.remove wire:target="save">Salvar Configurações de Menu</span>
-                            <span wire:loading wire:target="save">Salvando...</span>
-                            <svg wire:loading.remove wire:target="save" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </button>
                     </div>
                 </div>
             </div>

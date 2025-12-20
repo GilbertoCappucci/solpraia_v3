@@ -16,6 +16,17 @@ class GlobalSettingSeeder extends Seeder
         GlobalSetting::factory()->create([
             'user_id' => 2,
             'menu_id' => null,
+            'pix_enabled' => false,
+            'pix_key' => null,
+            'pix_key_type' => null,
+            'pix_name' => null,
+            'pix_city' => null,
+            'time_limit_pending' => 10,
+            'time_limit_in_production' => 10,
+            'time_limit_in_transit' => 10,
+            'time_limit_closed' => 10,
+            'time_limit_releasing' => 10,
+            'polling_interval' => 5000,
         ]);
     }
 }

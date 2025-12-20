@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Models\GlobalSetting;
 use App\Services\MenuService;
 use App\Services\OrderService;
 use App\Models\Table;
+use App\Services\GlobalSettingService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -29,15 +31,16 @@ class Menu extends Component
     protected $menuService;
     protected $orderService;
     protected $stockService;
+    protected $globalSettingsService;
 
     protected $listeners = ['global-settings-updated' => '$refresh'];
 
-    public function boot(\App\Services\MenuService $menuService, \App\Services\OrderService $orderService, \App\Services\StockService $stockService)
+    public function boot(\App\Services\MenuService $menuService, \App\Services\OrderService $orderService, \App\Services\StockService $stockService, GlobalSettingService $globalSettingsService)
     {
         $this->menuService = $menuService;
         $this->orderService = $orderService;
         $this->stockService = $stockService;
-        $this->pollingInterval = config('restaurant.polling_interval');
+        $this->globalSettingsService = $globalSettingsService;
     }
 
     public function mount($tableId)
@@ -50,6 +53,8 @@ class Menu extends Component
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
         $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
+
+        $this->pollingInterval = $this->globalSettingsService->getPollingInterval($this->userId);
 
         $this->loadParentCategories();
         $this->loadProducts();

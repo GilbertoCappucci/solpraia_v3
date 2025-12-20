@@ -4,7 +4,9 @@ namespace App\Livewire;
 
 use App\Enums\TableStatusEnum;
 use App\Services\CheckService;
+use App\Services\GlobalSettingService;
 use App\Services\OrderService;
+use App\Services\PixService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -22,22 +24,73 @@ class Check extends Component
 
     public $checkStatusAllowed = [];
 
+    public $pixPayload = null;
+    public $pixEnabled = false;
+
     protected $checkService;
     protected $orderService;
     protected $pixService;
+    protected $globalSettingService;
 
-    public function boot(CheckService $checkService, OrderService $orderService, \App\Services\PixService $pixService)
+    public function boot(
+        CheckService $checkService,
+        OrderService $orderService,
+        PixService $pixService,
+        GlobalSettingService $globalSettingService)
     {
         $this->checkService = $checkService;
         $this->orderService = $orderService;
         $this->pixService = $pixService;
-        $this->pollingInterval = config('restaurant.polling_interval');
+        $this->globalSettingService = $globalSettingService;
     }
 
     public function mount($checkId)
     {
         $this->checkId = $checkId;
+
         $this->loadCheck();
+        $this->pix();
+    }
+
+    public function hydrate(){
+        $this->loadCheck();
+        $this->pix();
+    }
+
+    public function pix(){
+        // PIX Generation
+        $globalSetting = $this->globalSettingService->loadGlobalSettings(Auth::user());
+        $this->pixEnabled = $globalSetting->pix_enabled;
+        $this->pollingInterval = $globalSetting->polling_interval;
+
+        if ($this->pixEnabled) {
+            $pixKey = $globalSetting->pix_key;
+            if ($pixKey) {
+                // Calculate total based on the same logic as view
+                if ($this->check->status === 'Closed' || $this->check->status === 'Paid') {
+                    $checkOrders = $this->check->orders->where('status', 'completed');
+                } else {
+                    $checkOrders = $this->check->orders->whereNotIn('status', ['pending', 'canceled']);
+                }
+                $checkTotal = $checkOrders->sum(fn($order) => $order->product->price);
+
+                if ($checkTotal > 0) {
+                    $pixKeyType = $globalSetting->pix_key_type;
+                    $pixName = $globalSetting->pix_name;
+                    $pixCity = $globalSetting->pix_city;
+
+
+                    $this->pixPayload = $this->pixService->generatePayload(
+                        $pixKey,
+                        $pixKeyType,
+                        $pixName,
+                        $pixCity,
+                        $checkTotal,
+                        $this->check->id // Use Check ID as transaction ID
+                    );
+                }
+            }
+        }
     }
 
     public function loadCheck()
@@ -142,41 +195,11 @@ class Check extends Component
         $allDelivered = $activeOrders->every(fn($order) => $order->status === 'completed');
         $hasIncompleteOrders = !$allDelivered && $activeOrders->count() > 0;
 
-        // PIX Generation
-        $pixPayload = null;
-        $globalSettingService = app(\App\Services\GlobalSettingService::class);
-        $pixKey = $globalSettingService->getSetting('pix_key');
-
-        if ($pixKey) {
-            // Calculate total based on the same logic as view
-            if ($this->check->status === 'Closed' || $this->check->status === 'Paid') {
-                $checkOrders = $this->check->orders->where('status', 'completed');
-            } else {
-                $checkOrders = $this->check->orders->whereNotIn('status', ['pending', 'canceled']);
-            }
-            $checkTotal = $checkOrders->sum(fn($order) => $order->product->price);
-
-            if ($checkTotal > 0) {
-                $pixKeyType = $globalSettingService->getSetting('pix_key_type', 'CPF');
-                $pixName = $globalSettingService->getSetting('pix_name');
-                $pixCity = $globalSettingService->getSetting('pix_city');
-
-
-                $pixPayload = $this->pixService->generatePayload(
-                    $pixKey,
-                    $pixKeyType,
-                    $pixName,
-                    $pixCity,
-                    $checkTotal,
-                    $this->check->id // Use Check ID as transaction ID
-                );
-            }
-        }
-
         return view('livewire.check', [
             'groupedOrders' => $groupedOrders,
             'hasIncompleteOrders' => $hasIncompleteOrders,
-            'pixPayload' => $pixPayload,
+            'pixPayload' => $this->pixPayload,
+            'pix_enabled' => $this->pixEnabled,
         ]);
     }
 }

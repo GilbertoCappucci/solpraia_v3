@@ -3,24 +3,20 @@
 namespace App\Services;
 
 use App\Models\GlobalSetting;
+use App\Models\Menu;
 use App\Models\User;
-use Illuminate\Support\Facades\Session;
 
 class GlobalSettingService
 {
-    /**
-     * Chaves das configurações globais na sessão
-     */
-    const SESSION_PREFIX = 'restaurant.';
 
     /**
-     * Carrega as configurações globais para a sessão
+     * Carrega as configurações globais do banco de dados
      * Busca as configurações do admin (user_id do usuário logado ou do próprio usuário se for admin)
      * 
      * @param User $user
      * @return void
      */
-    public function loadGlobalSettings(User $user): void
+    public function loadGlobalSettings(User $user): GlobalSetting
     {
         // Determina qual admin buscar as configurações
         $adminId = $user->user_id ?? $user->id;
@@ -28,153 +24,42 @@ class GlobalSettingService
         // Busca configurações globais do admin
         $settings = GlobalSetting::where('user_id', $adminId)->first();
 
-        if (!$settings) {
-            // Se não existe, cria com valores padrão do config
-            $settings = $this->createDefaultSettings($adminId);
-        }
-
-        // Carrega na sessão
-        $this->syncToSession($settings);
+        return $settings;
     }
 
-    /**
-     * Cria as configurações padrão para o admin a partir do config/restaurant.php
-     * 
-     * @param int $adminId
-     * @return GlobalSetting
-     */
-    public function createDefaultSettings(int $adminId): GlobalSetting
+    public function getTimeLimits(User $user): array
     {
-        $config = config('restaurant');
-
-        return GlobalSetting::create([
-            'user_id' => $adminId,
-            'time_limit_pending' => $config['time_limits']['pending'] ?? 15,
-            'time_limit_in_production' => $config['time_limits']['in_production'] ?? 30,
-            'time_limit_in_transit' => $config['time_limits']['in_transit'] ?? 10,
-            'time_limit_closed' => $config['time_limits']['closed'] ?? 5,
-            'time_limit_releasing' => $config['time_limits']['releasing'] ?? 10,
-            'pix_key' => null,
-            'pix_key_type' => null,
-            'pix_name' => null,
-            'pix_city' => null,
-            'menu_id' => null,
-        ]);
-    }
-
-    /**
-     * Sincroniza os dados do banco para a sessão
-     * 
-     * @param GlobalSetting $settings
-     * @return void
-     */
-    public function syncToSession(GlobalSetting $settings): void
-    {
-        // Time limits
-        Session::put(self::SESSION_PREFIX . 'time_limit_pending', $settings->time_limit_pending);
-        Session::put(self::SESSION_PREFIX . 'time_limit_in_production', $settings->time_limit_in_production);
-        Session::put(self::SESSION_PREFIX . 'time_limit_in_transit', $settings->time_limit_in_transit);
-        Session::put(self::SESSION_PREFIX . 'time_limit_closed', $settings->time_limit_closed);
-        Session::put(self::SESSION_PREFIX . 'time_limit_releasing', $settings->time_limit_releasing);
-
-        // PIX Settings
-        Session::put(self::SESSION_PREFIX . 'pix_key', $settings->pix_key);
-        Session::put(self::SESSION_PREFIX . 'pix_key_type', $settings->pix_key_type);
-        Session::put(self::SESSION_PREFIX . 'pix_name', $settings->pix_name);
-        Session::put(self::SESSION_PREFIX . 'pix_city', $settings->pix_city);
-        Session::put(self::SESSION_PREFIX . 'menu_id', $settings->menu_id);
-    }
-
-    /**
-     * Atualiza múltiplas configurações globais de uma vez
-     * APENAS ADMIN pode executar esta ação
-     * 
-     * @param User $user
-     * @param array $data
-     * @return bool
-     */
-    public function updateSettings(User $user, array $data): bool
-    {
-        // Verifica se o usuário é admin (user_id é null)
-        if ($user->user_id !== null) {
-            throw new \Exception('Apenas administradores podem alterar configurações globais.');
-        }
-
-        $settings = GlobalSetting::where('user_id', $user->id)->first();
-
-        if (!$settings) {
-            $settings = $this->createDefaultSettings($user->id);
-        }
-
-        $dbData = [];
-
-        foreach ($data as $key => $value) {
-            // Atualiza na sessão
-            Session::put(self::SESSION_PREFIX . $key, $value);
-
-            // Prepara dados para o banco
-            $dbField = $this->mapSessionKeyToDbField($key);
-            if ($dbField) {
-                $dbData[$dbField] = $value;
-            }
-        }
-
-        if (!empty($dbData)) {
-            $settings->update($dbData);
-        }
-
-        return true;
-    }
-
-    /**
-     * Obtém uma configuração da sessão
-     * 
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
-     */
-    public function getSetting(string $key, $default = null)
-    {
-        return Session::get(self::SESSION_PREFIX . $key, $default);
-    }
-
-    /**
-     * Obtém os time limits da sessão como array
-     * 
-     * @return array
-     */
-    public function getTimeLimits(): array
-    {
+        $settings = GlobalSetting::where('user_id', $user->user_id ?? $user->id)->first();
         return [
-            'pending' => $this->getSetting('time_limit_pending', config('restaurant.time_limits.pending')),
-            'in_production' => $this->getSetting('time_limit_in_production', config('restaurant.time_limits.in_production')),
-            'in_transit' => $this->getSetting('time_limit_in_transit', config('restaurant.time_limits.in_transit')),
-            'closed' => $this->getSetting('time_limit_closed', config('restaurant.time_limits.closed')),
-            'releasing' => $this->getSetting('time_limit_releasing', config('restaurant.time_limits.releasing')),
+            'pending' => $settings->pending_minutes,
+            'in_production' => $settings->in_production_minutes,
+            'releasing' => $settings->releasing_minutes,
+            'in_transit' => $settings->in_transit_minutes,
+            'closed' => $settings->closed_minutes,
+            'paid' => $settings->paid_minutes,
+            'occupied' => $settings->occupied_minutes,
+            'reserved' => $settings->reserved_minutes,
+            'close' => $settings->close_minutes,
         ];
     }
-
-    /**
-     * Mapeia a chave da sessão para o campo do banco de dados
-     * 
-     * @param string $sessionKey
-     * @return string|null
-     */
-    private function mapSessionKeyToDbField(string $sessionKey): ?string
+    
+    public static function getActiveMenu(int $user_id): ?Menu
     {
-        $map = [
-            'time_limit_pending' => 'time_limit_pending',
-            'time_limit_in_production' => 'time_limit_in_production',
-            'time_limit_in_transit' => 'time_limit_in_transit',
-            'time_limit_closed' => 'time_limit_closed',
-            'time_limit_releasing' => 'time_limit_releasing',
-            'pix_key' => 'pix_key',
-            'pix_key_type' => 'pix_key_type',
-            'pix_name' => 'pix_name',
-            'pix_city' => 'pix_city',
-            'menu_id' => 'menu_id',
-        ];
-
-        return $map[$sessionKey] ?? null;
+        $settings = GlobalSetting::where('user_id', $user_id)->first();
+        return Menu::find($settings->menu_id);
     }
+
+    public static function getPollingInterval(int $user_id): int
+    {
+        $settings = GlobalSetting::where('user_id', $user_id)->first();
+        return $settings->polling_interval;
+    }
+    
+    public static function getPixEnabled(int $user_id): bool
+    {
+        $settings = GlobalSetting::where('user_id', $user_id)->first();
+        return $settings->pix_enabled;
+    }
+    
+
 }

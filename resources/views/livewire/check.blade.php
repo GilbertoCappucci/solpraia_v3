@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.{{ $pollingInterval }}ms>
 
     <x-flash-message />
 
@@ -135,7 +135,7 @@
         @endif
 
         {{-- QR Code PIX --}}
-        @if(isset($pixPayload) && $pixPayload)
+        @if($pix_enabled && isset($pixPayload) && $pixPayload)
         <div class="flex flex-col items-center justify-center mt-6 mb-4">
             <p class="text-sm font-bold text-gray-900 mb-2">Pagamento via PIX</p>
 

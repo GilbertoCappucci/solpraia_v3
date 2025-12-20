@@ -41,7 +41,7 @@ class UserPreferenceService
      */
     public function createDefaultPreferences(User $user): UserPreference
     {
-        $config = config('restaurant');
+        $config = config('solpraia');
 
         return UserPreference::create([
             'user_id' => $user->id,
@@ -114,6 +114,4 @@ class UserPreferenceService
     {
         return Session::get(self::SESSION_PREFIX . $key, $default);
     }
-
-
 }

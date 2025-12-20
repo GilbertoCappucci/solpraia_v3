@@ -7,6 +7,7 @@ use App\Enums\OrderStatusEnum;
 use App\Enums\TableStatusEnum;
 use App\Models\Table;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class TableService
 {
@@ -348,7 +349,8 @@ class TableService
             : 0;
 
         // Delayed orders (virtual status - pedidos que excederam o tempo limite)
-        $timeLimits = $this->globalSettingService->getTimeLimits();
+
+        $timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
         $delayedOrders = $orders->filter(function ($order) use ($now, $timeLimits) {
             if (!$order->status_changed_at) return false;
 

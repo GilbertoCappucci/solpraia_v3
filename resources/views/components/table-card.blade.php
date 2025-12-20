@@ -2,7 +2,8 @@
 'table',
 'delayAlarmEnabled' => true,
 'selectionMode' => false,
-'selectedTables' => []
+'selectedTables' => [],
+'timeLimits' => []
 ])
 
 @php
@@ -52,7 +53,6 @@ $showClosedIndicator = $table->checkStatus === 'Closed' && $activeStatuses === 0
 $showReleasingIndicator = $table->status === 'releasing';
 
 // Atrasos
-$timeLimits = time_limits();
 $hasDelay = false;
 if (isset($table->pendingMinutes) && $table->pendingMinutes > $timeLimits['pending']) $hasDelay = true;
 if (isset($table->productionMinutes) && $table->productionMinutes > $timeLimits['in_production']) $hasDelay = true;

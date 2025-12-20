@@ -6,6 +6,7 @@ use App\Enums\OrderStatusEnum;
 use App\Services\OrderService;
 use App\Models\Table;
 use App\Services\CheckService;
+use App\Services\GlobalSettingService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -35,15 +36,17 @@ class Orders extends Component
     public $showGroupActionsModal = false;
     public $groupActionData = null;
     public $checkStatusAllowed = [];
+    public $timeLimits = [];
 
     protected $orderService;
     protected $checkService;
+    protected $globalSettingsService;
 
-    public function boot(OrderService $orderService, CheckService $checkService)
+    public function boot(OrderService $orderService, CheckService $checkService, GlobalSettingService $globalSettingsService)
     {
         $this->orderService = $orderService;
         $this->checkService = $checkService;
-        $this->pollingInterval = config('restaurant.polling_interval');
+        $this->globalSettingsService = $globalSettingsService;
     }
 
     public function mount($tableId)
@@ -55,6 +58,8 @@ class Orders extends Component
             ? $user->id
             : $user->user_id;
 
+        $this->pollingInterval = $this->globalSettingsService->getPollingInterval($this->userId);
+        $this->timeLimits = $this->globalSettingsService->getTimeLimits($user);
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);

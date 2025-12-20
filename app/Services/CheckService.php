@@ -165,4 +165,9 @@ class CheckService
 
         return $allowedStatuses;
     }
+
+    public function pixPayload(Check $check): string
+    {
+        return $check->pix_payload;
+    }
 }

@@ -42,12 +42,13 @@ class MenuService
     }
 
     /**
-     * Obter o ID do menu ativo para o usuário (vê na sessão primeiro)
+     * Obter o ID do menu ativo para o usuário
+     * Menu pai aonde menu_id é null
      */
-    public function getActiveMenuId(int $userId): ?int
+    public function getActiveMenuId(int $userId): int
     {
-        // Tenta pegar da sessão (carregado pelo GlobalSettingService)
-        return $this->globalSettingService->getSetting('menu_id');
+        $activeMenu = $this->globalSettingService->getActiveMenu($userId);
+        return $activeMenu->id;
     }
 
     /**
@@ -100,6 +101,7 @@ class MenuService
             ->whereHas('category', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             });
+
 
         // Sobrescreve o preço com o preço do menu, se existir
         $query->addSelect(DB::raw('COALESCE(menu_items.price, products.price) as price'));

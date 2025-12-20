@@ -277,6 +277,7 @@
                     :table="$table" 
                     :selectionMode="$selectionMode"
                     :selectedTables="$selectedTables"
+                    :timeLimits="$timeLimits"
                 />
             @endforeach
         </div>

@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Enums\DepartamentEnum;
 use App\Enums\CheckStatusEnum;
 use App\Models\Check;
+use App\Services\GlobalSettingService;
 use App\Services\OrderService;
 use App\Services\UserPreferenceService;
 use App\Services\TableService;
@@ -35,19 +36,22 @@ class Tables extends Component
     public $mergeDestinationTableId = null;
     public $canMerge = false;
 
+    public $timeLimits = [];
+
     public $pollingInterval;
 
     protected $tableService;
     protected $orderService;
     protected $userPreferenceService;
+    protected $globalSettingService;
 
-
-    public function boot(TableService $tableService, OrderService $orderService, UserPreferenceService $userPreferenceService)
+    public function boot(TableService $tableService, OrderService $orderService, UserPreferenceService $userPreferenceService, GlobalSettingService $globalSettingService)
     {
         $this->tableService = $tableService;
         $this->orderService = $orderService;
         $this->userPreferenceService = $userPreferenceService;
-        $this->pollingInterval = config('restaurant.polling_interval');
+        $this->globalSettingService = $globalSettingService;
+        $this->pollingInterval = config('solpraia.polling_interval');
     }
 
     public function mount()
@@ -63,6 +67,8 @@ class Tables extends Component
         $this->filterDepartaments = $this->userPreferenceService->getPreference('table_filter_departament', []);
         $this->globalFilterMode = $this->userPreferenceService->getPreference('table_filter_mode', 'AND');
         $this->showFilters = session('tables.showFilters', false);
+
+        $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
     }
 
     public function toggleFilters()
@@ -393,7 +399,7 @@ class Tables extends Component
 
     public function getPollingIntervalProperty()
     {
-        return config('restaurant.polling_interval', 5000);
+        return config('solpraia.polling_interval', 5000);
     }
 
     public function render()
