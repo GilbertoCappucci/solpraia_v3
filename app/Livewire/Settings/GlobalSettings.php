@@ -36,7 +36,6 @@ class GlobalSettings extends Component
         $this->loadSettings($settings);
         
         $this->menus = \App\Models\Menu::where('user_id', Auth::id())
-            ->whereNull('menu_id')
             ->get();
     }
 

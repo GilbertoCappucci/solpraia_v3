@@ -50,9 +50,20 @@ class MenuItemResource extends Resource
 
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
-        return parent::getRecordRouteBindingEloquentQuery()
+        $query = parent::getRecordRouteBindingEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+
+        // Log para depuração
+        if ($query->getModel()->exists) {
+            $record = $query->first();
+            \Log::info('Loading MenuItem for editing', [
+                'menu_item_id' => $record->id,
+                'product_id' => $record->product_id,
+                'menu_id' => $record->menu_id,
+            ]);
+        }
+        return $query;
     }
 }

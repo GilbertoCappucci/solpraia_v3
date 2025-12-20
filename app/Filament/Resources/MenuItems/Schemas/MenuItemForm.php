@@ -21,7 +21,7 @@ class MenuItemForm
                         name: 'menu',
                         titleAttribute: 'name',
                         modifyQueryUsing: fn(Builder $query) =>
-                        $query->where('menus.user_id', Auth::id())->whereNull('menus.menu_id')
+                        $query->where('menus.user_id', Auth::id())
                     )
                     ->live()
                     ->required(),
@@ -29,13 +29,25 @@ class MenuItemForm
                     ->relationship(
                         name: 'product',
                         titleAttribute: 'name',
-                        modifyQueryUsing: fn(Builder $query, Get $get) =>
-                        $query->whereHas('category', fn($q) => $q->where('user_id', Auth::id()))
-                            ->when(
-                                $get('menu_id'),
-                                fn($q, $menuId) =>
-                                $q->whereDoesntHave('menuItems', fn($sq) => $sq->where('menu_id', $menuId))
-                            )
+                        modifyQueryUsing: function(Builder $query, Get $get, ?\App\Models\MenuItem $record = null) // Adiciona o parâmetro $record
+                        {
+                            $query->whereHas('category', fn($q) => $q->where('user_id', Auth::id()));
+
+                            $selectedMenuId = $get('menu_id');
+                            $currentMenuItemId = $record?->id; // Agora usa o $record direto
+
+                            if ($selectedMenuId) {
+                                $excludedProductIds = \App\Models\MenuItem::query()
+                                                    ->where('menu_id', $selectedMenuId)
+                                                    ->when($currentMenuItemId, fn($sq) => $sq->where('id', '!=', $currentMenuItemId))
+                                                    ->pluck('product_id')
+                                                    ->toArray();
+
+                                $query->whereNotIn('id', $excludedProductIds);
+                            }
+
+                            return $query;
+                        }
                     )
                     ->required(),
                 TextInput::make('price')
