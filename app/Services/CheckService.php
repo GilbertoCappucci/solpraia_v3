@@ -17,18 +17,6 @@ class CheckService
      */
     public function recalculateCheckTotal(Check $check): void
     {
-        // Busca o ID do usuário (dono da mesa/restaurante)
-        // Como o Check está ligado à mesa, e a mesa ao usuário (Admin)
-        $userId = $check->table?->user_id;
-
-        // Tenta encontrar o menu ativo para esse usuário
-        $activeMenuId = null;
-        if ($userId) {
-            $activeMenuId = DB::table('menus')
-                ->where('user_id', $userId)
-                ->where('active', true)
-                ->value('id');
-        }
 
         // Busca todos os pedidos do check que NÃO foram cancelados nem estão aguardando
         $activeOrders = $check->orders()
@@ -39,20 +27,9 @@ class CheckService
                     && $order->status !== OrderStatusEnum::PENDING->value;
             });
 
-        // Pre-carrega os preços do menu para evitar N+1 se necessário, 
-        // mas aqui vamos fazer uma lógica simples de busca ou join
-        $menuPrices = [];
-        if ($activeMenuId) {
-            $menuPrices = MenuItem::where('menu_id', $activeMenuId)
-                ->whereIn('product_id', $activeOrders->pluck('product_id')->unique())
-                ->pluck('price', 'product_id')
-                ->toArray();
-        }
-
         // Recalcula o total baseado em quantidade * preço (Menu ou Produto)
-        $newTotal = $activeOrders->sum(function ($order) use ($menuPrices) {
-            $price = $menuPrices[$order->product_id] ?? $order->price;
-            return $order->quantity * $price;
+        $newTotal = $activeOrders->sum(function ($order)  {
+            return $order->quantity * $order->price;
         });
 
         // Atualiza o total do check se mudou
