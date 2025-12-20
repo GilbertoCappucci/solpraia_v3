@@ -195,7 +195,7 @@ class Orders extends Component
             $this->orderToCancelData = [
                 'product_name' => $order->product->name,
                 'quantity' => $order->quantity,
-                'price' => $order->product->price,
+                'price' => $order->price,
             ];
         }
 
@@ -283,10 +283,10 @@ class Orders extends Component
             'product_id' => $order->product_id,
             'product_name' => $order->product->name,
             'quantity' => $order->quantity,
-            'price' => $order->product->price,
+            'price' => $order->price,
             'status' => $order->status,
             'created_at' => $order->created_at,
-            'total' => $order->quantity * $order->product->price,
+            'total' => $order->quantity * $order->price,
             'available_stock' => $availableStock,
         ];
 
@@ -598,12 +598,12 @@ class Orders extends Component
                 return (object) [
                     'product_id' => $firstOrder->product_id,
                     'product_name' => $firstOrder->product->name,
-                    'product_price' => $firstOrder->product->price,
+                    'product_price' => $firstOrder->price,
                     'status' => $firstOrder->status,
                     'total_quantity' => $totalQuantity,
                     'order_count' => $orderCount,
                     'orders' => $group,
-                    'total_price' => $totalQuantity * $firstOrder->product->price,
+                    'total_price' => $totalQuantity * $firstOrder->price,
                     'status_changed_at' => $group->max('status_changed_at'), // Pega o mais recente
                 ];
             })->values();

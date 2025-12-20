@@ -15,7 +15,7 @@ class GlobalSettingSeeder extends Seeder
     {
         GlobalSetting::factory()->create([
             'user_id' => 2,
-            'menu_id' => null,
+            'menu_id' => 1,
             'pix_enabled' => false,
             'pix_key' => null,
             'pix_key_type' => null,

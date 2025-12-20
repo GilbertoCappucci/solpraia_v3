@@ -63,7 +63,7 @@
     } else {
     $checkOrders = $check->orders->whereNotIn('status', ['pending', 'canceled'])->sortBy('created_at');
     }
-    $checkTotal = $checkOrders->sum(fn($order) => $order->product->price);
+    $checkTotal = $checkOrders->sum(fn($order) => $order->price);
     @endphp
 
     <div class="max-w-sm mx-auto bg-white p-6 print:p-4 print:max-w-none">
@@ -108,7 +108,7 @@
                     @foreach($checkOrders as $order)
                     <tr class="border-b border-gray-200">
                         <td class="py-2 text-gray-900">{{ $order->product->name }}</td>
-                        <td class="py-2 text-right text-gray-900 font-medium">R$ {{ number_format($order->product->price, 2, ',', '.') }}</td>
+                        <td class="py-2 text-right text-gray-900 font-medium">R$ {{ number_format($order->price, 2, ',', '.') }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -207,7 +207,7 @@
                         <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($order->created_at)->format('H:i') }}</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-semibold text-gray-900">R$ {{ number_format($order->product->price, 2, ',', '.') }}</p>
+                        <p class="font-semibold text-gray-900">R$ {{ number_format($order->price, 2, ',', '.') }}</p>
                     </div>
                 </div>
                 @endforeach
@@ -233,7 +233,7 @@
                         <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($order->created_at)->format('H:i') }}</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-semibold text-gray-900">R$ {{ number_format($order->product->price, 2, ',', '.') }}</p>
+                        <p class="font-semibold text-gray-900">R$ {{ number_format($order->price, 2, ',', '.') }}</p>
                     </div>
                 </div>
                 @endforeach
@@ -259,7 +259,7 @@
                         <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($order->created_at)->format('H:i') }}</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-semibold text-gray-900">R$ {{ number_format($order->product->price, 2, ',', '.') }}</p>
+                        <p class="font-semibold text-gray-900">R$ {{ number_format($order->price, 2, ',', '.') }}</p>
                     </div>
                 </div>
                 @endforeach
@@ -285,7 +285,7 @@
                         <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($order->created_at)->format('H:i') }}</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-semibold text-gray-900">R$ {{ number_format($order->product->price, 2, ',', '.') }}</p>
+                        <p class="font-semibold text-gray-900">R$ {{ number_format($order->price, 2, ',', '.') }}</p>
                     </div>
                 </div>
                 @endforeach
@@ -311,7 +311,7 @@
                         <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($order->created_at)->format('H:i') }}</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-semibold text-gray-900 line-through">R$ {{ number_format($order->product->price, 2, ',', '.') }}</p>
+                        <p class="font-semibold text-gray-900 line-through">R$ {{ number_format($order->price, 2, ',', '.') }}</p>
                     </div>
                 </div>
                 @endforeach

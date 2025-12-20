@@ -228,7 +228,7 @@ $animate = $color === 'purple' ? 'animate-pulse' : '';
 
                 {{-- Preço --}}
                 @if($showPrice)
-                <span class="text-sm font-bold text-orange-600 ml-auto">R$ {{ number_format($order->product->price * $order->quantity, 2, ',', '.') }}</span>
+                <span class="text-sm font-bold text-orange-600 ml-auto">R$ {{ number_format($order->price * $order->quantity, 2, ',', '.') }}</span>
                 @endif
             </div>
         </div>

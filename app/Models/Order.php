@@ -16,6 +16,7 @@ class Order extends Model
         'user_id',
         'check_id',
         'product_id',
+        'price',
         'quantity',
     ];
 

@@ -72,7 +72,7 @@ class Check extends Component
                 } else {
                     $checkOrders = $this->check->orders->whereNotIn('status', ['pending', 'canceled']);
                 }
-                $checkTotal = $checkOrders->sum(fn($order) => $order->product->price);
+                $checkTotal = $checkOrders->sum(fn($order) => $order->price);
 
                 if ($checkTotal > 0) {
                     $pixKeyType = $globalSetting->pix_key_type;

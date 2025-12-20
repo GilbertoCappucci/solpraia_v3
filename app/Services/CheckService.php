@@ -51,7 +51,7 @@ class CheckService
 
         // Recalcula o total baseado em quantidade * preço (Menu ou Produto)
         $newTotal = $activeOrders->sum(function ($order) use ($menuPrices) {
-            $price = $menuPrices[$order->product_id] ?? $order->product->price;
+            $price = $menuPrices[$order->product_id] ?? $order->price;
             return $order->quantity * $price;
         });
 

@@ -217,6 +217,7 @@ class MenuService
                         'user_id' => $userId,
                         'check_id' => $check->id,
                         'product_id' => $productId,
+                        'price' => $item['product']->price,
                         'quantity' => 1, // Ordens são individuais
                         // status padrão é PENDING
                     ]);

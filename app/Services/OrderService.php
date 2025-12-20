@@ -173,7 +173,7 @@ class OrderService
      */
     public function calculateOrderStats(Collection $orders): array
     {
-        $total = $orders->sum(fn($order) => $order->product->price * $order->quantity);
+        $total = $orders->sum(fn($order) => $order->price * $order->quantity);
 
         if ($orders->isEmpty()) {
             return ['total' => $total, 'time' => 0];
