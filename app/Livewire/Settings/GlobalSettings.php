@@ -25,6 +25,10 @@ class GlobalSettings extends Component
     public $menuId = null;
     public $menus = [];
 
+    protected $listeners = [
+        'global.setting.updated' => 'updateSettings',
+    ];
+
     public function mount()
     {
         if (! Gate::allows('access-global-settings')) {
@@ -37,6 +41,13 @@ class GlobalSettings extends Component
         
         $this->menus = \App\Models\Menu::where('user_id', Auth::id())
             ->get();
+    }
+
+
+    public function updateSettings($settings)
+    {
+        logger('GlobalSettings updated', ['settings' => $settings]);
+        $this->mount();
     }
 
     public function loadSettings(GlobalSetting $settings)

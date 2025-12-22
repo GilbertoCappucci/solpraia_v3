@@ -4,8 +4,7 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Observers\UserObserver;
-use App\Services\GlobalSettingService;
-use App\Services\UserPreferenceService;
+
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Cache;
@@ -13,6 +12,12 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use App\Enums\RoleEnum; // Import RoleEnum
+use App\Models\GlobalSetting;
+use App\Observers\GlobalSettingObserver;
+use Filament\Facades\Filament;
+use Filament\Support\Assets\Js;
+use Filament\Support\Facades\FilamentAsset;
+use Filament\View\PanelsRenderHook;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,6 +36,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Registrar Observer do User
         User::observe(UserObserver::class);
+
+        // Registrar Observer do GlobalSetting
+        GlobalSetting::observe(GlobalSettingObserver::class);
 
         // Definir Gates de autorização
         // Admin sempre tem acesso a tudo
@@ -59,5 +67,14 @@ class AppServiceProvider extends ServiceProvider
                 Cache::forget('user-is-online-' . $event->user->id);
             }
         });
+
+        FilamentAsset::register([
+            Js::make('filament-reverb', asset('js/filament/filament-reverb.js')),
+        ]);
+
+        Filament::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            fn () => view('filament.partials.user-id')
+        );
     }
 }

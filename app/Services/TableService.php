@@ -8,6 +8,7 @@ use App\Enums\TableStatusEnum;
 use App\Models\Table;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use App\Events\TableUpdated;
 
 class TableService
 {
@@ -472,7 +473,11 @@ class TableService
         }
 
         $table->status = $newStatus;
-        return $table->save();
+        if ($table->save()) {
+            event(new TableUpdated($table)); // Dispatch the event
+            return true;
+        }
+        return false;
     }
 
     /**

@@ -107,16 +107,6 @@ class Tables extends Component
         $this->saveFiltersToSession();
     }
 
-    public function toggleDepartamentFilter($departament)
-    {
-        if (in_array($departament, $this->filterDepartaments)) {
-            $this->filterDepartaments = array_values(array_filter($this->filterDepartaments, fn($d) => $d !== $departament));
-        } else {
-            $this->filterDepartaments[] = $departament;
-        }
-        $this->saveFiltersToSession();
-    }
-
     public function toggleGlobalFilterMode()
     {
         $this->globalFilterMode = $this->globalFilterMode === 'OR' ? 'AND' : 'OR';
@@ -395,11 +385,6 @@ class Tables extends Component
 
         session()->flash('success', 'Status da mesa atualizado com sucesso!');
         $this->closeTableStatusModal();
-    }
-
-    public function getPollingIntervalProperty()
-    {
-        return config('solpraia.polling_interval', 5000);
     }
 
     public function render()

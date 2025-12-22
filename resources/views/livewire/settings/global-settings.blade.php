@@ -2,6 +2,7 @@
 
     @include('partials.settings-heading')
     <x-settings.layout :heading="__('Global Settings')" :subheading="__('Manage your application global settings')">
+        @
         {{-- Saved Indicator --}}
         @if (session()->has('message'))
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 2000)" x-transition
@@ -262,6 +263,6 @@
             </div>
             @endif
         </div>
-
+        
     </x-settings.layout>
 </section>

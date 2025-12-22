@@ -3,6 +3,9 @@
 
 <head>
     @include('partials.head')
+    <script>
+        window.userId = {{ auth()->user()->id }};
+    </script>
 </head>
 
 <body class="min-h-screen bg-white dark:bg-zinc-800">

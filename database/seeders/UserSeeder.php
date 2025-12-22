@@ -15,24 +15,11 @@ class UserSeeder extends Seeder
     public function run(): void
     {
 
-        // Create root
-        User::factory()->create([
-            'id' => 1,
-            'user_id' => null,
-            'name' => 'User root',
-            'email' => 'root@gmail.com',
-            'remember_token' => null,
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
-            'role' => RoleEnum::ROOT->value,
-            'active' => true,
-        ]);
 
         // Create admin
         User::factory()->create([
             'id' => 2,
-            'user_id' => null,
+            'user_id' => 2,
             'name' => 'User admin',
             'email' => 'sol@gmail.com',
             'remember_token' => null,
