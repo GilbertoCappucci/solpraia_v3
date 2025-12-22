@@ -14,9 +14,9 @@ class GlobalSettingService
      * Busca as configurações do admin (user_id do usuário logado ou do próprio usuário se for admin)
      * 
      * @param User $user
-     * @return void
+     * @return ?GlobalSetting
      */
-    public function loadGlobalSettings(User $user): GlobalSetting
+    public function loadGlobalSettings(User $user): ?GlobalSetting
     {
         // Determina qual admin buscar as configurações
         $adminId = $user->user_id ?? $user->id;
@@ -30,35 +30,56 @@ class GlobalSettingService
     public function getTimeLimits(User $user): array
     {
         $settings = GlobalSetting::where('user_id', $user->user_id ?? $user->id)->first();
+
+        // Define os valores padrão para todos os limites de tempo, caso não existam configurações.
+        $defaults = [
+            'pending' => 15,
+            'in_production' => 30,
+            'releasing' => 15,
+            'in_transit' => 10,
+            'closed' => 60,
+            'paid' => 120,      // Valor padrão, pois não está no formulário
+            'occupied' => 999,  // Valor padrão, pois não está no formulário
+            'reserved' => 999,  // Valor padrão, pois não está no formulário
+            'close' => 999,     // Valor padrão, pois não está no formulário
+        ];
+
+        if (!$settings) {
+            return $defaults;
+        }
+
         return [
-            'pending' => $settings->pending_minutes,
-            'in_production' => $settings->in_production_minutes,
-            'releasing' => $settings->releasing_minutes,
-            'in_transit' => $settings->in_transit_minutes,
-            'closed' => $settings->closed_minutes,
-            'paid' => $settings->paid_minutes,
-            'occupied' => $settings->occupied_minutes,
-            'reserved' => $settings->reserved_minutes,
-            'close' => $settings->close_minutes,
+            'pending' => $settings->time_limit_pending ?? $defaults['pending'],
+            'in_production' => $settings->time_limit_in_production ?? $defaults['in_production'],
+            'releasing' => $settings->time_limit_releasing ?? $defaults['releasing'],
+            'in_transit' => $settings->time_limit_in_transit ?? $defaults['in_transit'],
+            'closed' => $settings->time_limit_closed ?? $defaults['closed'],
+            'paid' => $settings->time_limit_paid ?? $defaults['paid'], // Mantém a lógica, mas usa um padrão
+            'occupied' => $settings->time_limit_occupied ?? $defaults['occupied'], // Mantém a lógica, mas usa um padrão
+            'reserved' => $settings->time_limit_reserved ?? $defaults['reserved'], // Mantém a lógica, mas usa um padrão
+            'close' => $settings->time_limit_close ?? $defaults['close'], // Mantém a lógica, mas usa um padrão
         ];
     }
     
     public static function getActiveMenu(int $user_id): ?Menu
     {
         $settings = GlobalSetting::where('user_id', $user_id)->first();
+        if (!$settings || !$settings->menu_id) {
+            return null;
+        }
         return Menu::find($settings->menu_id);
     }
 
     public static function getPollingInterval(int $user_id): int
     {
         $settings = GlobalSetting::where('user_id', $user_id)->first();
-        return $settings->polling_interval;
+        return $settings->polling_interval ?? config('solpraia.polling_interval', 5000);
     }
     
     public static function getPixEnabled(int $user_id): bool
     {
         $settings = GlobalSetting::where('user_id', $user_id)->first();
-        return $settings->pix_enabled;
+        return $settings->pix_enabled ?? false;
     }
     
 
