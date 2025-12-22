@@ -9,8 +9,8 @@
 @php
 $isSelected = $selectionMode && in_array($table->id, $selectedTables);
 
-// Condições para desabilitar a seleção (ex: mesas sem comanda ativa para unir)
-$isDisabled = $selectionMode && !$table->checkId;
+// Condições para desabilitar a seleção (ex: mesas sem comanda ativa para unir, ou em liberação)
+$isDisabled = $selectionMode && (!$table->checkId || $table->status === 'releasing');
 
 // Calcula quantidade de status ativos
 $activeStatuses = 0;
@@ -110,7 +110,10 @@ $selectionClasses .= ' ring-4 ring-offset-2 ring-blue-500';
         @elseif($showClosedIndicator)
         <div class="flex flex-col items-center justify-center gap-1">
             <div class="w-6 h-6 bg-orange-500 rounded-full"></div>
-            <span class="text-2xl font-bold text-orange-700">{{ $table->closedMinutes ?? 0 }}m</span>
+            <div class="flex flex-col items-center leading-tight">
+                <span class="text-2xl font-bold text-orange-700">{{ $table->closedMinutes ?? 0 }}m</span>
+                <span class="text-[10px] font-bold text-orange-600 uppercase tracking-wider">Fechando</span>
+            </div>
         </div>
         @elseif($showReleasingIndicator)
         <div class="flex flex-col items-center justify-center gap-1">
@@ -128,7 +131,7 @@ $selectionClasses .= ' ring-4 ring-offset-2 ring-blue-500';
     </div>
 
     {{-- Barra Inferior: Valor do Check --}}
-    @if(isset($table->checkTotal) && $table->checkTotal > 0)
+    @if(isset($table->checkTotal) && $table->checkTotal > 0 && $table->status !== 'releasing')
     <div class="absolute bottom-0 left-0 right-0 flex items-center justify-center px-3 py-2 {{ $bottomBarBg }} z-1 rounded-b-xl pointer-events-none">
         <span class="text-xl font-bold text-orange-600">
             R$ {{ number_format($table->checkTotal, 2, ',', '.') }}

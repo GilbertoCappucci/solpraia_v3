@@ -142,8 +142,13 @@ class Menu extends Component
                 session()->flash('error', 'Produto sem estoque.');
                 return;
             }
+            // Armazena apenas dados primitivos para evitar perda na serialização do Livewire
             $this->cart[$productId] = [
-                'product' => $product,
+                'product' => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $product->price, // Preço do menu item
+                ],
                 'quantity' => 1,
             ];
         }

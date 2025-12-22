@@ -149,7 +149,16 @@ class MenuService
         }
 
         $product = Product::where('products.id', $productId)
-            ->select('products.*', 'menu_items.price as price')
+            ->select(
+                'products.id',
+                'products.name',
+                'products.description',
+                'products.category_id',
+                'products.production_local',
+                'products.active',
+                'products.favorite',
+                'menu_items.price as price'
+            )
             ->join('menu_items', function ($join) use ($activeMenuId) {
                 $join->on('products.id', '=', 'menu_items.product_id')
                     ->where('menu_items.menu_id', '=', $activeMenuId);
@@ -166,7 +175,7 @@ class MenuService
     {
         $total = 0;
         foreach ($cart as $item) {
-            $total += $item['product']->price * $item['quantity'];
+            $total += $item['product']['price'] * $item['quantity'];
         }
         return $total;
     }
@@ -213,7 +222,7 @@ class MenuService
             foreach ($cart as $productId => $item) {
                 // Debita o estoque total deste item
                 if (!$this->stockService->decrement($productId, $item['quantity'])) {
-                    throw new \Exception("Erro ao debitar estoque do produto: {$item['product']->name}");
+                    throw new \Exception("Erro ao debitar estoque do produto: {$item['product']['name']}");
                 }
 
                 // Cria múltiplos pedidos individuais baseados na quantidade
@@ -222,23 +231,22 @@ class MenuService
                     $productWithCorrectPrice = $this->getProductWithMenuPrice($userId, $productId);
 
                     if (!$productWithCorrectPrice) {
-                        throw new \Exception("Produto não encontrado ao confirmar o pedido: {$item['product']->name}");
+                        throw new \Exception("Produto não encontrado ao confirmar o pedido: {$item['product']['name']}");
                     }
 
                     $order = Order::create([
                         'user_id' => $userId,
                         'check_id' => $check->id,
                         'product_id' => $productId,
-                        'price' => $productWithCorrectPrice->price, // Usa o preço correto
-                        'quantity' => 1, // Ordens são individuais
-                        // status padrão é PENDING
                     ]);
 
-                    // Cria histórico inicial
+                    // Cria histórico inicial com price e quantity
                     OrderStatusHistory::create([
                         'order_id' => $order->id,
                         'from_status' => null,
                         'to_status' => OrderStatusEnum::PENDING->value,
+                        'price' => $productWithCorrectPrice->price,
+                        'quantity' => 1,
                         'changed_at' => now(),
                     ]);
                 }

@@ -219,11 +219,13 @@ class OrderService
 
             // Se qtyToMove for 0 ou igual à quantidade atual, move TUDO (simples update)
             if ($qtyToMove <= 0 || $qtyToMove >= $currentQty) {
-                // Registra histórico
+                // Registra histórico com price e quantity atuais
                 OrderStatusHistory::create([
                     'order_id' => $order->id,
                     'from_status' => $oldStatus,
                     'to_status' => $newStatus,
+                    'price' => $order->price,
+                    'quantity' => $order->quantity,
                     'changed_at' => now(),
                 ]);
 
@@ -249,25 +251,30 @@ class OrderService
             } else {
                 // MOVIMENTO PARCIAL -> DIVISÃO (SPLIT)
 
-                // 1. Decrementa o pedido atual (fica no status antigo com qtd reduzida)
-                $order->quantity = $currentQty - $qtyToMove;
-                $order->save();
+                // 1. Cria novo histórico para o pedido atual com quantidade reduzida (mantendo status antigo)
+                OrderStatusHistory::create([
+                    'order_id' => $order->id,
+                    'from_status' => $oldStatus,
+                    'to_status' => $oldStatus, // Mantém o mesmo status
+                    'price' => $order->price,
+                    'quantity' => $currentQty - $qtyToMove, // Quantidade reduzida
+                    'changed_at' => now(),
+                ]);
 
                 // 2. Cria NOVO pedido com a quantidade movida e o NOVO status
                 $newOrder = Order::create([
                     'user_id' => $order->user_id,
                     'check_id' => $order->check_id,
                     'product_id' => $order->product_id,
-                    'quantity' => $qtyToMove,
                 ]);
 
-                // 3. Registra histórico para o NOVO pedido (Status Inicial -> Novo Status)
-                // Nota: O novo pedido nasce "do nada" na fase atual? Ou carrega histórico?
-                // R: Nasce com o status NOVO.
+                // 3. Registra histórico para o NOVO pedido com price e quantity
                 OrderStatusHistory::create([
                     'order_id' => $newOrder->id,
-                    'from_status' => $oldStatus, // Veio do status antigo
+                    'from_status' => $oldStatus,
                     'to_status' => $newStatus,
+                    'price' => $order->price,
+                    'quantity' => $qtyToMove,
                     'changed_at' => now(),
                 ]);
 
@@ -311,12 +318,20 @@ class OrderService
                     'order_id' => $orderId,
                     'from_status' => $order->status,
                     'to_status' => OrderStatusEnum::CANCELED->value,
+                    'price' => $order->price,
+                    'quantity' => $order->quantity,
                     'changed_at' => now(),
                 ]);
             } else {
-                // Cancela PARCIAL (Apenas reduz a quantidade)
-                // Para cancelamento parcial, mantém o status atual e apenas reduz quantidade
-                $order->decrement('quantity', $qtyToCancel);
+                // Cancela PARCIAL - cria novo histórico com quantidade reduzida
+                OrderStatusHistory::create([
+                    'order_id' => $orderId,
+                    'from_status' => $order->status,
+                    'to_status' => $order->status, // Mantém o mesmo status
+                    'price' => $order->price,
+                    'quantity' => $order->quantity - $qtyToCancel,
+                    'changed_at' => now(),
+                ]);
             }
 
             if ($order->check) {
@@ -360,6 +375,8 @@ class OrderService
                     'order_id' => $orderId,
                     'from_status' => $order->status,
                     'to_status' => OrderStatusEnum::CANCELED->value,
+                    'price' => $order->price,
+                    'quantity' => $order->quantity,
                     'changed_at' => now(),
                 ]);
 
@@ -408,8 +425,15 @@ class OrderService
                 return ['success' => false, 'message' => 'Erro ao atualizar estoque.'];
             }
 
-            // Simplesmente incrementa
-            $order->increment('quantity');
+            // Cria novo histórico com quantidade incrementada
+            OrderStatusHistory::create([
+                'order_id' => $order->id,
+                'from_status' => $order->status,
+                'to_status' => $order->status, // Mantém PENDING
+                'price' => $order->price,
+                'quantity' => $order->quantity + 1,
+                'changed_at' => now(),
+            ]);
 
             $this->checkService->recalculateCheckTotal($order->check);
 

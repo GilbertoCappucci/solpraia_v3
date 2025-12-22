@@ -16,12 +16,10 @@ class Order extends Model
         'user_id',
         'check_id',
         'product_id',
-        'price',
-        'quantity',
     ];
 
-    // Atributo virtual para status (busca do histórico)
-    protected $appends = ['status'];
+    // Atributos virtuais (buscam do histórico)
+    protected $appends = ['status', 'price', 'quantity', 'status_changed_at'];
 
     /**
      * Retorna o status atual do pedido baseado no histórico mais recente
@@ -30,6 +28,22 @@ class Order extends Model
     {
         // Usa a relação já carregada ou retorna 'pending' se não houver histórico
         return $this->currentStatusHistory ? $this->currentStatusHistory->to_status : OrderStatusEnum::PENDING->value;
+    }
+
+    /**
+     * Retorna o preço do pedido baseado no histórico mais recente
+     */
+    public function getPriceAttribute()
+    {
+        return $this->currentStatusHistory?->price ?? 0;
+    }
+
+    /**
+     * Retorna a quantidade do pedido baseada no histórico mais recente
+     */
+    public function getQuantityAttribute()
+    {
+        return $this->currentStatusHistory?->quantity ?? 1;
     }
 
     public function user()

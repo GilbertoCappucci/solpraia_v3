@@ -23,10 +23,28 @@ class OrderFactory extends Factory
      */
     public function definition(): array
     {
-
+        // Orders não têm mais price, quantity ou status diretamente
+        // Esses valores vêm do histórico
         return [
-            'status' => fake()->randomElement(OrderStatusEnum::cases())->value,
-            'status_changed_at' => now(),
+            // Apenas relacionamentos básicos
         ];
+    }
+
+    /**
+     * Callback executado após criar o pedido
+     * Cria o histórico inicial com status PENDING
+     */
+    public function configure()
+    {
+        return $this->afterCreating(function (\App\Models\Order $order) {
+            // Cria histórico inicial
+            $order->statusHistory()->create([
+                'from_status' => null,
+                'to_status' => OrderStatusEnum::PENDING->value,
+                'price' => fake()->randomFloat(2, 5, 50), // Preço aleatório para testes
+                'quantity' => 1,
+                'changed_at' => now(),
+            ]);
+        });
     }
 }

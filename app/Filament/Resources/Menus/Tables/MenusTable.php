@@ -11,8 +11,9 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use App\Models\MenuItem;
 use App\Models\Category;
+use App\Models\MenuItem;
+use App\Models\Product;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Select;
@@ -64,7 +65,18 @@ class MenusTable
                             ->label('Categoria Específica')
                             ->options(Category::where('user_id', Auth::id())->pluck('name', 'id'))
                             ->placeholder('Todas as Categorias')
-                            ->searchable(),
+                            ->searchable()
+                            ->disabled(fn($get) => $get('product_id') !== null)
+                            ->reactive()
+                            ->helperText('Desabilitado se um produto for selecionado.'),
+                        Select::make('product_id')
+                            ->label('Produto Específico')
+                            ->options(Product::whereHas('category', fn($q) => $q->where('user_id', Auth::id()))->pluck('name', 'id'))
+                            ->placeholder('Todos os Produtos')
+                            ->searchable()
+                            ->disabled(fn($get) => $get('category_id') !== null)
+                            ->reactive()
+                            ->helperText('Desabilitado se uma categoria for selecionada.'),
                         TextInput::make('factor')
                             ->label('Fator de Ajuste (%)')
                             ->placeholder('Ex: 10 ou -5')
@@ -74,16 +86,21 @@ class MenusTable
                             ->required(),
                         Toggle::make('clear_existing')
                             ->label('Remover itens atuais antes de sincronizar?')
-                            ->helperText('Se uma categoria for selecionada, apenas os itens dessa categoria serão removidos.')
+                            ->helperText('Se uma categoria ou produto for selecionado, apenas os itens correspondentes serão removidos.')
                             ->default(true),
                     ])
                     ->action(function ($record, array $data) {
                         $factor = 1 + ($data['factor'] / 100);
                         $categoryId = $data['category_id'] ?? null;
+                        $productId = $data['product_id'] ?? null;
 
                         $query = MenuItem::where('menu_id', $record->menu_id);
 
-                        if ($categoryId) {
+                        if ($productId) {
+                            // Se produto específico foi selecionado, filtra apenas por ele
+                            $query->where('product_id', $productId);
+                        } elseif ($categoryId) {
+                            // Caso contrário, filtra por categoria (se selecionada)
                             $categoryIds = Category::where('id', $categoryId)
                                 ->orWhere('category_id', $categoryId)
                                 ->pluck('id')
@@ -95,17 +112,24 @@ class MenusTable
                         $parentItems = $query->get();
 
                         if ($parentItems->isEmpty()) {
+                            $filterMsg = $productId ? ' deste produto' : ($categoryId ? ' desta categoria (ou subcategorias)' : '');
                             Notification::make()
                                 ->title('Aviso')
-                                ->body('Não há itens' . ($categoryId ? ' desta categoria (ou subcategorias)' : '') . ' no menu pai para sincronizar.')
+                                ->body('Não há itens' . $filterMsg . ' no menu pai para sincronizar.')
                                 ->warning()
                                 ->send();
                             return;
                         }
 
-                        DB::transaction(function () use ($record, $parentItems, $factor, $data, $categoryId) {
+                        DB::transaction(function () use ($record, $parentItems, $factor, $data, $categoryId, $productId) {
                             if ($data['clear_existing']) {
-                                if ($categoryId) {
+                                if ($productId) {
+                                    // Remove apenas o produto específico
+                                    $record->menuItems()
+                                        ->where('product_id', $productId)
+                                        ->delete();
+                                } elseif ($categoryId) {
+                                    // Remove itens da categoria
                                     $categoryIds = Category::where('id', $categoryId)
                                         ->orWhere('category_id', $categoryId)
                                         ->pluck('id')
@@ -115,6 +139,7 @@ class MenusTable
                                         ->whereHas('product', fn($q) => $q->whereIn('category_id', $categoryIds))
                                         ->delete();
                                 } else {
+                                    // Remove todos os itens
                                     $record->menuItems()->delete();
                                 }
                             }
