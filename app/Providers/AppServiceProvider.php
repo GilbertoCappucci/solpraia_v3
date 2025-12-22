@@ -68,13 +68,6 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        FilamentAsset::register([
-            Js::make('filament-reverb', asset('js/filament/filament-reverb.js')),
-        ]);
-
-        Filament::registerRenderHook(
-            PanelsRenderHook::HEAD_END,
-            fn () => view('filament.partials.user-id')
-        );
+        
     }
 }

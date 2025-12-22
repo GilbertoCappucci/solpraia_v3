@@ -3,6 +3,9 @@
 
 <head>
     @include('partials.head')
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <script>
         window.userId = {{ auth()->user()->id }};
     </script>

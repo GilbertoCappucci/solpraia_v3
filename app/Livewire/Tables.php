@@ -12,6 +12,8 @@ use App\Services\TableService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
+use Livewire\Attributes\On;
+
 class Tables extends Component
 {
     public $title = 'Locais';
@@ -68,6 +70,13 @@ class Tables extends Component
         $this->globalFilterMode = $this->userPreferenceService->getPreference('table_filter_mode', 'AND');
         $this->showFilters = session('tables.showFilters', false);
 
+        $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
+    }
+
+    #[On('global.setting.updated')]
+    public function refreshSetting($data)
+    {
+        dd($data);
         $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
     }
 
