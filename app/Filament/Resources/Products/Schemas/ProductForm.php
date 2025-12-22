@@ -33,10 +33,6 @@ class ProductForm
                 Textarea::make('description')
                     ->default(null)
                     ->columnSpanFull(),
-                TextInput::make('price')
-                    ->required()
-                    ->numeric()
-                    ->prefix('$'),
                 Toggle::make('favorite')
                     ->required(),
                 Toggle::make('active')

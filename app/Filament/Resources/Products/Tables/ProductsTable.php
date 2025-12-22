@@ -25,9 +25,6 @@ class ProductsTable
                     ->searchable(),
                 TextColumn::make('name')
                     ->searchable(),
-                TextColumn::make('price')
-                    ->money()
-                    ->sortable(),
                 IconColumn::make('favorite')
                     ->boolean(),
                 IconColumn::make('active')

@@ -22,7 +22,6 @@ class ProductSeeder extends Seeder
             'production_local' => DepartamentEnum::BAR,
             'name' => 'Coca-Cola',
             'description' => 'Refrigerante sabor cola',
-            'price' => 5.00,
             'favorite' => false,
             'active' => true,
         ]);
@@ -33,7 +32,6 @@ class ProductSeeder extends Seeder
             'production_local' => DepartamentEnum::BAR,
             'name' => 'Suco de laranja',
             'description' => 'Suco natural de laranja',
-            'price' => 7.00,
             'favorite' => false,
             'active' => true,
         ]);
@@ -44,7 +42,6 @@ class ProductSeeder extends Seeder
             'production_local' => DepartamentEnum::BAR,
             'name' => 'Agua mineral sem gas',
             'description' => 'Agua mineral sem gas',
-            'price' => 3.00,
             'favorite' => true,
             'active' => true,
         ]);
@@ -55,7 +52,6 @@ class ProductSeeder extends Seeder
             'production_local' => DepartamentEnum::BAR,
             'name' => 'Agua mineral com gas',
             'description' => 'Agua mineral com gas',
-            'price' => 3.50,
             'favorite' => false,
             'active' => true,
         ]);
@@ -66,7 +62,6 @@ class ProductSeeder extends Seeder
             'production_local' => DepartamentEnum::KITCHEN,
             'name' => 'Batata frita tradicional',
             'description' => 'Batata frita tradicional crocante',
-            'price' => 15.00,
             'favorite' => true,
             'active' => true,
         ]);
@@ -77,7 +72,6 @@ class ProductSeeder extends Seeder
             'production_local' => DepartamentEnum::KITCHEN,
             'name' => 'Batata frita cheddar e bacon',
             'description' => 'Batata frita com cheddar e bacon crocante',
-            'price' => 20.00,
             'favorite' => false,
             'active' => true,
         ]);

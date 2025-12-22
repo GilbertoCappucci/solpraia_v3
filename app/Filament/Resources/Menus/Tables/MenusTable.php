@@ -120,7 +120,7 @@ class MenusTable
                             }
 
                             foreach ($parentItems as $item) {
-                                $originalPrice = $item->price ?? $item->product?->price ?? 0;
+                                $originalPrice = $item->price;
 
                                 MenuItem::create([
                                     'menu_id' => $record->id,

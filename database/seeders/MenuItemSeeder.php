@@ -21,26 +21,31 @@ class MenuItemSeeder extends Seeder
             [
                 'menu_id' => 1,
                 'product_id' => 1,
+                'price' => 10,
                 'active' => true,
             ],
             [
                 'menu_id' => 1,
                 'product_id' => 2,
+                'price' => 20,
                 'active' => true,
             ],
             [
                 'menu_id' => 1,
                 'product_id' => 3,
+                'price' => 30,
                 'active' => true,
             ],
             [
                 'menu_id' => 1,
                 'product_id' => 4,
+                'price' => 40,
                 'active' => true,
             ],
             [
                 'menu_id' => 1,
                 'product_id' => 5,
+                'price' => 50,
                 'active' => true,
             ],
         ]);
@@ -50,11 +55,13 @@ class MenuItemSeeder extends Seeder
             [
                 'menu_id' => 2,
                 'product_id' => 1,
+                'price' => 10,
                 'active' => true,
             ],
             [
                 'menu_id' => 2,
                 'product_id' => 2,
+                'price' => 20,
                 'active' => true,
             ],
         ]);

@@ -7,6 +7,7 @@ use App\Services\MenuService;
 use App\Services\OrderService;
 use App\Models\Table;
 use App\Services\GlobalSettingService;
+use App\Services\StockService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -35,7 +36,7 @@ class Menu extends Component
 
     protected $listeners = ['global-settings-updated' => '$refresh'];
 
-    public function boot(\App\Services\MenuService $menuService, \App\Services\OrderService $orderService, \App\Services\StockService $stockService, GlobalSettingService $globalSettingsService)
+    public function boot(MenuService $menuService, OrderService $orderService, StockService $stockService, GlobalSettingService $globalSettingsService)
     {
         $this->menuService = $menuService;
         $this->orderService = $orderService;
@@ -123,6 +124,11 @@ class Menu extends Component
     public function addToCart($productId)
     {
         $product = $this->menuService->getProductWithMenuPrice($this->userId, $productId);
+
+        if (!$product) {
+            session()->flash('error', 'Produto não disponível no menu atual.');
+            return;
+        }
 
         if (isset($this->cart[$productId])) {
             $currentQty = $this->cart[$productId]['quantity'];

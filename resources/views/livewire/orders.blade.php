@@ -123,7 +123,7 @@
             @endforeach
             <div class="flex items-center justify-between">
                 <span class="text-lg font-semibold text-gray-700">Total Geral:</span>
-                <span class="text-2xl font-bold text-gray-700">R$ {{ number_format(($currentCheck->total??0), 2, ',', '.') }}</span>
+                <span class="text-2xl font-bold text-gray-700">R$ {{ number_format($checkTotal, 2, ',', '.') }}</span>
             </div>
         </div>
         @endif
@@ -279,7 +279,7 @@
                         <div class="flex-1 cursor-pointer" wire:click.stop="openDetailsFromGroup({{ $orderObj->id }})">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-lg font-bold text-gray-900">{{ $orderObj->quantity }} {{ $product->name }}</span>
-                                <span class="text-sm font-semibold text-orange-600">R$ {{ number_format($product->price * $orderObj->quantity, 2, ',', '.') }}</span>
+                                <span class="text-sm font-semibold text-orange-600">R$ {{ number_format($orderObj->price * $orderObj->quantity, 2, ',', '.') }}</span>
                             </div>
                             <div class="flex items-center justify-between text-xs text-gray-500">
                                 <span>Pedido #{{ $orderObj->id }}</span>

@@ -15,22 +15,33 @@ class CheckService
      * Recalcula o total de um check específico
      * Considera apenas pedidos que NÃO estão em PENDING nem CANCELED
      */
-    public function recalculateCheckTotal(Check $check): void
+    /**
+     * Calcula o total do check baseado nas regras de negócio (ignora Pending/Canceled)
+     * Não persiste no banco.
+     */
+    public function calculateTotal(Check $check): float
     {
+        // Busca todos os pedidos do check (se já estiverem carregados, usa a coleção, senão carrega)
+        $orders = $check->relationLoaded('orders') ? $check->orders : $check->orders()->with(['currentStatusHistory', 'product'])->get();
 
-        // Busca todos os pedidos do check que NÃO foram cancelados nem estão aguardando
-        $activeOrders = $check->orders()
-            ->with(['currentStatusHistory', 'product'])
-            ->get()
-            ->filter(function ($order) {
-                return $order->status !== OrderStatusEnum::CANCELED->value
-                    && $order->status !== OrderStatusEnum::PENDING->value;
-            });
+        // Filtra pedidos ativos (não cancelados nem aguardando)
+        $activeOrders = $orders->filter(function ($order) {
+            return $order->status !== OrderStatusEnum::CANCELED->value
+                && $order->status !== OrderStatusEnum::PENDING->value;
+        });
 
-        // Recalcula o total baseado em quantidade * preço (Menu ou Produto)
-        $newTotal = $activeOrders->sum(function ($order)  {
+        // Retorna a soma
+        return $activeOrders->sum(function ($order) {
             return $order->quantity * $order->price;
         });
+    }
+
+    /**
+     * Recalcula e persiste o total de um check específico
+     */
+    public function recalculateCheckTotal(Check $check): void
+    {
+        $newTotal = $this->calculateTotal($check);
 
         // Atualiza o total do check se mudou
         if ($check->total != $newTotal) {

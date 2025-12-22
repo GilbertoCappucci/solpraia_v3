@@ -29,7 +29,7 @@ class MenuItemForm
                     ->relationship(
                         name: 'product',
                         titleAttribute: 'name',
-                        modifyQueryUsing: function(Builder $query, Get $get, ?\App\Models\MenuItem $record = null) // Adiciona o parâmetro $record
+                        modifyQueryUsing: function (Builder $query, Get $get, ?\App\Models\MenuItem $record = null) // Adiciona o parâmetro $record
                         {
                             $query->whereHas('category', fn($q) => $q->where('user_id', Auth::id()));
 
@@ -38,10 +38,10 @@ class MenuItemForm
 
                             if ($selectedMenuId) {
                                 $excludedProductIds = \App\Models\MenuItem::query()
-                                                    ->where('menu_id', $selectedMenuId)
-                                                    ->when($currentMenuItemId, fn($sq) => $sq->where('id', '!=', $currentMenuItemId))
-                                                    ->pluck('product_id')
-                                                    ->toArray();
+                                    ->where('menu_id', $selectedMenuId)
+                                    ->when($currentMenuItemId, fn($sq) => $sq->where('id', '!=', $currentMenuItemId))
+                                    ->pluck('product_id')
+                                    ->toArray();
 
                                 $query->whereNotIn('id', $excludedProductIds);
                             }
@@ -51,7 +51,8 @@ class MenuItemForm
                     )
                     ->required(),
                 TextInput::make('price')
-                    ->numeric(),
+                    ->numeric()
+                    ->required(),
                 Toggle::make('active')
                     ->required(),
             ]);

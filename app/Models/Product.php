@@ -15,7 +15,6 @@ class Product extends Model
         'production_local',
         'name',
         'description',
-        'price',
         'active',
         'favorite',
     ];

@@ -367,7 +367,7 @@ class Orders extends Component
             'total_quantity' => $selectedOrders->sum('quantity'),
             'product_name' => $firstOrder['product']['name'] ?? '',
             'status' => $firstOrder['status'] ?? 'pending',
-            'total_price' => $selectedOrders->sum(fn($o) => $o['quantity'] * $o['product']['price']),
+            'total_price' => $selectedOrders->sum(fn($o) => $o['quantity'] * $o['price']),
         ];
 
         $this->showGroupActionsModal = true;
@@ -607,10 +607,13 @@ class Orders extends Component
                     'total_quantity' => $totalQuantity,
                     'order_count' => $orderCount,
                     'orders' => $group,
-                    'total_price' => $totalQuantity * $firstOrder->price,
-                    'status_changed_at' => $group->max('status_changed_at'), // Pega o mais recente
+                    'total_price' => $group->sum(fn($o) => $o->quantity * $o->price), // Necessário para exibir preço do grupo
+                    'status_changed_at' => $group->max('status_changed_at'), // Restaurado para cálculo de atraso na view
                 ];
             })->values();
+
+            // Calcula o total geral usando o Service para garantir a regra de negócio (ignora Pending/Canceled)
+            $ordersTotal = $this->checkService->calculateTotal($this->currentCheck);
         }
 
         // Permite adicionar pedidos se não há check ainda (NULL) ou se check está Open
@@ -620,6 +623,7 @@ class Orders extends Component
             'groupedOrders' => $groupedOrders,
             'isCheckOpen' => $isCheckOpen,
             'orders' => $orders ?? collect(),
+            'checkTotal' => $ordersTotal ?? 0,
         ]);
     }
 }

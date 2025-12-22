@@ -25,7 +25,6 @@ class ProductFactory extends Factory
             //'category_id' => $this->getRandomCategoryId($user_id),
             'name' => fake()->word(),
             'description' => fake()->sentence(),
-            'price' => fake()->randomFloat(2, 1, 100),
             'active' => fake()->boolean(80),
             'favorite' => fake()->boolean(20),
         ];

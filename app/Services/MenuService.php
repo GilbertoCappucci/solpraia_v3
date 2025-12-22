@@ -103,8 +103,8 @@ class MenuService
             });
 
 
-        // Sobrescreve o preço com o preço do menu, se existir
-        $query->addSelect(DB::raw('COALESCE(menu_items.price, products.price) as price'));
+        // Seleciona o preço diretamente do item do menu
+        $query->addSelect('menu_items.price as price');
 
         // Se está mostrando apenas favoritos
         if ($showFavoritesOnly) {
@@ -149,8 +149,8 @@ class MenuService
         }
 
         $product = Product::where('products.id', $productId)
-            ->select('products.*', DB::raw('COALESCE(menu_items.price, products.price) as price'))
-            ->leftJoin('menu_items', function ($join) use ($activeMenuId) {
+            ->select('products.*', 'menu_items.price as price')
+            ->join('menu_items', function ($join) use ($activeMenuId) {
                 $join->on('products.id', '=', 'menu_items.product_id')
                     ->where('menu_items.menu_id', '=', $activeMenuId);
             })
