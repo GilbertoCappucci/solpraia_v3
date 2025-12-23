@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('order_status_history', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
-            $table->string('from_status')->nullable(); // Status anterior
-            $table->string('to_status'); // Novo status
-            $table->double('price');
-            $table->integer('quantity')->default(1);
-            $table->timestamp('changed_at'); // Quando mudou
-            $table->text('notes')->nullable(); // Observações opcionais
-            $table->timestamps();
-            
-            $table->index(['order_id', 'changed_at']);
-        });
+        if (!Schema::hasTable('order_status_history')) {
+            Schema::create('order_status_history', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
+                $table->string('from_status')->nullable(); // Status anterior
+                $table->string('to_status'); // Novo status
+                $table->double('price');
+                $table->integer('quantity')->default(1);
+                $table->timestamp('changed_at'); // Quando mudou
+                $table->text('notes')->nullable(); // Observações opcionais
+                $table->timestamps();
+                
+                $table->index(['order_id', 'changed_at']);
+            });
+        }
     }
 
     /**
