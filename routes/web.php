@@ -34,8 +34,6 @@ Route::get('/home', function () {
 // =============================================
 Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
-    // Nova rota para Configurações Globais (admin apenas)
-    Route::get('settings/global', GlobalSettings::class)->name('settings.global')->middleware('can:access-global-settings');
 });
 
 // =============================================

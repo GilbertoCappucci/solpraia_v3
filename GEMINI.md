@@ -704,3 +704,13 @@ Forms\Components\Select::make('user_id')
 - Table filters: `Tables/Filters/`
 - Actions: `Actions/`
 </laravel-boost-guidelines>
+
+--- Context from: C:\Users\gilbe\.gemini\GEMINI.md ---
+## Gemini Added Memories
+- Falar em português/brasileiro.
+--- End of Context from: C:\Users\gilbe\.gemini\GEMINI.md ---
+
+--- Context from: GEMINI.md ---
+## Gemini Added Memories
+- Falar em português/brasileiro.
+--- End of Context from: GEMINI.md ---

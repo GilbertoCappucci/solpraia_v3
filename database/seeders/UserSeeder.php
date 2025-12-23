@@ -18,8 +18,8 @@ class UserSeeder extends Seeder
 
         // Create admin
         User::factory()->create([
-            'id' => 2,
-            'user_id' => 2,
+            'id' => 1,
+            'user_id' => 1,
             'name' => 'User admin',
             'email' => 'sol@gmail.com',
             'remember_token' => null,
@@ -32,8 +32,8 @@ class UserSeeder extends Seeder
 
         //Create device 001
         User::factory()->create([
-            'id' => 3,
-            'user_id' => 2,
+            'id' => 2,
+            'user_id' => 1,
             'name' => 'Device 001',
             'email' => 'sol1@gmail.com',
             'email_verified_at' => now(),
@@ -48,8 +48,8 @@ class UserSeeder extends Seeder
 
         //Create device 002
         User::factory()->create([
-            'id' => 4,
-            'user_id' => 2,
+            'id' => 3,
+            'user_id' => 1,
             'name' => 'Device 002',
             'email' => 'sol2@gmail.com',
             'email_verified_at' => now(),
@@ -64,8 +64,8 @@ class UserSeeder extends Seeder
 
         // Create device 003
         User::factory()->create([
-            'id' => 5,
-            'user_id' => 2,
+            'id' => 4,
+            'user_id' => 1,
             'name' => 'Device 003',
             'email' => 'sol3@gmail.com',
             'email_verified_at' => now(),

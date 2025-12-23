@@ -16,9 +16,9 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
 
-        //id:1 - category_id:8 - Coca-Cola - Bar
+        //id:1 - category_id:7 - Coca-Cola - Bar
         Product::factory()->create([
-            'category_id' => 8,
+            'category_id' => 7,
             'production_local' => DepartamentEnum::BAR,
             'name' => 'Coca-Cola',
             'description' => 'Refrigerante sabor cola',

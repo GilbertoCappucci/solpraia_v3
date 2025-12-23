@@ -20,27 +20,27 @@ class TableSeeder extends Seeder
 
         Table::factory()->createMany([
             [
-                'user_id' => 2,
+                'user_id' => 1,
                 'number' => 1,
                 'status' => TableStatusEnum::FREE->value,
             ],
             [
-                'user_id' => 2,
+                'user_id' => 1,
                 'number' => 2,
                 'status' => TableStatusEnum::FREE->value,
             ],
             [
-                'user_id' => 2,
+                'user_id' => 1,
                 'number' => 3,
                 'status' => TableStatusEnum::FREE->value,
             ],
             [
-                'user_id' => 2,
+                'user_id' => 1,
                 'number' => 4,
                 'status' => TableStatusEnum::FREE->value,  
             ],
             [
-                'user_id' => 2,
+                'user_id' => 1,
                 'number' => 5,
                 'status' => TableStatusEnum::FREE->value,
             ],

@@ -17,7 +17,7 @@ class CategorySeeder extends Seeder
         //Id:1 - Porcoes
         Category::factory()->create(
             [
-                'user_id' => 2,
+                'user_id' => 1,
                 'category_id' => null,
                 'name' => 'Porções',
                 'active' => true,
@@ -28,7 +28,7 @@ class CategorySeeder extends Seeder
         //Id:2 - Bebidas
         Category::factory()->create(
             [
-                'user_id' => 2,
+                'user_id' => 1,
                 'category_id' => null,
                 'name' => 'Bebidas',
                 'active' => true,
@@ -39,7 +39,7 @@ class CategorySeeder extends Seeder
         //Id:3 - Batata frita
         Category::factory()->create(
             [
-                'user_id' => 2,
+                'user_id' => 1,
                 'category_id' => 1,
                 'name' => 'Batata frita',
                 'active' => true,
@@ -47,21 +47,10 @@ class CategorySeeder extends Seeder
             ],
         );
 
-        //Id:4 - Peixe frito
+        //Id:4 - Calabresa
         Category::factory()->create(
             [
-                'user_id' => 2,
-                'category_id' => 1,
-                'name' => 'Peixe frito',
-                'active' => true,
-                'description' => 'Peixe frito de temporada'
-            ],
-        );
-
-        //Id:5 - Calabresa
-        Category::factory()->create(
-            [
-                'user_id' => 2,
+                'user_id' => 1,
                 'category_id' => 1,
                 'name' => 'Calabresa acebolada',
                 'active' => true,
@@ -69,10 +58,10 @@ class CategorySeeder extends Seeder
             ],
         );
 
-        //Id:6 - Suco de fruta
+        //Id:5 - Suco de fruta
         Category::factory()->create(
             [
-                'user_id' => 2,
+                'user_id' => 1,
                 'category_id' => 2,
                 'name' => 'Suco de Fruta',
                 'active' => true,
@@ -80,10 +69,10 @@ class CategorySeeder extends Seeder
             ],
         );
 
-        //Id:7 - Agua
+        //Id:6 - Agua
         Category::factory()->create(
             [
-                'user_id' => 2,
+                'user_id' => 1,
                 'category_id' => 2,
                 'name' => 'Agua',
                 'active' => true,
@@ -91,10 +80,10 @@ class CategorySeeder extends Seeder
             ],
         );
 
-        //Id:8 - Refrigerante
+        //Id:7 - Refrigerante
         Category::factory()->create(
             [
-                'user_id' => 2,
+                'user_id' => 1,
                 'category_id' => 2,
                 'name' => 'Refrigerante',
                 'active' => true,
@@ -102,50 +91,7 @@ class CategorySeeder extends Seeder
             ],
         );
 
-        //Id:9 - Porções
-        Category::factory()->create(
-            [
-                'user_id' => 5,
-                'category_id' => null,
-                'name' => 'Porções',
-                'active' => true,
-                'description' => 'Porções de alimentos'
-            ],
-        );
-
-        //Id:10 - Bebidas
-        Category::factory()->create(
-            [
-                'user_id' => 5,
-                'category_id' => null,
-                'name' => 'Bebidas',
-                'active' => true,
-                'description' => 'Bebidas alcoólicas e não alcoólicas'
-            ],
-        );
-        
-        //Id:11 - Batata fritas
-        Category::factory()->create(
-            [
-                'user_id' => 5,
-                'category_id' => 9,
-                'name' => 'Batata fritas',
-                'active' => true,
-                'description' => 'Batata fritas'
-            ],
-        );
-
-        //Id:12 - Bebida não alcoólica
-        Category::factory()->create(
-            [
-                'user_id' => 5,
-                'category_id' => 10,
-                'name' => 'Bebida não alcoólica',
-                'active' => true,
-                'description' => 'Bebidas não alcoólicas'
-            ],
-        );
-
+       
         /*
         for ($i = 0; $i < 30; $i++) {
             Category::factory()->create();

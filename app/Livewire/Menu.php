@@ -46,9 +46,7 @@ class Menu extends Component
 
     public function mount($tableId)
     {
-        $this->userId = Auth::user()->isAdmin()
-            ? Auth::id()
-            : Auth::user()->user_id;
+        $this->userId = Auth::user()->user_id;
 
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);

@@ -58,9 +58,7 @@ class Tables extends Component
 
     public function mount()
     {
-        $this->userId = Auth::user()->isAdmin()
-            ? Auth::id()
-            : Auth::user()->user_id;
+        $this->userId = Auth::user()->user_id;
 
         // Carrega filtros da sessão (já foram carregados pelo UserPreferenceService no login)
         $this->filterTableStatuses = $this->userPreferenceService->getPreference('table_filter_table', []);
@@ -73,11 +71,16 @@ class Tables extends Component
         $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
     }
 
-    #[On('global.setting.updated')]
+    public function getListeners()
+    {
+        return [
+            "echo-private:global-setting-updated.{$this->userId},.global.setting.updated" => 'refreshSetting',
+        ];
+    }
+
     public function refreshSetting($data)
     {
-        dd($data);
-        $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
+        logger('refreshSetting', $data);
     }
 
     public function toggleFilters()

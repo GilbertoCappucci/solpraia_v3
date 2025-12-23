@@ -7,7 +7,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <script>
-        window.userId = {{ auth()->user()->id }};
+        window.adminId = {{ auth()->user()->user_id }};
     </script>
 </head>
 

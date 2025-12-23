@@ -49,23 +49,6 @@ class MenuItemSeeder extends Seeder
                 'active' => true,
             ],
         ]);
-
-        //id:2 - menu_id:2 - many
-        MenuItem::factory()->createMany([
-            [
-                'menu_id' => 2,
-                'product_id' => 1,
-                'price' => 10,
-                'active' => true,
-            ],
-            [
-                'menu_id' => 2,
-                'product_id' => 2,
-                'price' => 20,
-                'active' => true,
-            ],
-        ]);
-
         
         /*
         foreach (User::where(['role'=>RoleEnum::ADMIN->value, 'active'=>true])->get() as $user) {
