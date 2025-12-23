@@ -90,8 +90,10 @@ class Tables extends Component
             'timestamp' => now()->format('H:i:s')
         ]);
         
-        // Atualizar os time limits
+        // Atualizar os time limits com as novas configurações
         $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
+        
+        logger('✅ timeLimits atualizados:', $this->timeLimits);
     }
 
     public function toggleFilters()
