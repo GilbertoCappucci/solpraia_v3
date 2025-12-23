@@ -1,4 +1,4 @@
-<div @if($pollingInterval) wire:poll.{{$pollingInterval}}.s @endif>
+<div>
     <x-flash-message />
 
     {{-- Header com fundo laranja --}}

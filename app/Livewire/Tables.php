@@ -73,14 +73,25 @@ class Tables extends Component
 
     public function getListeners()
     {
-        return [
-            "echo-private:global-setting-updated.{$this->userId},.global.setting.updated" => 'refreshSetting',
+        $listeners = [
+            'global.setting.updated' => 'refreshSetting',
         ];
+        
+        logger('📻 Livewire getListeners configured:', $listeners);
+        
+        return $listeners;
     }
 
-    public function refreshSetting($data)
+    public function refreshSetting($data = null)
     {
-        logger('refreshSetting', $data);
+        logger('🎯 refreshSetting CHAMADO no Livewire! Dados recebidos:', [
+            'data' => $data,
+            'userId' => $this->userId,
+            'timestamp' => now()->format('H:i:s')
+        ]);
+        
+        // Atualizar os time limits
+        $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
     }
 
     public function toggleFilters()

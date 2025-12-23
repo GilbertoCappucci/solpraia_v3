@@ -15,5 +15,5 @@ return [
         'departament' => [] // Departamentos
     ],
 
-    'polling_interval' => 10000000,
+    'polling_interval' => 5000,
 ];

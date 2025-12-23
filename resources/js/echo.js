@@ -19,12 +19,12 @@ window.Echo = new Echo({
 document.addEventListener('DOMContentLoaded', () => {
 
     if (window.adminId) {
-        window.Echo.private(`global-setting-updated-${window.adminId}`)
+        window.Echo.private(`global-setting-updated.${window.adminId}`)
             .listen('.global.setting.updated', (e) => {
                 console.log('📡 Evento recebido:', e);
                 Livewire.dispatch('global.setting.updated', e.globalSettingUpdated);
             });
-        console.log(`Echo is listening on channel: global-setting-updated-${window.adminId}`);
+        console.log(`Echo is listening on channel: global-setting-updated.${window.adminId}`);
     } else {
         console.error('Admin ID not found. Echo cannot subscribe to private channel.');
     }
