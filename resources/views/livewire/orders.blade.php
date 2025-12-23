@@ -246,16 +246,6 @@
                         </svg>
                     </button>
                 </div>
-
-                {{-- Checkbox Selecionar Todos --}}
-                <label class="flex items-center gap-2 mt-4 cursor-pointer">
-                    <input
-                        type="checkbox"
-                        wire:click="toggleSelectAll"
-                        {{ count($selectedOrderIds) === count($groupOrders) ? 'checked' : '' }}
-                        class="w-5 h-5 text-white bg-white/20 border-white/40 rounded focus:ring-white focus:ring-2">
-                    <span class="text-sm font-medium">Selecionar todos</span>
-                </label>
             </div>
 
             {{-- Lista de Pedidos Individuais --}}

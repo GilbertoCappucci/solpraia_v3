@@ -31,6 +31,7 @@ class Orders extends Component
     public $statusFilters = [];
     public $showGroupModal = false;
     public $groupOrders = [];
+    public $selectedOrdersIdsAll = false;
     public $selectedOrderIds = [];
     public $showGroupActionsModal = false;
     public $groupActionData = null;
@@ -332,8 +333,10 @@ class Orders extends Component
 
         $this->groupOrders = $orders->values()->toArray();
 
-        // Seleciona todos os pedidos por padrão
-        $this->selectedOrderIds = $orders->pluck('id')->toArray();
+        // Não Seleciona todos os pedidos por padrão()
+        if($this->selectedOrdersIdsAll){
+            $this->selectedOrderIds = $orders->pluck('id')->toArray();
+        }
 
         $this->showGroupModal = true;
     }
@@ -357,15 +360,6 @@ class Orders extends Component
             $this->selectedOrderIds = array_values(array_diff($this->selectedOrderIds, [$orderId]));
         } else {
             $this->selectedOrderIds[] = $orderId;
-        }
-    }
-
-    public function toggleSelectAll()
-    {
-        if (count($this->selectedOrderIds) === count($this->groupOrders)) {
-            $this->selectedOrderIds = [];
-        } else {
-            $this->selectedOrderIds = collect($this->groupOrders)->pluck('id')->toArray();
         }
     }
 
