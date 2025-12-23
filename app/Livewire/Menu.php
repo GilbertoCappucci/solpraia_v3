@@ -49,6 +49,7 @@ class Menu extends Component
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
         $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
+        $this->title = $this->menuService->getMenuName($this->activeMenuId);
 
 
         $this->loadParentCategories();
@@ -66,6 +67,7 @@ class Menu extends Component
     {
         // Atualizar configurações globais
         $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
+        $this->title = $this->menuService->getMenuName($this->activeMenuId);
         
         // Recarregar produtos e categorias
         $this->loadParentCategories();

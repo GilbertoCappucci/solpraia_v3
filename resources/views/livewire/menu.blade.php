@@ -25,6 +25,9 @@
                 <span class="text-2xl font-bold">{{ $selectedTable->number }}</span>
                 <span class="text-sm opacity-90">{{ $selectedTable->name }}</span>
             </div>
+            <div>
+                <span class="text-sm opacity-90">{{ $title }}</span>
+            </div>
         </div>
         @if($currentCheck && $currentCheck->total > 0)
         <div class="text-right">

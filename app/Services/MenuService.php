@@ -30,6 +30,11 @@ class MenuService
         $this->globalSettingService = $globalSettingService;
     }
 
+    public function getMenuName(int $menuId): string
+    {
+        return Menu::find($menuId)->name;
+    }
+
     public function getActiveMenu(int $userId): ?Menu
     {
         $menuId = $this->getActiveMenuId($userId);
