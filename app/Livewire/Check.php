@@ -16,7 +16,6 @@ class Check extends Component
     public $check;
     public $table;
     public $title = 'Comanda';
-    public $pollingInterval;
 
     public $showStatusModal = false;
     public $currentCheck = null;
@@ -52,16 +51,29 @@ class Check extends Component
         $this->pix();
     }
 
-    public function hydrate(){
-        $this->loadCheck();
+    public function getListeners()
+    {
+        return [
+            'global.setting.updated' => 'refreshSetting',
+        ];
+    }
+
+    public function refreshSetting($data = null)
+    {
+        //atualiza intervalo de polling
+
+        // Atualizar configurações globais e recarregar PIX
         $this->pix();
+        
+        logger('✅ Check: Configurações atualizadas', [
+            'pixEnabled' => $this->pixEnabled
+        ]);
     }
 
     public function pix(){
         // PIX Generation
         $globalSetting = $this->globalSettingService->loadGlobalSettings(Auth::user());
         $this->pixEnabled = $globalSetting->pix_enabled;
-        $this->pollingInterval = $globalSetting->polling_interval;
 
         if ($this->pixEnabled) {
             $pixKey = $globalSetting->pix_key;

@@ -70,11 +70,6 @@ class GlobalSettingService
         return Menu::find($settings->menu_id);
     }
 
-    public static function getPollingInterval(int $user_id): int
-    {
-        $settings = GlobalSetting::where('user_id', $user_id)->first();
-        return $settings->polling_interval ?? config('solpraia.polling_interval', 5000);
-    }
     
     public static function getPixEnabled(int $user_id): bool
     {

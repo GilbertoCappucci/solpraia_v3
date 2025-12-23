@@ -14,6 +14,4 @@ return [
         'order' => [], // Status dos pedidos
         'departament' => [] // Departamentos
     ],
-
-    'polling_interval' => 5000,
 ];

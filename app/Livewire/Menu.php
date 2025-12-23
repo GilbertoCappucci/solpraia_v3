@@ -27,14 +27,11 @@ class Menu extends Component
     public $cart = [];
     public $searchTerm = '';
     public $activeMenuId = null;
-    public $pollingInterval;
 
     protected $menuService;
     protected $orderService;
     protected $stockService;
     protected $globalSettingsService;
-
-    protected $listeners = ['global-settings-updated' => '$refresh'];
 
     public function boot(MenuService $menuService, OrderService $orderService, StockService $stockService, GlobalSettingService $globalSettingsService)
     {
@@ -53,10 +50,30 @@ class Menu extends Component
         $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
         $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
 
-        $this->pollingInterval = $this->globalSettingsService->getPollingInterval($this->userId);
 
         $this->loadParentCategories();
         $this->loadProducts();
+    }
+
+    public function getListeners()
+    {
+        return [
+            'global.setting.updated' => 'refreshSetting',
+        ];
+    }
+
+    public function refreshSetting($data = null)
+    {
+        // Atualizar configurações globais
+        $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
+        
+        // Recarregar produtos e categorias
+        $this->loadParentCategories();
+        $this->loadProducts();
+        
+        logger('✅ Menu: Configurações atualizadas', [
+            'activeMenuId' => $this->activeMenuId
+        ]);
     }
 
     public function hydrate()

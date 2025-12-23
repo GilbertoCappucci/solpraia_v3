@@ -40,8 +40,6 @@ class Tables extends Component
 
     public $timeLimits = [];
 
-    public $pollingInterval;
-
     protected $tableService;
     protected $orderService;
     protected $userPreferenceService;
@@ -53,7 +51,6 @@ class Tables extends Component
         $this->orderService = $orderService;
         $this->userPreferenceService = $userPreferenceService;
         $this->globalSettingService = $globalSettingService;
-        $this->pollingInterval = config('solpraia.polling_interval');
     }
 
     public function mount()

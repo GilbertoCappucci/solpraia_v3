@@ -25,7 +25,6 @@ class Orders extends Component
     public $orderIdsToCancel = [];
     public $orderToCancelData = null;
     public $hasActiveCheck = false;
-    public $pollingInterval;
     public $showDetailsModal = false;
     public $orderDetails = null;
     public $showFilterModal = false;
@@ -58,7 +57,6 @@ class Orders extends Component
             ? $user->id
             : $user->user_id;
 
-        $this->pollingInterval = $this->globalSettingsService->getPollingInterval($this->userId);
         $this->timeLimits = $this->globalSettingsService->getTimeLimits($user);
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
@@ -72,6 +70,26 @@ class Orders extends Component
 
         // Define status permitidos para o check com base no status da mesa
         $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($this->currentCheck?->status ?? '', $this->currentCheck);
+    }
+
+    public function getListeners()
+    {
+        return [
+            'global.setting.updated' => 'refreshSetting',
+        ];
+    }
+
+    public function refreshSetting($data = null)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        
+        // Atualizar configurações globais
+        $this->timeLimits = $this->globalSettingsService->getTimeLimits($user);
+        
+        logger('✅ Orders: Configurações atualizadas', [
+            'timeLimits' => $this->timeLimits
+        ]);
     }
 
     public function updatedCheckStatus($value)
