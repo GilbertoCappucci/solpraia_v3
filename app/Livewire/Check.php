@@ -25,6 +25,7 @@ class Check extends Component
 
     public $pixPayload = null;
     public $pixEnabled = false;
+    public $pixKey = 0; // Para forçar re-render do QR Code
 
     protected $checkService;
     protected $orderService;
@@ -60,16 +61,18 @@ class Check extends Component
 
     public function refreshSetting($data = null)
     {
-        //atualiza intervalo de polling
-
         // Atualizar configurações globais e recarregar PIX
         $this->pix();
         
+        // Incrementar chave para forçar re-render do QR Code
+        $this->pixKey++;
+        
         logger('✅ Check: Configurações atualizadas', [
-            'pixEnabled' => $this->pixEnabled
+            'pixEnabled' => $this->pixEnabled,
+            'pixKey' => $this->pixKey
         ]);
     }
-
+    //Monta o PIX
     public function pix(){
         // PIX Generation
         $globalSetting = $this->globalSettingService->loadGlobalSettings(Auth::user());
