@@ -316,7 +316,7 @@
     {{-- Modal Alterar Status do Check --}}
     @if($showStatusModal)
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeStatusModal">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" wire:click.stop>
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" @click.stop>
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-bold text-gray-900">Alterar Status do Check</h3>
                 <button wire:click="closeStatusModal" class="text-gray-400 hover:text-gray-600">

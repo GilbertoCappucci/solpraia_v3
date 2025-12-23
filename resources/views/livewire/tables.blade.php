@@ -286,7 +286,7 @@
     {{-- Modal Criar Novo Local --}}
     @if($showNewTableModal)
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeNewTableModal">
-            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" wire:click.stop>
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" @click.stop>
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-xl font-bold text-gray-900">Criar Novo Local</h3>
                     <button wire:click="closeNewTableModal" class="text-gray-400 hover:text-gray-600">
@@ -337,7 +337,7 @@
     {{-- Modal Alterar Status da Mesa --}}
     @if($showTableStatusModal)
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeTableStatusModal">
-            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" wire:click.stop>
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" @click.stop>
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-xl font-bold text-gray-900">Alterar Status da Mesa</h3>
                     <button wire:click="closeTableStatusModal" class="text-gray-400 hover:text-gray-600">
@@ -424,7 +424,7 @@
     {{-- Merge Tables Modal --}}
     @if($showMergeModal)
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeMergeModal">
-            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" wire:click.stop>
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" @click.stop>
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-xl font-bold text-gray-900">Unir</h3>
                     <button wire:click="closeMergeModal" class="text-gray-400 hover:text-gray-600">

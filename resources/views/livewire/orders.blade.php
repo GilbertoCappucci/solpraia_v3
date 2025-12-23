@@ -171,7 +171,7 @@
     {{-- Modal Alterar Status do check --}}
     @if($showStatusCheckModal)
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeStatusModal">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" wire:click.stop>
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" @click.stop>
             {{-- Title and Close button --}}
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-bold text-gray-900">Alterar Status</h3>
@@ -227,7 +227,7 @@
     {{-- Modal de Grupo (Lista de Pedidos) --}}
     @if($showGroupModal)
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeGroupModal">
-        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col" wire:click.stop>
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col" @click.stop>
             {{-- Header --}}
             <div class="bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white flex-shrink-0">
                 <div class="flex items-center justify-between">
@@ -313,7 +313,7 @@
     {{-- Modal de Ações em Grupo --}}
     @if($showGroupActionsModal && $groupActionData)
     <div class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden" wire:click.stop>
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden" @click.stop>
             {{-- Header --}}
             <div class="bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white">
                 <h3 class="text-2xl font-bold">Ações em Grupo</h3>
@@ -490,7 +490,7 @@
     {{-- Modal de Detalhes do Pedido --}}
     @if($showDetailsModal && $orderDetails)
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeDetailsModal">
-        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden" wire:click.stop>
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden" @click.stop>
             {{-- Header --}}
             <div class="bg-gradient-to-r from-orange-500 to-red-500 p-4 text-white">
                 <div class="flex items-center justify-between">
@@ -634,7 +634,7 @@
     {{-- Modal Confirmar Cancelamento --}}
     @if($showCancelModal)
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeCancelModal">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden" wire:click.stop>
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden" @click.stop>
             {{-- Header com icone --}}
             <div class="bg-gradient-to-r from-red-500 to-red-600 p-6 text-white">
                 <div class="flex items-center justify-center mb-3">
