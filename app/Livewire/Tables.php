@@ -39,6 +39,7 @@ class Tables extends Component
     public $canMerge = false;
 
     public $timeLimits = [];
+    public $pollingInterval = 60;
 
     protected $tableService;
     protected $orderService;
