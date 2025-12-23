@@ -254,11 +254,13 @@
             <div class="hero-content">
                 <h1>Venda mais <br><span>com os pés na areia.</span></h1>
                 <p class="subtitle">A ferramenta definitiva para quiosques, barracas e vendedores ambulantes. Gerencie pedidos, estoque e aumente seu faturamento enquanto aproveita o sol.</p>
-
-                @if (Route::has('register'))
-                <a href="{{ route('register') }}" class="btn btn-primary">Começar Agora</a>
-                @else
-                <a href="{{ route('login') }}" class="btn btn-primary">Acessar Sistema</a>
+                {{-- TODO: Retirar na produção --}}
+                @if(false)
+                    @if (Route::has('register'))
+                    <a href="{{ route('register') }}" class="btn btn-primary">Começar Agora</a>
+                    @else
+                    <a href="{{ route('login') }}" class="btn btn-primary">Acessar Sistema</a>
+                    @endif
                 @endif
             </div>
         </div>
