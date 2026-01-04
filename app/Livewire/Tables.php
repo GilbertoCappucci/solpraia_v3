@@ -219,8 +219,9 @@ class Tables extends Component
         $this->dispatch('open-new-table-modal');
     }
 
-    public function selectTableForMerge($tableId)
+    public function selectTableForMerge($data)
     {
+        $tableId = is_array($data) ? ($data['tableId'] ?? $data) : $data;
 
         if (in_array($tableId, $this->selectedTables)) {
             // Remove da seleção

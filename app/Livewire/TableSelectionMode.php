@@ -58,8 +58,10 @@ class TableSelectionMode extends Component
         $this->toggleSelectionMode();
     }
 
-    public function selectTableForMerge($tableId)
+    public function selectTableForMerge($data)
     {
+        $tableId = is_array($data) ? ($data['tableId'] ?? $data) : $data;
+        
         // Verifica se a mesa já está selecionada
         if (in_array($tableId, $this->selectedTables)) {
             // Remove da seleção

@@ -19,7 +19,7 @@ class CreateTableModal extends Component
         $this->tableService = $tableService;
     }
 
-    protected function getListeners()
+    public function getListeners()
     {
         return [
             'open-new-table-modal' => 'openModal',
