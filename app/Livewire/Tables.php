@@ -7,6 +7,7 @@ use App\Models\Check;
 use App\Services\GlobalSettingService;
 use App\Services\OrderService;
 use App\Services\TableService;
+use App\Services\UserPreferenceService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -38,18 +39,38 @@ class Tables extends Component
     protected $tableService;
     protected $orderService;
     protected $globalSettingService;
+    protected $userPreferenceService;
 
-    public function boot(TableService $tableService, OrderService $orderService, GlobalSettingService $globalSettingService)
+    public function boot(TableService $tableService, OrderService $orderService, GlobalSettingService $globalSettingService, \App\Services\UserPreferenceService $userPreferenceService)
     {
         $this->tableService = $tableService;
         $this->orderService = $orderService;
         $this->globalSettingService = $globalSettingService;
+        $this->userPreferenceService = $userPreferenceService;
     }
 
     public function mount()
     {
         $this->userId = Auth::user()->user_id;
         $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
+        
+        // Inicializa os filtros a partir das preferências salvas
+        $this->initializeFilters();
+    }
+    
+    protected function initializeFilters()
+    {
+        // Carrega filtros das preferências do usuário
+        $this->filterTableStatuses = $this->userPreferenceService->getPreference('table_filter_table', []);
+        $this->filterCheckStatuses = $this->userPreferenceService->getPreference('table_filter_check', []);
+        $this->filterOrderStatuses = $this->userPreferenceService->getPreference('table_filter_order', []);
+        $this->filterDepartaments = $this->userPreferenceService->getPreference('table_filter_departament', []);
+        $this->globalFilterMode = $this->userPreferenceService->getPreference('table_filter_mode', 'AND');
+        
+        $this->hasActiveFilters = !empty($this->filterTableStatuses) || 
+                                 !empty($this->filterCheckStatuses) || 
+                                 !empty($this->filterOrderStatuses) || 
+                                 !empty($this->filterDepartaments);
     }
 
     public function getListeners()

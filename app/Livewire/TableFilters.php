@@ -39,6 +39,18 @@ class TableFilters extends Component
         $this->globalFilterMode = $this->userPreferenceService->getPreference('table_filter_mode', 'AND');
         $this->showFilters = session('tables.showFilters', false);
     }
+    
+    public function booted()
+    {
+        // Emite evento para sincronizar filtros com o componente pai após a inicialização completa
+        $this->dispatch('filters-changed', [
+            'filterTableStatuses' => $this->filterTableStatuses,
+            'filterCheckStatuses' => $this->filterCheckStatuses,
+            'filterOrderStatuses' => $this->filterOrderStatuses,
+            'filterDepartaments' => $this->filterDepartaments,
+            'globalFilterMode' => $this->globalFilterMode,
+        ]);
+    }
 
     public function toggleFilters()
     {
