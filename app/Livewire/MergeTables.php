@@ -7,12 +7,14 @@ use App\Services\TableService;
 use App\Models\Check;
 use App\Enums\CheckStatusEnum;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 use Livewire\Component;
 
 class MergeTables extends Component
 {
     public $selectedTables = [];
-    public $tables = [];
+    /** @var Collection<int, mixed> */
+    public $tables;
     public $mergeDestinationTableId = null;
 
     protected $tableService;
@@ -24,10 +26,17 @@ class MergeTables extends Component
         $this->orderService = $orderService;
     }
 
-    public function mount($selectedTables = [], $tables = [])
+    public function mount($selectedTables = [])
     {
         $this->selectedTables = is_array($selectedTables) ? $selectedTables : [];
-        $this->tables = collect($tables);
+        
+        // Buscar as mesas selecionadas diretamente pelo TableService
+        if (!empty($this->selectedTables)) {
+            $this->tables = collect($this->tableService->getTablesByIds($this->selectedTables));
+        } else {
+            $this->tables = collect();
+        }
+        
         $this->mergeDestinationTableId = $this->selectedTables[0] ?? null;
         
         logger('🔀 MergeTables.mount', [
@@ -94,24 +103,12 @@ class MergeTables extends Component
             ->orderBy('created_at', 'desc')
             ->first();
 
-        if (!$destinationCheck) {
-            $destinationTable = $selectedTablesData->where('id', $destinationTableId)->first();
-            $num = $destinationTable->number ?? $destinationTableId;
-            logger('🔀 MergeTables: destination has no active check', [
-                'destination' => $destinationTableId, 
-                'check_found' => $destinationCheck ? 'yes' : 'no'
-            ]);
-            $this->dispatch('merge-completed', ['success' => false, 'message' => "A mesa de destino (Mesa {$num}) não possui uma comanda ativa para receber os pedidos."]);
-            $this->dispatch('merge-closed');
-            return;
-        }
-
-        $destinationCheckId = $destinationCheck->id;
-
         $sourceTableIds = array_diff($allSelectedTableIds, [$destinationTableId]);
         $sourceCheckIds = [];
         $tablesToFree = [];
 
+        // Verificar se alguma mesa de origem tem check ativo
+        $hasSourceChecks = false;
         foreach ($sourceTableIds as $tableId) {
             // Buscar check ativo diretamente do banco para cada mesa de origem
             $sourceCheck = Check::where('table_id', $tableId)
@@ -124,6 +121,7 @@ class MergeTables extends Component
             
             if ($sourceCheck) {
                 $sourceCheckIds[] = $sourceCheck->id;
+                $hasSourceChecks = true;
             }
             
             $tablesToFree[] = $tableId;
@@ -133,20 +131,43 @@ class MergeTables extends Component
             'sourceTableIds' => $sourceTableIds,
             'sourceCheckIds' => $sourceCheckIds,
             'tablesToFree' => $tablesToFree,
+            'hasSourceChecks' => $hasSourceChecks,
+            'destinationCheckExists' => !is_null($destinationCheck)
         ]);
 
-        if (empty($sourceCheckIds) && !empty($tablesToFree)) {
+        // Se não há checks de origem nem de destino, só liberar as mesas
+        if (!$hasSourceChecks && !$destinationCheck) {
             $this->tableService->releaseTables($tablesToFree);
-            logger('🔀 MergeTables: releasing tables (no source checks)', ['tablesToFree' => $tablesToFree]);
+            logger('🔀 MergeTables: releasing all tables (no checks anywhere)', ['tablesToFree' => $tablesToFree]);
             $this->dispatch('merge-completed', ['success' => true, 'message' => 'As mesas selecionadas foram liberadas.']);
             $this->dispatch('merge-closed');
             return;
-        } elseif (empty($sourceCheckIds)) {
-            logger('🔀 MergeTables: no source checks and no tables to free', ['selectedTables' => $this->selectedTables]);
+        }
+
+        // Se há checks de origem mas não há check de destino, criar um novo check na mesa de destino
+        if ($hasSourceChecks && !$destinationCheck) {
+            logger('🔀 MergeTables: creating new check for destination table', ['destinationTableId' => $destinationTableId]);
+            
+            // Criar novo check na mesa de destino
+            $destinationCheck = Check::create([
+                'table_id' => $destinationTableId,
+                'status' => CheckStatusEnum::OPEN->value,
+                'user_id' => Auth::id(),
+                'total' => 0.00,
+            ]);
+            
+            logger('🔀 MergeTables: new destination check created', ['checkId' => $destinationCheck->id]);
+        }
+
+        // Se não há checks de origem, não há o que unir
+        if (!$hasSourceChecks) {
+            logger('🔀 MergeTables: no source checks found', ['selectedTables' => $this->selectedTables]);
             $this->dispatch('merge-completed', ['success' => false, 'message' => 'Nenhuma comanda de origem válida encontrada para unir.']);
             $this->dispatch('merge-closed');
             return;
         }
+
+        $destinationCheckId = $destinationCheck->id;
 
         logger('🔀 MergeTables: calling OrderService::mergeChecks', ['sourceCheckIds' => $sourceCheckIds, 'destinationCheckId' => $destinationCheckId]);
 

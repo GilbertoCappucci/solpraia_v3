@@ -9,8 +9,9 @@
 @php
 $isSelected = $selectionMode && in_array($table->id, $selectedTables);
 
-// Condições para desabilitar a seleção (ex: mesas sem comanda ativa para unir, ou em liberação)
-$isDisabled = $selectionMode && (!$table->checkId || $table->status === 'releasing');
+// Condições para desabilitar a seleção 
+// Desabilita apenas se a mesa estiver em liberação ou fechada
+$isDisabled = $selectionMode && ($table->status === 'releasing' || $table->status === 'close');
 
 // Calcula quantidade de status ativos
 $activeStatuses = 0;

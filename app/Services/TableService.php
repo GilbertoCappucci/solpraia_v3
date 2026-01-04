@@ -462,6 +462,61 @@ class TableService
     }
 
     /**
+     * Busca multiple tables por seus IDs com relacionamentos
+     */
+    public function getTablesByIds(array $tableIds): Collection
+    {
+        if (empty($tableIds)) {
+            return collect();
+        }
+
+        return Table::whereIn('id', $tableIds)
+            ->with(['checks' => function ($query) {
+                $query->with(['orders.currentStatusHistory', 'orders.product']);
+            }])
+            ->orderBy('number')
+            ->get()
+            ->map(function ($table) {
+                // Adicionar propriedades calculadas 
+                return $this->addCalculatedProperties($table);
+            });
+    }
+
+    /**
+     * Adiciona propriedades calculadas à mesa (similar ao processamento em getFilteredTables)
+     */
+    protected function addCalculatedProperties(Table $table): Table
+    {
+        // Buscar o check ativo mais recente (OPEN ou CLOSED)
+        $currentCheck = $table->checks
+            ->whereIn('status', [
+                CheckStatusEnum::OPEN->value,
+                CheckStatusEnum::CLOSED->value,
+            ])
+            ->sortByDesc('created_at')
+            ->first();
+        
+        // Verifica se o check é ativo (não está Pago, Cancelado ou Merged),
+        // a menos que esteja Pago mas a mesa ainda não tenha sido liberada (status RELEASING)
+        $checkIsActive = $currentCheck && (
+            !in_array($currentCheck->status, [
+                CheckStatusEnum::PAID->value,
+                CheckStatusEnum::CANCELED->value,
+                CheckStatusEnum::MERGED->value,
+            ]) || ($currentCheck->status === CheckStatusEnum::PAID->value && $table->status === TableStatusEnum::RELEASING->value)
+        );
+
+        if ($checkIsActive) {
+            $this->setCheckData($table, $currentCheck);
+            $this->setOrdersData($table, $currentCheck);
+        } else {
+            $this->setEmptyData($table);
+        }
+
+        return $table;
+    }
+
+    /**
      * Atualiza o status de uma table
      */
     public function updateTableStatus(int $tableId, string $newStatus): bool
