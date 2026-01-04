@@ -47,7 +47,7 @@ class Menu extends Component
 
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
-        $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
+        $this->currentCheck = $this->orderService->findCheck($tableId); // Apenas busca, não cria
         $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
         $this->title = $this->menuService->getMenuName($this->activeMenuId);
 

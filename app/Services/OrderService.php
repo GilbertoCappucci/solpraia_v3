@@ -41,12 +41,16 @@ class OrderService
     }
 
     /**
-     * Busca ou cria check aberto para a mesa
+     * Busca check ativo para a mesa (sem criar)
+     * 
+     * USE ESTE MÉTODO quando:
+     * - Apenas visualizar dados de uma mesa (Orders, Menu)
+     * - Verificar se existe check sem criar
+     * - Modais de status, etc.
      */
-    public function findOrCreateCheck(int $tableId): ?Check
+    public function findCheck(int $tableId): ?Check
     {
-        // Busca check ativo (não Paid nem Canceled)
-        $existingCheck = Check::where('table_id', $tableId)
+        return Check::where('table_id', $tableId)
             ->whereNotIn('status', [
                 CheckStatusEnum::PAID->value,
                 CheckStatusEnum::CANCELED->value,
@@ -54,6 +58,27 @@ class OrderService
             ])
             ->orderBy('created_at', 'desc')
             ->first();
+    }
+
+    /**
+     * Busca ou cria check aberto para a mesa
+     * 
+     * ⚠️ CUIDADO: Este método CRIA check automaticamente!
+     * 
+     * USE ESTE MÉTODO APENAS quando:
+     * - Confirmar pedidos (MenuService::confirmOrder)
+     * - Operações que realmente precisam de um check ativo
+     * - Merge de mesas que precisa criar check de destino
+     * 
+     * NÃO USE para:
+     * - Apenas visualizar dados
+     * - Mount de componentes Livewire
+     * - Verificações de status
+     */
+    public function findOrCreateCheck(int $tableId): ?Check
+    {
+        // Busca check ativo primeiro
+        $existingCheck = $this->findCheck($tableId);
             
         // Se encontrou check ativo, retorna
         if ($existingCheck) {

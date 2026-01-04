@@ -61,7 +61,7 @@ class Orders extends Component
         $this->timeLimits = $this->globalSettingsService->getTimeLimits($user);
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
-        $this->currentCheck = $this->orderService->findOrCreateCheck($tableId);
+        $this->currentCheck = $this->orderService->findCheck($tableId); // Apenas busca, não cria
         $this->statusFilters = session('orders.statusFilters', OrderStatusEnum::getValues());
 
         // Abre o modal de status automaticamente se a mesa estiver em Liberação, Fechada ou Reservada
@@ -147,7 +147,7 @@ class Orders extends Component
     {
         // Recarrega dados atualizados do banco
         $this->selectedTable->refresh();
-        $this->currentCheck = $this->orderService->findOrCreateCheck($this->tableId);
+        $this->currentCheck = $this->orderService->findCheck($this->tableId); // Apenas busca, não cria
 
         // Garante que o objeto esteja fresco (evita problemas de cache do Eloquent)
         if ($this->currentCheck) {

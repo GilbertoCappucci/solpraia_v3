@@ -36,7 +36,7 @@ class TableStatusModal extends Component
         $this->newTableStatus = $table->status;
 
         // Verifica se há check ativo (não Paid nem Canceled)
-        $activeCheck = $this->orderService->findOrCreateCheck($tableId);
+        $activeCheck = $this->orderService->findCheck($tableId); // Apenas busca, não cria
         $this->hasActiveCheck = $activeCheck && in_array($activeCheck->status, ['Open', 'Closed']);
 
         $this->showModal = true;
