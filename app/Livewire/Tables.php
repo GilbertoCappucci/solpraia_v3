@@ -77,10 +77,10 @@ class Tables extends Component
         $userId = $this->userId ?? Auth::user()?->user_id ?? Auth::id();
         
         $listeners = [
-            // Echo listener for global settings broadcasts (both broadcastAs and event class)
-            "echo-private:global-setting-updated.{$userId},global.setting.updated" => 'refreshSetting',
-            "echo-private:tables-updated.{$userId},table.updated" => 'onTableUpdated',
-            "echo-private:tables-updated.{$userId},check.updated" => 'onCheckUpdated',
+            // Echo listeners - formato alternativo que pode funcionar melhor
+            "echo-private:global-setting-updated.{$userId},.global.setting.updated" => 'refreshSetting',
+            "echo-private:tables-updated.{$userId},.table.updated" => 'onTableUpdated',
+            "echo-private:tables-updated.{$userId},.check.updated" => 'onCheckUpdated',
             
             // Listeners para TableFilters
             'filters-changed' => 'onFiltersChanged',

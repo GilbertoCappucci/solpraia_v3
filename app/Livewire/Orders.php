@@ -84,9 +84,9 @@ class Orders extends Component
         }
         
         return [
-            "echo-private:global-setting-updated.{$userId},global.setting.updated" => 'refreshSetting',
-            "echo-private:tables-updated.{$userId},table.updated" => 'refreshData',
-            "echo-private:tables-updated.{$userId},check.updated" => 'refreshData',
+            "echo-private:global-setting-updated.{$userId},.global.setting.updated" => 'refreshSetting',
+            "echo-private:tables-updated.{$userId},.table.updated" => 'refreshData',
+            "echo-private:tables-updated.{$userId},.check.updated" => 'refreshData',
         ];
     }
 
