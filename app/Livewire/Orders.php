@@ -75,10 +75,18 @@ class Orders extends Component
 
     public function getListeners()
     {
+        // Usa a mesma lógica do mount para determinar o userId
+        if ($this->userId) {
+            $userId = $this->userId;
+        } else {
+            $user = Auth::user();
+            $userId = $user?->isAdmin() ? $user->id : $user?->user_id ?? Auth::id();
+        }
+        
         return [
-            "echo-private:global-setting-updated.{$this->userId},global.setting.updated" => 'refreshSetting',
-            "echo-private:tables-updated.{$this->userId},table.updated" => 'refreshData',
-            "echo-private:tables-updated.{$this->userId},check.updated" => 'refreshData',
+            "echo-private:global-setting-updated.{$userId},global.setting.updated" => 'refreshSetting',
+            "echo-private:tables-updated.{$userId},table.updated" => 'refreshData',
+            "echo-private:tables-updated.{$userId},check.updated" => 'refreshData',
         ];
     }
 

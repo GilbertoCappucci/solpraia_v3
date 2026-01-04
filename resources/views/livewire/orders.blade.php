@@ -1,4 +1,12 @@
-<div>
+<div x-data="{ userId: {{ $userId }} }" x-init="
+    // Escuta eventos do Reverb via Echo e chama métodos do Livewire
+    window.Echo.private('tables-updated.' + userId)
+        .listen('.table.updated', (data) => $wire.call('refreshData', data))
+        .listen('.check.updated', (data) => $wire.call('refreshData', data));
+    
+    window.Echo.private('global-setting-updated.' + userId)
+        .listen('.global.setting.updated', (data) => $wire.call('refreshSetting', data));
+">
 
     <x-flash-message />
 
