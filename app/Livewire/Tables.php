@@ -73,6 +73,8 @@ class Tables extends Component
     {
         $listeners = [
             'global.setting.updated' => 'refreshSetting',
+            'merge-closed' => 'closeMergeModal',
+            'merge-completed' => 'onMergeCompleted',
         ];
         
         logger('📻 Livewire getListeners configured:', $listeners);
@@ -92,6 +94,29 @@ class Tables extends Component
         $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
         
         logger('✅ timeLimits atualizados:', $this->timeLimits);
+    }
+
+    public function onMergeCompleted($payload = null)
+    {
+        logger('🔀 Tables.onMergeCompleted called', ['payload' => $payload, 'selectedTables' => $this->selectedTables]);
+
+        $success = false;
+        $message = null;
+        if (is_array($payload)) {
+            $success = $payload['success'] ?? false;
+            $message = $payload['message'] ?? null;
+        }
+
+        if ($success) {
+            session()->flash('success', $message ?? 'Operação realizada com sucesso.');
+        } else {
+            session()->flash('error', $message ?? 'Erro ao realizar operação.');
+        }
+
+        $this->closeMergeModal();
+        if ($this->selectionMode) {
+            $this->toggleSelectionMode();
+        }
     }
 
     public function toggleFilters()
