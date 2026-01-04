@@ -87,7 +87,15 @@ class Orders extends Component
             "echo-private:global-setting-updated.{$userId},.global.setting.updated" => 'refreshSetting',
             "echo-private:tables-updated.{$userId},.table.updated" => 'refreshData',
             "echo-private:tables-updated.{$userId},.check.updated" => 'refreshData',
+            'set' => 'handleSet', // Listener para receber atualizações de componentes filhos
         ];
+    }
+
+    public function handleSet($property, $value)
+    {
+        if (property_exists($this, $property)) {
+            $this->$property = $value;
+        }
     }
 
     public function refreshSetting($data = null)

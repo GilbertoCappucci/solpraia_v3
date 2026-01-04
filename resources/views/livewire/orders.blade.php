@@ -183,8 +183,9 @@
             </div>
 
             {{-- Status da Mesa --}}
-            <div class="space-y-4 mb-6">
-                <x-table-status-selector
+            <div class="space-y-4 mb-6" wire:key="table-status-section">
+                <livewire:components.table-status-selector
+                    :key="'table-status-selector'"
                     :table="$selectedTable"
                     :newTableStatus="$newTableStatus"
                     :hasActiveCheck="$hasActiveCheck" />
