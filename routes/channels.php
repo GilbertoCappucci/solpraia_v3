@@ -3,9 +3,9 @@
 use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel('global-setting-updated.{adminId}', function ($user, $adminId) {
-    return $user->user_id == $adminId;
+    return (int) $user->user_id === (int) $adminId;
 });
 
-Broadcast::channel('tables-updated.{adminId}', function ($user, $adminId) {
-    return $user->user_id == $adminId;
+Broadcast::channel('tables-updated.{userId}', function ($user, $userId) {
+    return (int) $user->user_id === (int) $userId;
 });

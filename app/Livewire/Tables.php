@@ -75,10 +75,10 @@ class Tables extends Component
     public function getListeners()
     {
         $listeners = [
-            'global.setting.updated' => 'refreshSetting',
-            "echo-private:table.updated.{$this->userId}"
-                => 'onTableUpdated',
-            'check.updated' => 'onCheckUpdated',
+            // Echo listener for global settings broadcasts (both broadcastAs and event class)
+            "echo-private:global-setting-updated.{$this->userId},global.setting.updated" => 'refreshSetting',
+            "echo-private:tables-updated.{$this->userId},table.updated" => 'onTableUpdated',
+            "echo-private:tables-updated.{$this->userId},check.updated" => 'onCheckUpdated',
             
             // Listeners para TableFilters
             'filters-changed' => 'onFiltersChanged',
@@ -183,23 +183,33 @@ class Tables extends Component
 
     public function onTableUpdated($data)
     {
-        logger('🔄 Table updated received in Livewire:', $data);
+        logger('🔄🔔 onTableUpdated invoked in Livewire Tables', [
+            'data' => $data, 
+            'userIdProp' => $this->userId,
+            'timestamp' => now()->format('H:i:s.u')
+        ]);
         
         // Só atualiza se a mesa pertencer a este usuário
         if (isset($data['userId']) && $data['userId'] == $this->userId) {
+            logger('✅ Refreshing Tables component', ['userId' => $this->userId]);
             // Força refresh dos dados
-            $this->render();
+            $this->dispatch('$refresh');
+        } else {
+            logger('❌ Skipping refresh - userId mismatch', [
+                'data_userId' => $data['userId'] ?? 'not set',
+                'component_userId' => $this->userId
+            ]);
         }
     }
 
     public function onCheckUpdated($data)
     {
-        logger('🔄 Check updated received in Livewire:', $data);
+        logger('🔄🔔 onCheckUpdated invoked in Livewire', ['data' => $data, 'userIdProp' => $this->userId]);
         
         // Só atualiza se a mesa pertencer a este usuário
         if (isset($data['userId']) && $data['userId'] == $this->userId) {
             // Força refresh dos dados
-            $this->render();
+            $this->dispatch('$refresh');
         }
     }
 

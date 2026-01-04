@@ -76,7 +76,9 @@ class Orders extends Component
     public function getListeners()
     {
         return [
-            'global.setting.updated' => 'refreshSetting',
+            "echo-private:global-setting-updated.{$this->userId},global.setting.updated" => 'refreshSetting',
+            "echo-private:tables-updated.{$this->userId},table.updated" => 'refreshData',
+            "echo-private:tables-updated.{$this->userId},check.updated" => 'refreshData',
         ];
     }
 
