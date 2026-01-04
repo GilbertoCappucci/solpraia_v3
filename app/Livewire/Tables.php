@@ -135,13 +135,6 @@ class Tables extends Component
                                  !empty($this->filterDepartaments);
     }
 
-    public function toggleFilters()
-    {
-        // O evento toggle-filters já foi despachado pelo TableHeader
-        // e será capturado pelo listener do TableFilters
-        // Não precisamos fazer nada aqui
-    }
-
     public function toggleSelectionMode()
     {
         $this->selectionMode = !$this->selectionMode;
@@ -301,9 +294,12 @@ class Tables extends Component
             $this->globalFilterMode
         );
 
-        // Permite unir se há pelo menos 2 mesas no total (independente de terem check ou não)
-        // Isso permite unir mesas vazias com mesas ocupadas
-        $this->canMerge = $tables->count() >= 2;
+        // Permite unir apenas se há pelo menos 2 mesas que podem ser unidas
+        // Exclui mesas com status 'releasing', 'close' ou 'reserved'
+        $mergeableTables = $tables->filter(function($table) {
+            return !in_array($table->status, ['releasing', 'close', 'reserved']);
+        });
+        $this->canMerge = $mergeableTables->count() >= 2;
 
         return view('livewire.tables', [
             'tables' => $tables,

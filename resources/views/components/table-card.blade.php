@@ -10,8 +10,8 @@
 $isSelected = $selectionMode && in_array($table->id, $selectedTables);
 
 // Condições para desabilitar a seleção 
-// Desabilita apenas se a mesa estiver em liberação ou fechada
-$isDisabled = $selectionMode && ($table->status === 'releasing' || $table->status === 'close');
+// Desabilita se a mesa estiver em liberação, fechada ou reservada
+$isDisabled = $selectionMode && ($table->status === 'releasing' || $table->status === 'close' || $table->status === 'reserved');
 
 // Calcula quantidade de status ativos
 $activeStatuses = 0;
