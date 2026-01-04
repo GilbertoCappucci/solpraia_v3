@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Observers\UserObserver;
+use App\Models\Table;
+use App\Observers\TableObserver;
+use App\Models\Check;
+use App\Observers\CheckObserver;
 
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -39,6 +43,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Registrar Observer do GlobalSetting
         GlobalSetting::observe(GlobalSettingObserver::class);
+
+        // Registrar Observers para Broadcasting
+        Table::observe(TableObserver::class);
+        Check::observe(CheckObserver::class);
 
         // Definir Gates de autorização
         // Admin sempre tem acesso a tudo

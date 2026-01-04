@@ -1,4 +1,4 @@
-<div wire:poll.{{ $pollingInterval }}s>
+<div>
     <x-flash-message />
 
     {{-- Header --}}

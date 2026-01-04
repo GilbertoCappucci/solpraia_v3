@@ -34,7 +34,6 @@ class Tables extends Component
 
     // Configurações gerais
     public $timeLimits = [];
-    public $pollingInterval = 60;
 
     protected $tableService;
     protected $orderService;
@@ -77,6 +76,9 @@ class Tables extends Component
     {
         $listeners = [
             'global.setting.updated' => 'refreshSetting',
+            "echo-private:table.updated.{$this->userId}"
+                => 'onTableUpdated',
+            'check.updated' => 'onCheckUpdated',
             
             // Listeners para TableFilters
             'filters-changed' => 'onFiltersChanged',
@@ -99,8 +101,6 @@ class Tables extends Component
             'merge-closed' => 'closeMergeModal',
             'merge-completed' => 'onMergeCompleted',
         ];
-        
-        logger('📻 Livewire getListeners configured:', $listeners);
         
         return $listeners;
     }
@@ -181,6 +181,28 @@ class Tables extends Component
         $this->dispatch('$refresh');
     }
 
+    public function onTableUpdated($data)
+    {
+        logger('🔄 Table updated received in Livewire:', $data);
+        
+        // Só atualiza se a mesa pertencer a este usuário
+        if (isset($data['userId']) && $data['userId'] == $this->userId) {
+            // Força refresh dos dados
+            $this->render();
+        }
+    }
+
+    public function onCheckUpdated($data)
+    {
+        logger('🔄 Check updated received in Livewire:', $data);
+        
+        // Só atualiza se a mesa pertencer a este usuário
+        if (isset($data['userId']) && $data['userId'] == $this->userId) {
+            // Força refresh dos dados
+            $this->render();
+        }
+    }
+
     public function cancelSelection()
     {
         $this->selectionMode = false;
@@ -194,20 +216,13 @@ class Tables extends Component
 
     public function selectTableForMerge($tableId)
     {
-        logger('🎯 selectTableForMerge called', [
-            'tableId' => $tableId,
-            'currentSelectedTables' => $this->selectedTables,
-            'selectionMode' => $this->selectionMode
-        ]);
 
         if (in_array($tableId, $this->selectedTables)) {
             // Remove da seleção
             $this->selectedTables = array_values(array_filter($this->selectedTables, fn($id) => $id != $tableId));
-            logger('✅ Mesa removida da seleção', ['tableId' => $tableId, 'newSelection' => $this->selectedTables]);
         } else {
             // Adiciona à seleção
             $this->selectedTables[] = $tableId;
-            logger('✅ Mesa adicionada à seleção', ['tableId' => $tableId, 'newSelection' => $this->selectedTables]);
         }
     }
 
@@ -226,11 +241,6 @@ class Tables extends Component
 
     public function selectTable($tableId)
     {
-        logger('🎯 selectTable called', [
-            'tableId' => $tableId,
-            'selectionMode' => $this->selectionMode
-        ]);
-
         // Se estiver em modo de seleção, trata a seleção para unir
         if ($this->selectionMode) {
             $this->selectTableForMerge($tableId);

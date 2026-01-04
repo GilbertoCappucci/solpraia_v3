@@ -8,6 +8,7 @@
 
     <script>
         window.adminId = {{ auth()->user()->user_id }};
+        window.userId = {{ auth()->user()->user_id }};
     </script>
 </head>
 

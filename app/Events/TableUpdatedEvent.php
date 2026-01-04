@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Events;
+
+use App\Models\Table;
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+
+class TableUpdatedEvent implements ShouldBroadcast
+{
+    use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    public $table;
+
+    /**
+     * Create a new event instance.
+     */
+    public function __construct(Table $table)
+    {
+        logger('🚀 TableUpdatedEvent instantiated', ['tableId' => $table->id, 'status' => $table->status]);
+        $this->table = $table;
+    }
+
+    /**
+     * Get the channels the event should broadcast on.
+     */
+    public function broadcastOn(): array
+    {
+        logger('📡 Broadcasting TableUpdatedEvent', ['tableId' => $this->table->id, 'userId' => $this->table->user_id]);
+        return [
+            new PrivateChannel('tables-updated.' . $this->table->user_id),
+        ];
+    }
+
+    /**
+     * The event's broadcast name.
+     */
+    public function broadcastAs(): string
+    {
+        return 'table.updated';
+    }
+
+    /**
+     * Get the data to broadcast.
+     */
+    public function broadcastWith(): array
+    {
+        return [
+            'tableId' => $this->table->id,
+            'userId' => $this->table->user_id,
+            'status' => $this->table->status,
+            'number' => $this->table->number,
+            'name' => $this->table->name,
+            'updated_at' => $this->table->updated_at->toISOString(),
+        ];
+    }
+}

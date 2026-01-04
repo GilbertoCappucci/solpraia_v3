@@ -8,7 +8,6 @@ use App\Enums\TableStatusEnum;
 use App\Models\Table;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use App\Events\TableUpdated;
 
 class TableService
 {
@@ -528,22 +527,24 @@ class TableService
         }
 
         $table->status = $newStatus;
-        if ($table->save()) {
-            event(new TableUpdated($table)); // Dispatch the event
-            return true;
-        }
-        return false;
+        return $table->save(); // O Observer vai disparar o evento automaticamente
     }
 
     /**
      * Libera múltiplas mesas, definindo seu status para FREE.
      * Usado após a união de mesas para liberar as mesas de origem.
-     *
+     * 
      * @param array $tableIds IDs das mesas a serem liberadas.
      * @return void
      */
     public function releaseTables(array $tableIds): void
     {
-        Table::whereIn('id', $tableIds)->update(['status' => TableStatusEnum::FREE->value]);
+        // Usar loop para garantir que os Observers sejam disparados
+        foreach ($tableIds as $tableId) {
+            $table = Table::find($tableId);
+            if ($table) {
+                $table->update(['status' => TableStatusEnum::FREE->value]);
+            }
+        }
     }
 }

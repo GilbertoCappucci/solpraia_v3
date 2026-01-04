@@ -43,7 +43,7 @@ class CheckService
     {
         $newTotal = $this->calculateTotal($check);
 
-        // Atualiza o total do check se mudou
+        // Atualiza o total do check se mudou (Observer vai disparar o evento)
         if ($check->total != $newTotal) {
             $check->update(['total' => $newTotal]);
         }
@@ -102,7 +102,7 @@ class CheckService
             return ['success' => false, 'errors' => $errors];
         }
 
-        // Atualiza o status do check
+        // Atualiza o status do check (Observer vai disparar o evento)
         $check->update(['status' => $newStatus]);
 
         // Se foi marcado como Closed ou Paid, atualiza closed_at
