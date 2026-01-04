@@ -22,6 +22,13 @@ class TableFilters extends Component
         $this->userPreferenceService = $userPreferenceService;
     }
 
+    public function getListeners()
+    {
+        return [
+            'toggle-filters' => 'toggleFilters',
+        ];
+    }
+
     public function mount()
     {
         // Carrega filtros da sessão (já foram carregados pelo UserPreferenceService no login)

@@ -114,7 +114,9 @@ class Tables extends Component
 
     public function toggleFilters()
     {
-        $this->dispatch('toggle-filters');
+        // O evento toggle-filters já foi despachado pelo TableHeader
+        // e será capturado pelo listener do TableFilters
+        // Não precisamos fazer nada aqui
     }
 
     public function toggleSelectionMode()
