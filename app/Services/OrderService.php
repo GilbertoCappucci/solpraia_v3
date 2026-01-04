@@ -46,7 +46,7 @@ class OrderService
     public function findOrCreateCheck(int $tableId): ?Check
     {
         // Busca check ativo (não Paid nem Canceled)
-        return Check::where('table_id', $tableId)
+        $existingCheck = Check::where('table_id', $tableId)
             ->whereNotIn('status', [
                 CheckStatusEnum::PAID->value,
                 CheckStatusEnum::CANCELED->value,
@@ -54,6 +54,32 @@ class OrderService
             ])
             ->orderBy('created_at', 'desc')
             ->first();
+            
+        // Se encontrou check ativo, retorna
+        if ($existingCheck) {
+            return $existingCheck;
+        }
+        
+        // Se não encontrou, cria novo check automaticamente
+        $newCheck = Check::create([
+            'table_id' => $tableId,
+            'status' => CheckStatusEnum::OPEN->value,
+            'total' => 0.00,
+        ]);
+        
+        // Atualiza status da mesa para ocupada se estiver livre
+        $table = Table::find($tableId);
+        if ($table && $table->status === TableStatusEnum::FREE->value) {
+            $table->update(['status' => TableStatusEnum::OCCUPIED->value]);
+        }
+        
+        logger('🆕 Check criado automaticamente', [
+            'check_id' => $newCheck->id,
+            'table_id' => $tableId,
+            'user_id' => auth()->id() ?? 'sistema'
+        ]);
+        
+        return $newCheck;
     }
 
     /**

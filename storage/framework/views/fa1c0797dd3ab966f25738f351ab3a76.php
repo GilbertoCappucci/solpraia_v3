@@ -21,9 +21,23 @@
 
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($table->name): ?> (<?php echo e($table->name); ?>) <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </span>
-                        <span class="ml-auto text-sm text-gray-500">
-                            <?php echo e($table->checkTotal > 0 ? 'R$ ' . number_format($table->checkTotal, 2, ',', '.') : 'Vazia'); ?>
-
+                        <span class="ml-auto text-sm">
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($table->checkId): ?>
+                                <span class="inline-flex items-center gap-1">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span class="font-medium text-green-700">Check Aberto</span>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($table->checkTotal > 0): ?>
+                                        <span class="text-gray-500">• R$ <?php echo e(number_format($table->checkTotal, 2, ',', '.')); ?></span>
+                                    <?php else: ?>
+                                        <span class="text-gray-500">• R$ 0,00</span>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="inline-flex items-center gap-1">
+                                    <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                                    <span class="text-gray-500">Sem Check</span>
+                                </span>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </span>
                     </label>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>

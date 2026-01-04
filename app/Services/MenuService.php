@@ -21,12 +21,14 @@ class MenuService
 {
     protected $checkService;
     protected $stockService;
+    protected $orderService;
     protected $globalSettingService;
 
-    public function __construct(CheckService $checkService, StockService $stockService, GlobalSettingService $globalSettingService)
+    public function __construct(CheckService $checkService, StockService $stockService, OrderService $orderService, GlobalSettingService $globalSettingService)
     {
         $this->checkService = $checkService;
         $this->stockService = $stockService;
+        $this->orderService = $orderService;
         $this->globalSettingService = $globalSettingService;
     }
 
@@ -210,17 +212,9 @@ class MenuService
                 }
             }
 
-            // 1. Se não houver check, cria um novo
+            // 1. Usa o OrderService para encontrar ou criar check automaticamente
             if (!$check) {
-                $check = Check::create([
-                    'table_id' => $tableId,
-                    'status' => CheckStatusEnum::OPEN->value,
-                    'total' => 0, // Será calculado abaixo
-                ]);
-                // Atualiza status da mesa para ocupada
-                if ($table->status === TableStatusEnum::FREE->value) {
-                    $table->update(['status' => TableStatusEnum::OCCUPIED->value]);
-                }
+                $check = $this->orderService->findOrCreateCheck($tableId);
             }
 
             // 2. Cria os pedidos e debita estoque
