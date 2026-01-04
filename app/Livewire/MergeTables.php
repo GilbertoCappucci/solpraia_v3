@@ -38,17 +38,6 @@ class MergeTables extends Component
         }
         
         $this->mergeDestinationTableId = $this->selectedTables[0] ?? null;
-        
-        logger('🔀 MergeTables.mount', [
-            'selectedTables' => $this->selectedTables,
-            'tables_count' => $this->tables->count(),
-            'tables_with_checkId' => $this->tables->filter(fn($t) => !empty($t->checkId))->count(),
-            'sample_table' => $this->tables->first() ? [
-                'id' => $this->tables->first()->id,
-                'number' => $this->tables->first()->number,
-                'checkId' => $this->tables->first()->checkId ?? 'NULL',
-            ] : null,
-        ]);
     }
 
     public function close()
@@ -58,21 +47,14 @@ class MergeTables extends Component
 
     public function confirmMerge()
     {
-        logger('🔀 MergeTables.confirmMerge called', [
-            'selectedTables' => $this->selectedTables,
-            'mergeDestinationTableId' => $this->mergeDestinationTableId,
-            'user' => Auth::id(),
-        ]);
 
         if (count($this->selectedTables) < 2) {
-            logger('🔀 MergeTables: less than 2 tables selected', ['selectedTables' => $this->selectedTables]);
             $this->dispatch('merge-completed', ['success' => false, 'message' => 'Selecione pelo menos duas mesas para unir.']);
             $this->dispatch('merge-closed');
             return;
         }
 
         if (!$this->mergeDestinationTableId) {
-            logger('🔀 MergeTables: no destination selected', ['selectedTables' => $this->selectedTables]);
             $this->dispatch('merge-completed', ['success' => false, 'message' => 'Selecione uma mesa de destino para a união.']);
             $this->dispatch('merge-closed');
             return;

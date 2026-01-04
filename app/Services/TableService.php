@@ -547,4 +547,46 @@ class TableService
             }
         }
     }
+
+    /**
+     * Verifica se uma mesa pode ser selecionada para união
+     * 
+     * @param Table|object $table
+     * @return bool
+     */
+    public function canTableBeMerged($table): bool
+    {
+        // Mesas com os seguintes status não podem ser unidas:
+        // - releasing: mesa está sendo liberada
+        // - close: mesa está fechada permanentemente
+        // - reserved: mesa está reservada
+        $excludedStatuses = ['releasing', 'close', 'reserved'];
+        $tables = !in_array($table->status, $excludedStatuses);
+
+        return $tables;
+    }
+
+    /**
+     * Filtra uma coleção de mesas retornando apenas as que podem ser unidas
+     * 
+     * @param Collection $tables
+     * @return Collection
+     */
+    public function getMergeableTables(Collection $tables): Collection
+    {
+        return $tables->filter(fn($table) => $this->canTableBeMerged($table));
+    }
+
+    /**
+     * Verifica se há mesas suficientes para realizar uma união
+     * Requer pelo menos 2 mesas que podem ser unidas
+     * 
+     * @param Collection $tables
+     * @return bool
+     */
+    public function canMergeTables(Collection $tables): bool
+    {
+        $mergeableTables = $this->getMergeableTables($tables);
+        return $mergeableTables->count() >= 2;
+    }
 }

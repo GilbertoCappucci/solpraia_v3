@@ -23,6 +23,11 @@ class TableHeader extends Component
 
     public function toggleSelectionMode()
     {
+        logger('🎯 TableHeader::toggleSelectionMode', [
+            'selectionMode' => $this->selectionMode,
+            'canMerge' => $this->canMerge,
+            'selectedTables' => $this->selectedTables,
+        ]);
         $this->dispatch('toggle-selection-mode');
     }
 

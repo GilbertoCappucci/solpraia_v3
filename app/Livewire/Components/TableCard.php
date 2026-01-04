@@ -3,6 +3,7 @@
 namespace App\Livewire\Components;
 
 use App\Models\Table as TableModel;
+use App\Services\TableService;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -13,6 +14,13 @@ class TableCard extends Component
     public bool $selectionMode = false;
     public array $selectedTables = [];
     public array $timeLimits = [];
+    
+    protected $tableService;
+    
+    public function boot(TableService $tableService)
+    {
+        $this->tableService = $tableService;
+    }
 
     public function mount(TableModel $table, bool $delayAlarmEnabled = true, bool $selectionMode = false, array $selectedTables = [], array $timeLimits = [])
     {
@@ -32,7 +40,7 @@ class TableCard extends Component
     #[Computed]
     public function isDisabled(): bool
     {
-        return $this->selectionMode && in_array($this->table->status, ['releasing', 'close', 'reserved']);
+        return $this->selectionMode && !$this->tableService->canTableBeMerged($this->table);
     }
 
     #[Computed]
@@ -172,6 +180,12 @@ class TableCard extends Component
 
     public function selectTable($tableId)
     {
+        logger('🎯 TableCard::selectTable called', [
+            'tableId' => $tableId,
+            'selectionMode' => $this->selectionMode,
+            'isDisabled' => $this->isDisabled,
+        ]);
+        
         if (!$this->selectionMode) {
             // Se não está em modo de seleção, navega para a mesa
             return redirect()->route('orders', ['tableId' => $tableId]);

@@ -137,14 +137,19 @@ class Tables extends Component
 
     public function toggleSelectionMode()
     {
+        logger('🔄 toggleSelectionMode called', [
+            'before' => $this->selectionMode,
+            'canMerge' => $this->canMerge,
+        ]);
+        
         $this->selectionMode = !$this->selectionMode;
         if (!$this->selectionMode) {
             $this->selectedTables = [];
         }
         
-        logger('🎯 toggleSelectionMode called', [
-            'selectionMode' => $this->selectionMode,
-            'selectedTables' => $this->selectedTables
+        logger('✅ toggleSelectionMode completed', [
+            'after' => $this->selectionMode,
+            'selectedTables' => $this->selectedTables,
         ]);
     }
 
@@ -219,9 +224,12 @@ class Tables extends Component
         $this->dispatch('open-new-table-modal');
     }
 
-    public function selectTableForMerge($data)
+    public function selectTableForMerge($tableId = null)
     {
-        $tableId = is_array($data) ? ($data['tableId'] ?? $data) : $data;
+        if ($tableId === null) {
+            logger('⚠️ selectTableForMerge called without tableId');
+            return;
+        }
 
         if (in_array($tableId, $this->selectedTables)) {
             // Remove da seleção
@@ -230,6 +238,11 @@ class Tables extends Component
             // Adiciona à seleção
             $this->selectedTables[] = $tableId;
         }
+        
+        logger('📋 selectTableForMerge', [
+            'tableId' => $tableId,
+            'selectedTables' => $this->selectedTables,
+        ]);
     }
 
     public function onSelectionModeChanged($selectionMode)
@@ -296,11 +309,24 @@ class Tables extends Component
         );
 
         // Permite unir apenas se há pelo menos 2 mesas que podem ser unidas
-        // Exclui mesas com status 'releasing', 'close' ou 'reserved'
-        $mergeableTables = $tables->filter(function($table) {
-            return !in_array($table->status, ['releasing', 'close', 'reserved']);
-        });
-        $this->canMerge = $mergeableTables->count() >= 2;
+        $this->canMerge = $this->tableService->canMergeTables($tables);
+
+        // Diagnostic logging: ajuda a entender por que o botão 'Unir' fica desabilitado
+        if ($this->canMerge) {
+            $mergeableTables = $this->tableService->getMergeableTables($tables);
+            logger('Tables::render diagnostic', [
+                'tables_count' => $tables->count(),
+                'tables_ids' => $tables->pluck('id')->toArray(),
+                'mergeable_count' => $mergeableTables->count(),
+                'mergeable_ids' => $mergeableTables->pluck('id')->toArray(),
+                'filterTableStatuses' => $this->filterTableStatuses,
+                'filterCheckStatuses' => $this->filterCheckStatuses,
+                'filterOrderStatuses' => $this->filterOrderStatuses,
+                'filterDepartaments' => $this->filterDepartaments,
+                'globalFilterMode' => $this->globalFilterMode,
+                'selectedTables_count' => count($this->selectedTables),
+            ]);
+        }
 
         return view('livewire.tables', [
             'tables' => $tables,

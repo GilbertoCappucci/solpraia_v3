@@ -7,7 +7,7 @@
         :selected-tables="$selectedTables" 
         :can-merge="$canMerge" 
         :has-active-filters="$hasActiveFilters"
-        wire:key="table-header" 
+        :key="'table-header-'.($selectionMode ? 'select' : 'normal').'-'.count($selectedTables)" 
     />
 
     <div class="p-4 relative">
@@ -19,7 +19,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             @foreach($tables as $table)
                 <livewire:components.table-card 
-                    :key="'table-card-'.$table->id"
+                    :key="'table-card-'.$table->id.'-'.($selectionMode ? 'select' : 'normal').'-'.count($selectedTables)"
                     :table="$table" 
                     :selectionMode="$selectionMode"
                     :selectedTables="$selectedTables"
