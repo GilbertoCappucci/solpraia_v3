@@ -25,6 +25,7 @@
     <div class="flex items-center justify-center grow pointer-events-none z-1">
         @if($table->checkStatus && $this->activeStatuses > 0)
         <div class="grid {{ $this->gridClass }} gap-1 w-full px-2">
+            @if($table->ordersPending > 0)
             <livewire:components.order-status-indicator 
                 :key="'pending-'.$table->id"
                 status="pending" 
@@ -34,6 +35,8 @@
                 :textSize="$this->textSize" 
                 :padding="$this->padding" 
             />
+            @endif
+            @if($table->ordersInProduction > 0)
             <livewire:components.order-status-indicator 
                 :key="'production-'.$table->id"
                 status="production" 
@@ -43,6 +46,8 @@
                 :textSize="$this->textSize" 
                 :padding="$this->padding" 
             />
+            @endif
+            @if($table->ordersInTransit > 0)
             <livewire:components.order-status-indicator 
                 :key="'transit-'.$table->id"
                 status="transit" 
@@ -52,6 +57,7 @@
                 :textSize="$this->textSize" 
                 :padding="$this->padding" 
             />
+            @endif
         </div>
         @elseif($this->showClosedIndicator)
         <div class="flex flex-col items-center justify-center gap-1">
