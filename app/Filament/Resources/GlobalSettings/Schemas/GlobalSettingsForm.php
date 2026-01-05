@@ -32,7 +32,6 @@ class GlobalSettingsForm
                     ->helperText('Aguardando início do preparo')
                     ->numeric()
                     ->minValue(1)
-                    ->maxValue(120)
                     ->suffix('minutos')
                     ->default(15),
 
@@ -41,7 +40,6 @@ class GlobalSettingsForm
                     ->helperText('Em preparo na cozinha')
                     ->numeric()
                     ->minValue(1)
-                    ->maxValue(120)
                     ->suffix('minutos')
                     ->default(30),
 
@@ -50,7 +48,6 @@ class GlobalSettingsForm
                     ->helperText('A caminho da mesa')
                     ->numeric()
                     ->minValue(1)
-                    ->maxValue(120)
                     ->suffix('minutos')
                     ->default(10),
 
@@ -59,7 +56,6 @@ class GlobalSettingsForm
                     ->helperText('Aguardando pagamento')
                     ->numeric()
                     ->minValue(1)
-                    ->maxValue(120)
                     ->suffix('minutos')
                     ->default(60),
 
@@ -68,7 +64,6 @@ class GlobalSettingsForm
                     ->helperText('Aguardando limpeza')
                     ->numeric()
                     ->minValue(1)
-                    ->maxValue(120)
                     ->suffix('minutos')
                     ->default(15),
 
