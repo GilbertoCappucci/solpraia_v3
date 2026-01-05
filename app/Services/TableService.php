@@ -95,7 +95,7 @@ class TableService
             // Verifica checks fechados atrasados (status virtual)
             if ($hasDelayedClosedFilter && !$matchesCheckStatus) {
                 if ($currentCheck->status === CheckStatusEnum::CLOSED->value && $currentCheck->updated_at) {
-                    $timeLimits = $this->globalSettingService->getTimeLimits();
+                    $timeLimits = $this->globalSettingService->getTimeLimits($table->user);
                     $closedMinutes = abs((int) now()->diffInMinutes($currentCheck->updated_at));
                     $matchesCheckStatus = $closedMinutes > $timeLimits['closed'];
                 }
@@ -115,7 +115,7 @@ class TableService
             }
 
             if ($hasDelayedFilter && !$matchesOrderStatus) {
-                $timeLimits = $this->globalSettingService->getTimeLimits();
+                $timeLimits = $this->globalSettingService->getTimeLimits($table->user);
                 $now = now();
                 $matchesOrderStatus = $currentCheck->orders
                     ->filter(function ($order) use ($now, $timeLimits) {
@@ -196,7 +196,7 @@ class TableService
     ): bool {
         $hasDelayedFilter = in_array('delayed', $filterOrderStatuses);
         $otherStatuses = array_diff($filterOrderStatuses, ['delayed']);
-        $timeLimits = $this->globalSettingService->getTimeLimits();
+        $timeLimits = $this->globalSettingService->getTimeLimits($table->user);
         $now = now();
 
         // Filtra pedidos que atendem AMBOS os critérios: departamento E status (OR dentro de cada)
@@ -301,15 +301,19 @@ class TableService
             $table->checkStatusLabel = 'Liberando';
             $table->checkStatusColor = 'teal';
             $table->releasingMinutes = $table->updated_at ? abs((int) now()->diffInMinutes($table->updated_at)) : 0;
+            $table->releasingTimestamp = $table->updated_at;
         } else {
             $table->releasingMinutes = 0;
+            $table->releasingTimestamp = null;
         }
 
         // Calcula tempo desde que o check foi fechado
         if ($currentCheck->status === CheckStatusEnum::CLOSED->value && $currentCheck->updated_at) {
             $table->closedMinutes = abs((int) now()->diffInMinutes($currentCheck->updated_at));
+            $table->closedTimestamp = $currentCheck->updated_at;
         } else {
             $table->closedMinutes = 0;
+            $table->closedTimestamp = null;
         }
     }
 
@@ -329,6 +333,7 @@ class TableService
         $table->pendingMinutes = $oldestPending && $oldestPending->status_changed_at
             ? abs((int) $now->diffInMinutes($oldestPending->status_changed_at))
             : 0;
+        $table->pendingTimestamp = $oldestPending?->status_changed_at;
 
         // In production orders
         $productionOrders = $orders->filter(fn($order) => $order->status === OrderStatusEnum::IN_PRODUCTION->value);
@@ -337,6 +342,7 @@ class TableService
         $table->productionMinutes = $oldestProduction && $oldestProduction->status_changed_at
             ? abs((int) $now->diffInMinutes($oldestProduction->status_changed_at))
             : 0;
+        $table->productionTimestamp = $oldestProduction?->status_changed_at;
 
         // In transit orders
         $transitOrders = $orders->filter(fn($order) => $order->status === OrderStatusEnum::IN_TRANSIT->value);
@@ -345,6 +351,7 @@ class TableService
         $table->transitMinutes = $oldestTransit && $oldestTransit->status_changed_at
             ? abs((int) $now->diffInMinutes($oldestTransit->status_changed_at))
             : 0;
+        $table->transitTimestamp = $oldestTransit?->status_changed_at;
 
         // Completed orders
         $completedOrders = $orders->filter(fn($order) => $order->status === OrderStatusEnum::COMPLETED->value);
@@ -569,12 +576,14 @@ class TableService
         $excludedStatuses = ['releasing', 'close', 'reserved'];
         $canMerge = !in_array($table->status, $excludedStatuses);
 
+        /*
         logger('🔍 canTableBeMerged', [
             'tableId' => $table->id,
             'tableName' => $table->name,
             'status' => $table->status,
             'canMerge' => $canMerge,
         ]);
+        */
 
         return $canMerge;
     }

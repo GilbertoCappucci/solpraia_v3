@@ -22,7 +22,6 @@ class TableUpdatedEvent implements ShouldBroadcastNow
      */
     public function __construct(Table $table)
     {
-        logger('🚀 TableUpdatedEvent instantiated', ['tableId' => $table->id, 'status' => $table->status]);
         $this->table = $table;
     }
 

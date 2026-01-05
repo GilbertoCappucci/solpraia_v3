@@ -35,6 +35,9 @@ class Tables extends Component
 
     // Configurações gerais
     public $timeLimits = [];
+    
+    // Timestamp para forçar re-renderização quando eventos via broadcasting chegam
+    public $lastUpdate;
 
     protected $tableService;
     protected $orderService;
@@ -76,10 +79,9 @@ class Tables extends Component
     public function getListeners()
     {
         $listeners = [
-            // Echo listeners - TEMPORARIAMENTE DESABILITADOS
-            // "echo-private:global-setting-updated.{$userId},.global.setting.updated" => 'refreshSetting',
-            // "echo-private:tables-updated.{$userId},.table.updated" => 'onTableUpdated',
-            // "echo-private:tables-updated.{$userId},.check.updated" => 'onCheckUpdated',
+            "echo-private:global-setting-updated.{$this->userId},.global.setting.updated" => 'refreshSetting',
+            "echo-private:tables-updated.{$this->userId},.table.updated" => 'onTableUpdated',
+            "echo-private:tables-updated.{$this->userId},.check.updated" => 'onCheckUpdated',
             
             // Listeners para TableFilters
             'filters-changed' => 'onFiltersChanged',
@@ -177,7 +179,7 @@ class Tables extends Component
         $this->showMergeModal = false;
         $this->selectionMode = false;
         $this->selectedTables = [];
-        $this->dispatch('$refresh');
+        // O componente será atualizado automaticamente
     }
 
     public function onTableUpdated($data)
@@ -334,12 +336,14 @@ class Tables extends Component
         // Atualiza a propriedade do componente
         $this->canMerge = $canMerge;
 
+        /*
         logger('📊 Tables render', [
             'totalTables' => $tables->count(),
             'canMerge' => $canMerge,
             'selectionMode' => $this->selectionMode,
             'selectedCount' => count($this->selectedTables),
         ]);
+        */
 
         return view('livewire.tables', [
             'tables' => $tables,

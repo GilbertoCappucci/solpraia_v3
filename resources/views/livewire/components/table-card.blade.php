@@ -1,6 +1,55 @@
 <div
+    x-data="{
+        hasDelay: false,
+        timeLimits: @js($timeLimits),
+        timestamps: @js($this->statusTimestamps),
+        checkDelay() {
+            const now = Math.floor(Date.now() / 1000);
+            let delay = false;
+            
+            // Debug logs
+            if (this.timestamps.releasing) {
+                console.log('🔍 Checking releasing delay:', {
+                    tableId: {{ $table->id }},
+                    timestamp: this.timestamps.releasing,
+                    limit: this.timeLimits.releasing,
+                    now: now,
+                    releasingMinutes: Math.floor((now - new Date(this.timestamps.releasing).getTime() / 1000) / 60)
+                });
+            }
+            
+            if (this.timestamps.pending) {
+                const pendingMinutes = Math.floor((now - new Date(this.timestamps.pending).getTime() / 1000) / 60);
+                if (pendingMinutes > (this.timeLimits.pending || 0)) delay = true;
+            }
+            
+            if (this.timestamps.production) {
+                const productionMinutes = Math.floor((now - new Date(this.timestamps.production).getTime() / 1000) / 60);
+                if (productionMinutes > (this.timeLimits.in_production || 0)) delay = true;
+            }
+            
+            if (this.timestamps.transit) {
+                const transitMinutes = Math.floor((now - new Date(this.timestamps.transit).getTime() / 1000) / 60);
+                if (transitMinutes > (this.timeLimits.in_transit || 0)) delay = true;
+            }
+            
+            if (this.timestamps.closed) {
+                const closedMinutes = Math.floor((now - new Date(this.timestamps.closed).getTime() / 1000) / 60);
+                if (closedMinutes > (this.timeLimits.closed || 0)) delay = true;
+            }
+            
+            if (this.timestamps.releasing) {
+                const releasingMinutes = Math.floor((now - new Date(this.timestamps.releasing).getTime() / 1000) / 60);
+                if (releasingMinutes > (this.timeLimits.releasing || 0)) delay = true;
+            }
+            
+            this.hasDelay = delay;
+        }
+    }"
+    x-init="checkDelay(); setInterval(() => checkDelay(), 5000)"
     @if(!$this->isDisabled) wire:click="selectTable({{ $table->id }})" @endif
-    class="relative aspect-square rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2 {{ $this->cardClasses }} {{ $this->delayAnimation }} {{ $this->selectionClasses }}">
+    :class="hasDelay ? 'animate-pulse-warning' : ''"
+    class="relative aspect-square rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2 {{ $this->cardClasses }} {{ $this->selectionClasses }}">
 
     {{-- Indicador de Seleção (Checkbox) --}}
     @if($selectionMode && !$this->isDisabled)
@@ -29,6 +78,7 @@
                 status="pending" 
                 :count="$table->ordersPending ?? 0" 
                 :minutes="$table->pendingMinutes ?? 0" 
+                :timestamp="$table->pendingTimestamp"
                 :dotSize="$this->dotSize" 
                 :textSize="$this->textSize" 
                 :padding="$this->padding" 
@@ -40,6 +90,7 @@
                 status="production" 
                 :count="$table->ordersInProduction ?? 0" 
                 :minutes="$table->productionMinutes ?? 0" 
+                :timestamp="$table->productionTimestamp"
                 :dotSize="$this->dotSize" 
                 :textSize="$this->textSize" 
                 :padding="$this->padding" 
@@ -51,6 +102,7 @@
                 status="transit" 
                 :count="$table->ordersInTransit ?? 0" 
                 :minutes="$table->transitMinutes ?? 0" 
+                :timestamp="$table->transitTimestamp"
                 :dotSize="$this->dotSize" 
                 :textSize="$this->textSize" 
                 :padding="$this->padding" 
@@ -58,18 +110,44 @@
             @endif
         </div>
         @elseif($this->showClosedIndicator)
-        <div class="flex flex-col items-center justify-center gap-1">
+        <div 
+            x-data="{
+                minutes: {{ $table->closedMinutes ?? 0 }},
+                timestamp: @js($table->closedTimestamp),
+                updateMinutes() {
+                    if (this.timestamp) {
+                        const now = Math.floor(Date.now() / 1000);
+                        const statusTime = Math.floor(new Date(this.timestamp).getTime() / 1000);
+                        this.minutes = Math.floor((now - statusTime) / 60);
+                    }
+                }
+            }"
+            x-init="if (timestamp) { updateMinutes(); setInterval(() => updateMinutes(), 5000); }"
+            class="flex flex-col items-center justify-center gap-1">
             <div class="w-6 h-6 bg-orange-500 rounded-full"></div>
             <div class="flex flex-col items-center leading-tight">
-                <span class="text-2xl font-bold text-orange-700">{{ $table->closedMinutes ?? 0 }}m</span>
+                <span class="text-2xl font-bold text-orange-700" x-text="minutes + 'm'">{{ $table->closedMinutes ?? 0 }}m</span>
                 <span class="text-[10px] font-bold text-orange-600 uppercase tracking-wider">Fechando</span>
             </div>
         </div>
         @elseif($this->showReleasingIndicator)
-        <div class="flex flex-col items-center justify-center gap-1">
+        <div 
+            x-data="{
+                minutes: {{ $table->releasingMinutes ?? 0 }},
+                timestamp: @js($table->releasingTimestamp),
+                updateMinutes() {
+                    if (this.timestamp) {
+                        const now = Math.floor(Date.now() / 1000);
+                        const statusTime = Math.floor(new Date(this.timestamp).getTime() / 1000);
+                        this.minutes = Math.floor((now - statusTime) / 60);
+                    }
+                }
+            }"
+            x-init="if (timestamp) { updateMinutes(); setInterval(() => updateMinutes(), 5000); }"
+            class="flex flex-col items-center justify-center gap-1">
             <div class="w-6 h-6 bg-teal-500 rounded-full"></div>
             <div class="flex flex-col items-center leading-tight">
-                <span class="text-2xl font-bold text-teal-700">{{ $table->releasingMinutes ?? 0 }}m</span>
+                <span class="text-2xl font-bold text-teal-700" x-text="minutes + 'm'">{{ $table->releasingMinutes ?? 0 }}m</span>
                 <span class="text-[10px] font-bold text-teal-600 uppercase tracking-wider">Liberando</span>
             </div>
         </div>

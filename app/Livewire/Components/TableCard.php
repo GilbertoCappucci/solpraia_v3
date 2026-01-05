@@ -17,6 +17,26 @@ class TableCard extends Component
     
     protected $tableService;
     
+    public function getListeners()
+    {
+        return [
+            "echo-private:global-setting-updated.{$this->table->user_id},.global.setting.updated" => 'handleTableUpdated',
+            "echo-private:tables-updated.{$this->table->user_id},.table.updated" => 'handleTableUpdated',
+        ];
+    }
+
+    public function handleTableUpdated($data)
+    {
+        logger('📶 TableCard received table.updated event', ['data' => $data]);
+
+        // Verifica se o evento é para esta mesa
+        if (isset($data['tableId']) && $data['tableId'] == $this->table->id) {
+            logger('🔄 Updating TableCard data', ['tableId' => $this->table->id]);
+            // Recarrega os dados da mesa
+            $this->table->refresh();
+        }
+    }
+
     public function boot(TableService $tableService)
     {
         $this->tableService = $tableService;
@@ -157,6 +177,18 @@ class TableCard extends Component
     public function delayAnimation(): string
     {
         return $this->hasDelay ? 'animate-pulse-warning' : '';
+    }
+
+    #[Computed]
+    public function statusTimestamps(): array
+    {
+        return [
+            'pending' => $this->table->pendingTimestamp ?? null,
+            'production' => $this->table->productionTimestamp ?? null,
+            'transit' => $this->table->transitTimestamp ?? null,
+            'closed' => $this->table->closedTimestamp ?? null,
+            'releasing' => $this->table->releasingTimestamp ?? null,
+        ];
     }
 
     #[Computed]
