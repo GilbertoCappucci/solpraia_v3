@@ -5,6 +5,7 @@ namespace App\Livewire\Table;
 use App\Enums\CheckStatusEnum;
 use App\Services\GlobalSettingService;
 use App\Services\TableService;
+use App\Services\UserPreferenceService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -45,7 +46,7 @@ class Tables extends Component
     protected $globalSettingService;
     protected $userPreferenceService;
 
-    public function boot(TableService $tableService, GlobalSettingService $globalSettingService, \App\Services\UserPreferenceService $userPreferenceService)
+    public function boot(TableService $tableService, GlobalSettingService $globalSettingService,UserPreferenceService $userPreferenceService)
     {
         $this->tableService = $tableService;
         $this->globalSettingService = $globalSettingService;
