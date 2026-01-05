@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 use Livewire\Attributes\On;
+use Livewire\Attributes\Computed;
 
 class Tables extends Component
 {
@@ -29,8 +30,8 @@ class Tables extends Component
     // Estados de seleção (controlados pelo TableSelectionMode)
     public $selectionMode = false;
     public $selectedTables = [];
-    public $canMerge = false;
     public $showMergeModal = false;
+    public $canMerge = false;
 
     // Configurações gerais
     public $timeLimits = [];
@@ -74,13 +75,11 @@ class Tables extends Component
 
     public function getListeners()
     {
-        $userId = $this->userId ?? Auth::user()?->user_id ?? Auth::id();
-        
         $listeners = [
-            // Echo listeners - formato alternativo que pode funcionar melhor
-            "echo-private:global-setting-updated.{$userId},.global.setting.updated" => 'refreshSetting',
-            "echo-private:tables-updated.{$userId},.table.updated" => 'onTableUpdated',
-            "echo-private:tables-updated.{$userId},.check.updated" => 'onCheckUpdated',
+            // Echo listeners - TEMPORARIAMENTE DESABILITADOS
+            // "echo-private:global-setting-updated.{$userId},.global.setting.updated" => 'refreshSetting',
+            // "echo-private:tables-updated.{$userId},.table.updated" => 'onTableUpdated',
+            // "echo-private:tables-updated.{$userId},.check.updated" => 'onCheckUpdated',
             
             // Listeners para TableFilters
             'filters-changed' => 'onFiltersChanged',
@@ -90,7 +89,6 @@ class Tables extends Component
             'toggle-selection-mode' => 'toggleSelectionMode',
             'open-merge-modal' => 'openMergeModal',
             'cancel-selection' => 'cancelSelection',
-            'open-new-table-modal' => 'openNewTableModal',
             
             // Listeners para TableSelectionMode
             'selection-mode-changed' => 'onSelectionModeChanged',
@@ -145,6 +143,7 @@ class Tables extends Component
         $this->selectionMode = !$this->selectionMode;
         if (!$this->selectionMode) {
             $this->selectedTables = [];
+            $this->canMerge = false;
         }
         
         logger('✅ toggleSelectionMode completed', [
@@ -217,11 +216,7 @@ class Tables extends Component
     {
         $this->selectionMode = false;
         $this->selectedTables = [];
-    }
-
-    public function openNewTableModal()
-    {
-        $this->dispatch('open-new-table-modal');
+        $this->canMerge = false;
     }
 
     public function selectTableForMerge($tableId = null)
@@ -239,9 +234,13 @@ class Tables extends Component
             $this->selectedTables[] = $tableId;
         }
         
+        // Update canMerge based on selected tables
+        $this->updateCanMerge();
+        
         logger('📋 selectTableForMerge', [
             'tableId' => $tableId,
             'selectedTables' => $this->selectedTables,
+            'canMerge' => $this->canMerge,
         ]);
     }
 
@@ -256,6 +255,26 @@ class Tables extends Component
     public function onSelectedTablesChanged($selectedTables)
     {
         $this->selectedTables = $selectedTables;
+        $this->updateCanMerge();
+    }
+
+    protected function updateCanMerge()
+    {
+        if (count($this->selectedTables) < 2) {
+            $this->canMerge = false;
+            return;
+        }
+
+        $tables = $this->tableService->getFilteredTables(
+            $this->userId,
+            $this->filterTableStatuses,
+            $this->filterCheckStatuses,
+            $this->filterOrderStatuses,
+            $this->filterDepartaments,
+            $this->globalFilterMode
+        )->whereIn('id', $this->selectedTables);
+
+        $this->canMerge = $this->tableService->canMergeTables($tables);
     }
 
     public function selectTable($tableId)
@@ -296,9 +315,6 @@ class Tables extends Component
 
     public function render()
     {
-        // Recalcula todos os checks ativos antes de carregar a view
-        $this->orderService->recalculateAllActiveChecks();
-
         $tables = $this->tableService->getFilteredTables(
             $this->userId,
             $this->filterTableStatuses,
@@ -308,28 +324,11 @@ class Tables extends Component
             $this->globalFilterMode
         );
 
-        // Permite unir apenas se há pelo menos 2 mesas que podem ser unidas
-        $this->canMerge = $this->tableService->canMergeTables($tables);
-
-        // Diagnostic logging: ajuda a entender por que o botão 'Unir' fica desabilitado
-        if ($this->canMerge) {
-            $mergeableTables = $this->tableService->getMergeableTables($tables);
-            logger('Tables::render diagnostic', [
-                'tables_count' => $tables->count(),
-                'tables_ids' => $tables->pluck('id')->toArray(),
-                'mergeable_count' => $mergeableTables->count(),
-                'mergeable_ids' => $mergeableTables->pluck('id')->toArray(),
-                'filterTableStatuses' => $this->filterTableStatuses,
-                'filterCheckStatuses' => $this->filterCheckStatuses,
-                'filterOrderStatuses' => $this->filterOrderStatuses,
-                'filterDepartaments' => $this->filterDepartaments,
-                'globalFilterMode' => $this->globalFilterMode,
-                'selectedTables_count' => count($this->selectedTables),
-            ]);
-        }
+        $canMerge = $this->tableService->canMergeTables($tables);
 
         return view('livewire.tables', [
             'tables' => $tables,
+            'canMerge' => $canMerge,
         ]);
     }
 }

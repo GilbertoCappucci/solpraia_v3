@@ -1,5 +1,5 @@
 <div
-    wire:click="@if(!$this->isDisabled)selectTable({{ $table->id }})@endif"
+    @if(!$this->isDisabled) wire:click="selectTable({{ $table->id }})" @endif
     class="relative aspect-square rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2 {{ $this->cardClasses }} {{ $this->delayAnimation }} {{ $this->selectionClasses }}">
 
     {{-- Indicador de Seleção (Checkbox) --}}

@@ -3,31 +3,25 @@
 namespace App\Livewire;
 
 use Livewire\Component;
-use Livewire\Attributes\Reactive;
 
 class TableHeader extends Component
 {
-    #[Reactive]
     public $selectionMode = false;
-    
-    #[Reactive]
     public $selectedTables = [];
-    
-    #[Reactive]
     public $canMerge = false;
-    
-    #[Reactive]
     public $hasActiveFilters = false;
-    
     public $title = 'Locais';
+
+    public function mount($selectionMode = false, $selectedTables = [], $canMerge = false, $hasActiveFilters = false)
+    {
+        $this->selectionMode = $selectionMode;
+        $this->selectedTables = $selectedTables;
+        $this->canMerge = $canMerge;
+        $this->hasActiveFilters = $hasActiveFilters;
+    }
 
     public function toggleSelectionMode()
     {
-        logger('🎯 TableHeader::toggleSelectionMode', [
-            'selectionMode' => $this->selectionMode,
-            'canMerge' => $this->canMerge,
-            'selectedTables' => $this->selectedTables,
-        ]);
         $this->dispatch('toggle-selection-mode');
     }
 

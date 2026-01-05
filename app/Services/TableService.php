@@ -20,6 +20,7 @@ class TableService
     /**
      * Busca e filtra tables com seus checks e orders
      */
+
     public function getFilteredTables(
         int $userId,
         array $filterTableStatuses = [],
@@ -56,9 +57,11 @@ class TableService
             });
     }
 
+
     /**
      * Aplica filtros na table (lógica configurável por tipo de filtro)
      */
+
     protected function applyFilters(
         Table $table,
         array $filterTableStatuses,
@@ -181,9 +184,11 @@ class TableService
         }
     }
 
+
     /**
      * Verifica se há pedidos que atendem simultaneamente aos filtros de status E departamento
      */
+
     protected function checkOrdersMatchBothFilters(
         $currentCheck,
         array $filterOrderStatuses,
@@ -237,6 +242,7 @@ class TableService
         // OR: Deve ter pelo menos UM pedido que atende ambos os critérios
         return $matchingOrders->isNotEmpty();
     }
+
 
     /**
      * Enriquece os dados da table com informações de check e orders
