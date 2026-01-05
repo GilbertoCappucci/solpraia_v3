@@ -16,4 +16,3 @@
             title="{{ $count }} {{ $this->getConfig()['label'] }}"></span>
     <span class="{{ $textSize }} font-semibold {{ $this->getConfig()['textColor'] }}" x-text="minutes + 'm'"></span>
 </div>
-

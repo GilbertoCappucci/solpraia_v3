@@ -27,27 +27,27 @@ class OrderStatusIndicator extends Component
 
     public function getConfig(): array
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => [
-                'color' => 'bg-yellow-500',
-                'textColor' => 'text-yellow-700',
-                'label' => 'aguardando'
+                'label' => 'Aguardando',
+                'color' => 'bg-yellow-400',
+                'textColor' => 'text-yellow-600',
             ],
             'production' => [
-                'color' => 'bg-blue-500',
-                'textColor' => 'text-blue-700',
-                'label' => 'em preparo'
+                'label' => 'Em Preparo',
+                'color' => 'bg-blue-400',
+                'textColor' => 'text-blue-600',
             ],
             'transit' => [
-                'color' => 'bg-purple-500',
-                'textColor' => 'text-purple-700',
-                'label' => 'em trânsito'
+                'label' => 'Em Trânsito',
+                'color' => 'bg-purple-400',
+                'textColor' => 'text-purple-600',
             ],
             default => [
-                'color' => 'bg-gray-500',
-                'textColor' => 'text-gray-700',
-                'label' => ''
-            ]
+                'label' => 'Desconhecido',
+                'color' => 'bg-gray-400',
+                'textColor' => 'text-gray-600',
+            ],
         };
     }
 
