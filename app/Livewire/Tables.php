@@ -3,7 +3,9 @@
 namespace App\Livewire;
 
 use App\Enums\CheckStatusEnum;
+use App\Enums\TableStatusEnum;
 use App\Models\Check;
+use App\Models\Table;
 use App\Services\GlobalSettingService;
 use App\Services\OrderService;
 use App\Services\TableService;
@@ -32,12 +34,27 @@ class Tables extends Component
     public $selectedTables = [];
     public $showMergeModal = false;
     public $canMerge = false;
+    public $mergeDestinationTableId = null;
 
     // Configurações gerais
     public $timeLimits = [];
     
     // Timestamp para forçar re-renderização quando eventos via broadcasting chegam
     public $lastUpdate;
+
+    // TableFilters properties
+    public $showFilters = false;
+
+    // TableCreateModal properties
+    public $showCreateModal = false;
+    public $newTableName = '';
+    public $newTableNumber = '';
+
+    // TableStatusModal properties
+    public $showStatusModal = false;
+    public $selectedTableId = null;
+    public $newTableStatus = null;
+    public $hasActiveCheck = false;
 
     protected $tableService;
     protected $orderService;
@@ -59,6 +76,9 @@ class Tables extends Component
         
         // Inicializa os filtros a partir das preferências salvas
         $this->initializeFilters();
+        
+        // TableFilters mount
+        $this->showFilters = session('tables.showFilters', false);
     }
     
     protected function initializeFilters()
@@ -74,6 +94,18 @@ class Tables extends Component
                                  !empty($this->filterCheckStatuses) || 
                                  !empty($this->filterOrderStatuses) || 
                                  !empty($this->filterDepartaments);
+    }
+
+    public function booted()
+    {
+        // Emite evento para sincronizar filtros após a inicialização completa
+        $this->dispatch('filters-changed', [
+            'filterTableStatuses' => $this->filterTableStatuses,
+            'filterCheckStatuses' => $this->filterCheckStatuses,
+            'filterOrderStatuses' => $this->filterOrderStatuses,
+            'filterDepartaments' => $this->filterDepartaments,
+            'globalFilterMode' => $this->globalFilterMode,
+        ]);
     }
 
     public function getListeners()
@@ -102,6 +134,12 @@ class Tables extends Component
             'table-status-updated' => '$refresh',
             'merge-closed' => 'closeMergeModal',
             'merge-completed' => 'onMergeCompleted',
+            
+            // TableCreateModal listeners
+            'open-new-table-modal' => 'openCreateModal',
+            
+            // TableStatusModal listeners
+            'open-table-status-modal' => 'openStatusModal',
         ];
         
         return $listeners;
@@ -352,5 +390,327 @@ class Tables extends Component
             'tables' => $tables,
             'canMerge' => $canMerge,
         ]);
+    }
+
+    // ============================================================================
+    // MÉTODOS DE TableFilters
+    // ============================================================================
+
+    public function toggleFilters()
+    {
+        $this->showFilters = !$this->showFilters;
+        $this->saveFiltersToSession();
+        
+        // Emite evento para notificar componente pai
+        $this->dispatch('filters-toggled', $this->showFilters);
+    }
+
+    public function toggleTableStatusFilter($status)
+    {
+        if (in_array($status, $this->filterTableStatuses)) {
+            $this->filterTableStatuses = array_values(array_filter($this->filterTableStatuses, fn($s) => $s !== $status));
+        } else {
+            $this->filterTableStatuses[] = $status;
+        }
+        $this->saveFiltersToSession();
+        $this->emitFiltersChanged();
+    }
+
+    public function toggleCheckStatusFilter($status)
+    {
+        if (in_array($status, $this->filterCheckStatuses)) {
+            $this->filterCheckStatuses = array_values(array_filter($this->filterCheckStatuses, fn($s) => $s !== $status));
+        } else {
+            $this->filterCheckStatuses[] = $status;
+        }
+        $this->saveFiltersToSession();
+        $this->emitFiltersChanged();
+    }
+
+    public function toggleOrderStatusFilter($status)
+    {
+        if (in_array($status, $this->filterOrderStatuses)) {
+            $this->filterOrderStatuses = array_values(array_filter($this->filterOrderStatuses, fn($s) => $s !== $status));
+        } else {
+            $this->filterOrderStatuses[] = $status;
+        }
+        $this->saveFiltersToSession();
+        $this->emitFiltersChanged();
+    }
+
+    public function toggleDepartamentFilter($departament)
+    {
+        if (in_array($departament, $this->filterDepartaments)) {
+            $this->filterDepartaments = array_values(array_filter($this->filterDepartaments, fn($d) => $d !== $departament));
+        } else {
+            $this->filterDepartaments[] = $departament;
+        }
+        $this->saveFiltersToSession();
+        $this->emitFiltersChanged();
+    }
+
+    public function toggleGlobalFilterMode()
+    {
+        $this->globalFilterMode = $this->globalFilterMode === 'OR' ? 'AND' : 'OR';
+        $this->saveFiltersToSession();
+        $this->emitFiltersChanged();
+    }
+
+    public function clearFilters()
+    {
+        $this->filterTableStatuses = [];
+        $this->filterCheckStatuses = [];
+        $this->filterOrderStatuses = [];
+        $this->filterDepartaments = [];
+        $this->globalFilterMode = 'AND';
+
+        // Limpa no banco e sessão
+        $user = Auth::user();
+        $this->userPreferenceService->updatePreferences($user, [
+            'table_filter_table' => [],
+            'table_filter_check' => [],
+            'table_filter_order' => [],
+            'table_filter_departament' => [],
+            'table_filter_mode' => 'AND',
+        ]);
+
+        session()->forget('tables.showFilters');
+        $this->showFilters = false;
+        
+        $this->emitFiltersChanged();
+        $this->dispatch('filters-toggled', false);
+    }
+
+    protected function saveFiltersToSession()
+    {
+        $user = Auth::user();
+
+        // Atualiza no banco de dados e na sessão
+        $this->userPreferenceService->updatePreferences($user, [
+            'table_filter_table' => $this->filterTableStatuses,
+            'table_filter_check' => $this->filterCheckStatuses,
+            'table_filter_order' => $this->filterOrderStatuses,
+            'table_filter_departament' => $this->filterDepartaments,
+            'table_filter_mode' => $this->globalFilterMode,
+        ]);
+
+        // Mantém configurações locais da view
+        session([
+            'tables.showFilters' => $this->showFilters,
+        ]);
+    }
+
+    protected function emitFiltersChanged()
+    {
+        $this->dispatch('filters-changed', [
+            'filterTableStatuses' => $this->filterTableStatuses,
+            'filterCheckStatuses' => $this->filterCheckStatuses,
+            'filterOrderStatuses' => $this->filterOrderStatuses,
+            'filterDepartaments' => $this->filterDepartaments,
+            'globalFilterMode' => $this->globalFilterMode,
+        ]);
+    }
+
+    public function getHasActiveFiltersProperty()
+    {
+        return !empty($this->filterTableStatuses) || 
+               !empty($this->filterCheckStatuses) || 
+               !empty($this->filterOrderStatuses) || 
+               !empty($this->filterDepartaments);
+    }
+
+    // ============================================================================
+    // MÉTODOS DE TableCreateModal
+    // ============================================================================
+
+    public function openCreateModal()
+    {
+        $this->showCreateModal = true;
+        $this->newTableName = '';
+        $this->newTableNumber = '';
+    }
+
+    public function closeCreateModal()
+    {
+        $this->showCreateModal = false;
+        $this->newTableName = '';
+        $this->newTableNumber = '';
+        $this->resetErrorBag();
+        $this->resetValidation();
+    }
+
+    public function createTable()
+    {
+        $this->validate([
+            'newTableNumber' => [
+                'required',
+                'integer',
+                'min:1',
+                'unique:tables,number,NULL,id,user_id,' . Auth::id()
+            ],
+            'newTableName' => 'nullable|string|max:255',
+        ], [
+            'newTableNumber.required' => 'O número do local é obrigatório.',
+            'newTableNumber.integer' => 'O número deve ser um valor numérico.',
+            'newTableNumber.min' => 'O número deve ser maior que zero.',
+            'newTableNumber.unique' => 'Já existe um local com este número.',
+        ]);
+
+        Table::create([
+            'user_id' => Auth::id(),
+            'name' => $this->newTableName,
+            'number' => $this->newTableNumber,
+            'status' => TableStatusEnum::FREE->value,
+        ]);
+
+        session()->flash('success', 'Local criado com sucesso!');
+        $this->closeCreateModal();
+        $this->dispatch('table-created');
+    }
+
+    // ============================================================================
+    // MÉTODOS DE TableStatusModal
+    // ============================================================================
+
+    public function openStatusModal($tableId)
+    {
+        $table = $this->tableService->getTableById($tableId);
+        $this->selectedTableId = $tableId;
+        $this->newTableStatus = $table->status;
+
+        // Verifica se há check ativo (não Paid nem Canceled)
+        $activeCheck = $this->orderService->findCheck($tableId); // Apenas busca, não cria
+        $this->hasActiveCheck = $activeCheck && in_array($activeCheck->status, ['Open', 'Closed']);
+
+        $this->showStatusModal = true;
+    }
+
+    public function closeStatusModal()
+    {
+        $this->showStatusModal = false;
+        $this->selectedTableId = null;
+        $this->newTableStatus = null;
+        $this->hasActiveCheck = false;
+    }
+
+    public function setStatus($status)
+    {
+        if (!$this->hasActiveCheck) {
+            $this->newTableStatus = $status;
+        }
+    }
+
+    public function updateTableStatus()
+    {
+        if (!$this->selectedTableId || !$this->newTableStatus) {
+            return;
+        }
+
+        // Validação: não pode alterar status da mesa com check ativo
+        if ($this->hasActiveCheck) {
+            session()->flash('error', 'Não é possível alterar o status da mesa. Finalize ou cancele o check primeiro.');
+            return;
+        }
+
+        $this->tableService->updateTableStatus($this->selectedTableId, $this->newTableStatus);
+
+        session()->flash('success', 'Status da mesa atualizado com sucesso!');
+        $this->closeStatusModal();
+        
+        // Notifica o componente pai para atualizar
+        $this->dispatch('table-status-updated');
+    }
+
+    // ============================================================================
+    // MÉTODOS DE TableSelectionMode  
+    // ============================================================================
+
+    public function mergeTables()
+    {
+        // 1. Validações finais
+        if (count($this->selectedTables) < 2) {
+            session()->flash('error', 'Selecione pelo menos duas mesas para unir.');
+            $this->closeMergeModal();
+            return;
+        }
+        if (!$this->mergeDestinationTableId) {
+            session()->flash('error', 'Selecione uma mesa de destino para a união.');
+            $this->closeMergeModal();
+            return;
+        }
+
+        // 2. Coletar IDs das comandas
+        $allSelectedTableIds = $this->selectedTables;
+        $destinationTableId = $this->mergeDestinationTableId;
+
+        // Garante que a mesa de destino é uma das selecionadas
+        if (!in_array($destinationTableId, $allSelectedTableIds)) {
+            session()->flash('error', 'A mesa de destino deve ser uma das mesas selecionadas.');
+            $this->closeMergeModal();
+            return;
+        }
+
+        // Encontra as mesas e seus checks ativos
+        $selectedTablesData = $this->tableService->getFilteredTables(
+            Auth::user()->user_id,
+            [],
+            [],
+            [],
+            [],
+            'OR'
+        )->whereIn('id', $allSelectedTableIds);
+
+        $destinationTable = $selectedTablesData->where('id', $destinationTableId)->first();
+        if (!$destinationTable || !$destinationTable->checkId) {
+            session()->flash('error', "A mesa de destino (Mesa {$destinationTable->number}) não possui uma comanda ativa para receber os pedidos.");
+            $this->closeMergeModal();
+            return;
+        }
+        $destinationCheckId = $destinationTable->checkId;
+
+        $sourceTableIds = array_diff($allSelectedTableIds, [$destinationTableId]);
+        $sourceCheckIds = [];
+        $tablesToFree = [];
+
+        foreach ($sourceTableIds as $tableId) {
+            $table = $selectedTablesData->where('id', $tableId)->first();
+            if ($table && $table->checkId) {
+                $sourceCheckIds[] = $table->checkId;
+                $tablesToFree[] = $table->id;
+            } else {
+                // Caso alguma mesa de origem não tenha check ativo, apenas liberamos ela
+                if ($table) {
+                    $tablesToFree[] = $table->id;
+                }
+            }
+        }
+
+        // Se não houver comandas de origem válidas para unir, mas houver mesas para liberar, liberamos.
+        if (empty($sourceCheckIds) && !empty($tablesToFree)) {
+            $this->tableService->releaseTables($tablesToFree);
+            session()->flash('success', 'As mesas selecionadas foram liberadas.');
+            $this->closeMergeModal();
+            $this->toggleSelectionMode();
+            return;
+        } elseif (empty($sourceCheckIds)) {
+            session()->flash('error', 'Nenhuma comanda de origem válida encontrada para unir.');
+            $this->closeMergeModal();
+            return;
+        }
+
+        // 3. Chamar o serviço de união
+        $mergeResult = $this->orderService->mergeChecks($sourceCheckIds, $destinationCheckId);
+
+        if ($mergeResult['success']) {
+            // 4. Liberar mesas de origem
+            $this->tableService->releaseTables($tablesToFree);
+            session()->flash('success', $mergeResult['message']);
+        } else {
+            session()->flash('error', $mergeResult['message']);
+        }
+
+        // 5. Resetar estado e atualizar UI
+        $this->closeMergeModal();
+        $this->toggleSelectionMode();
     }
 }
