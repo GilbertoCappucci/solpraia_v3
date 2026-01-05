@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Table;
 
 use App\Enums\TableStatusEnum;
 use App\Models\Table;

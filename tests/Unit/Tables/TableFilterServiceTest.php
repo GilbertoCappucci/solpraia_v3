@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\TableFilterService;
+use App\Services\Table\TableFilterService;
 use App\Services\GlobalSettingService;
 use App\Enums\CheckStatusEnum;
 use App\Models\Table;

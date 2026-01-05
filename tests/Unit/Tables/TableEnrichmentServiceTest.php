@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\TableEnrichmentService;
+use App\Services\Table\TableEnrichmentService;
 use App\Services\GlobalSettingService;
 use App\Models\Table;
 use Illuminate\Container\Container;

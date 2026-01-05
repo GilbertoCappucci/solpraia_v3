@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\TableMergeService;
+use App\Services\Table\TableMergeService;
 
 test('canTableBeMerged rejects excluded statuses', function () {
     $service = new TableMergeService();

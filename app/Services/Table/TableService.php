@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Table;
 
 use App\Enums\CheckStatusEnum;
 use App\Enums\OrderStatusEnum;
 use App\Enums\TableStatusEnum;
 use App\Models\Table;
+use App\Services\GlobalSettingService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
@@ -56,7 +57,6 @@ class TableService
                 return $this->enrichmentService->enrichTableData($table);
             });
     }
-
 
     /**
      * Busca uma table por ID

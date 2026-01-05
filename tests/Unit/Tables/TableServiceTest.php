@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\TableService;
+use App\Services\Table\TableService;
 use Illuminate\Support\Collection;
 
 afterEach(function () {
@@ -8,13 +8,13 @@ afterEach(function () {
 });
 
 test('releaseTables delegates to merge service', function () {
-    $merge = Mockery::mock(App\Services\TableMergeService::class);
+    $merge = Mockery::mock(App\Services\Table\TableMergeService::class);
     $merge->shouldReceive('releaseTables')->once()->with([1,2]);
 
-    $service = new App\Services\TableService(
+    $service = new App\Services\Table\TableService(
         Mockery::mock(App\Services\GlobalSettingService::class),
-        Mockery::mock(App\Services\TableFilterService::class),
-        Mockery::mock(App\Services\TableEnrichmentService::class),
+        Mockery::mock(App\Services\Table\TableFilterService::class),
+        Mockery::mock(App\Services\Table\TableEnrichmentService::class),
         $merge
     );
 
@@ -23,13 +23,13 @@ test('releaseTables delegates to merge service', function () {
 
 test('canTableBeMerged delegates to merge service', function () {
     $table = new stdClass();
-    $merge = Mockery::mock(App\Services\TableMergeService::class);
+    $merge = Mockery::mock(App\Services\Table\TableMergeService::class);
     $merge->shouldReceive('canTableBeMerged')->once()->with($table)->andReturnTrue();
 
-    $service = new App\Services\TableService(
+    $service = new App\Services\Table\TableService(
         Mockery::mock(App\Services\GlobalSettingService::class),
-        Mockery::mock(App\Services\TableFilterService::class),
-        Mockery::mock(App\Services\TableEnrichmentService::class),
+        Mockery::mock(App\Services\Table\TableFilterService::class),
+        Mockery::mock(App\Services\Table\TableEnrichmentService::class),
         $merge
     );
 
@@ -39,7 +39,7 @@ test('canTableBeMerged delegates to merge service', function () {
 test('getMergeableTables returns collection from merge service', function () {
     $expected = collect([1,2]);
 
-    $merge = Mockery::mock(App\Services\TableMergeService::class);
+    $merge = Mockery::mock(App\Services\Table\TableMergeService::class);
     $merge->shouldReceive('getMergeableTables')
         ->once()
         ->withArgs(function ($arg) {
@@ -47,10 +47,10 @@ test('getMergeableTables returns collection from merge service', function () {
         })
         ->andReturn($expected);
 
-    $service = new App\Services\TableService(
+    $service = new App\Services\Table\TableService(
         Mockery::mock(App\Services\GlobalSettingService::class),
-        Mockery::mock(App\Services\TableFilterService::class),
-        Mockery::mock(App\Services\TableEnrichmentService::class),
+        Mockery::mock(App\Services\Table\TableFilterService::class),
+        Mockery::mock(App\Services\Table\TableEnrichmentService::class),
         $merge
     );
 
@@ -61,13 +61,13 @@ test('getMergeableTables returns collection from merge service', function () {
 test('canMergeTables delegates to merge service', function () {
     $tables = collect([1,2]);
 
-    $merge = Mockery::mock(App\Services\TableMergeService::class);
+    $merge = Mockery::mock(App\Services\Table\TableMergeService::class);
     $merge->shouldReceive('canMergeTables')->once()->with($tables)->andReturnFalse();
 
-    $service = new App\Services\TableService(
+    $service = new App\Services\Table\TableService(
         Mockery::mock(App\Services\GlobalSettingService::class),
-        Mockery::mock(App\Services\TableFilterService::class),
-        Mockery::mock(App\Services\TableEnrichmentService::class),
+        Mockery::mock(App\Services\Table\TableFilterService::class),
+        Mockery::mock(App\Services\Table\TableEnrichmentService::class),
         $merge
     );
 

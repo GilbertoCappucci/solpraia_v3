@@ -4,7 +4,7 @@ namespace App\Livewire\Table;
 
 use App\Enums\CheckStatusEnum;
 use App\Services\GlobalSettingService;
-use App\Services\TableService;
+use App\Services\Table\TableService;
 use App\Services\UserPreferenceService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;

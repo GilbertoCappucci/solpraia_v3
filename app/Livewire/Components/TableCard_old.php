@@ -3,7 +3,7 @@
 namespace App\Livewire\Components;
 
 use App\Models\Table as TableModel;
-use App\Services\TableService;
+use App\Services\Table\TableService;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 

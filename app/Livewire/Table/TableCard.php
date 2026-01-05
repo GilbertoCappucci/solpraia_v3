@@ -3,7 +3,7 @@
 namespace App\Livewire\Table;
 
 use App\Models\Table;
-use App\Services\TableEnrichmentService;
+use App\Services\Table\TableEnrichmentService;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Reactive;

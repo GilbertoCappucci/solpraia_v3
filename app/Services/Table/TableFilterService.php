@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Table;
 
 use App\Enums\CheckStatusEnum;
 use App\Enums\OrderStatusEnum;
 use App\Models\Table;
+use App\Services\GlobalSettingService;
 
 class TableFilterService
 {
