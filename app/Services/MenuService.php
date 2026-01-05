@@ -16,6 +16,7 @@ use App\Models\Table;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Services\GlobalSettingService;
+use App\Services\Order\OrderService;
 
 class MenuService
 {
