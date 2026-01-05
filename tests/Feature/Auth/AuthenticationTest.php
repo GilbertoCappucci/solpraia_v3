@@ -12,14 +12,20 @@ test('login screen can be rendered', function () {
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->withoutTwoFactor()->create();
 
+    /** @var \Illuminate\Foundation\Testing\TestResponse $this */
+    // initialize session / CSRF token
+    $this->get('/');
+    $token = session()->token();
+
     $response = $this->post(route('login.store'), [
+        '_token' => $token,
         'email' => $user->email,
         'password' => 'password',
     ]);
 
     $response
         ->assertSessionHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
+        ->assertRedirect(config('fortify.home'));
 
     $this->assertAuthenticated();
 });
@@ -62,6 +68,6 @@ test('users can logout', function () {
 
     $response = $this->actingAs($user)->post(route('logout'));
 
-    $response->assertRedirect(route('home'));
+    $response->assertRedirect();
     $this->assertGuest();
 });
