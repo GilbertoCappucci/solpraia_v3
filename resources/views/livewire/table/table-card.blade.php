@@ -1,4 +1,5 @@
 <div
+    wire:key="table-card-{{ $tableId }}-{{ md5(json_encode($this->statusTimestamps)) }}"
     x-data="{
         hasDelay: false,
         timeLimits: @js($timeLimits),
@@ -63,7 +64,7 @@
         <div class="grid {{ $this->gridClass }} gap-1 w-full px-2">
             @if($this->enrichedTable->ordersPending > 0)
             <livewire:components.order-status-indicator 
-                wire:key="pending-{{ $tableId }}"
+                wire:key="pending-{{ $tableId }}-{{ $this->enrichedTable->pendingTimestamp }}"
                 status="pending" 
                 :count="$this->enrichedTable->ordersPending ?? 0" 
                 :minutes="$this->enrichedTable->pendingMinutes ?? 0" 
@@ -75,7 +76,7 @@
             @endif
             @if($this->enrichedTable->ordersInProduction > 0)
             <livewire:components.order-status-indicator 
-                wire:key="production-{{ $tableId }}"
+                wire:key="production-{{ $tableId }}-{{ $this->enrichedTable->productionTimestamp }}"
                 status="production" 
                 :count="$this->enrichedTable->ordersInProduction ?? 0" 
                 :minutes="$this->enrichedTable->productionMinutes ?? 0" 
@@ -87,7 +88,7 @@
             @endif
             @if($this->enrichedTable->ordersInTransit > 0)
             <livewire:components.order-status-indicator 
-                wire:key="transit-{{ $tableId }}"
+                wire:key="transit-{{ $tableId }}-{{ $this->enrichedTable->transitTimestamp }}"
                 status="transit" 
                 :count="$this->enrichedTable->ordersInTransit ?? 0" 
                 :minutes="$this->enrichedTable->transitMinutes ?? 0" 

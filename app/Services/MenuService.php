@@ -254,6 +254,9 @@ class MenuService
 
             // 3. Recalcula o total do check
             $this->checkService->recalculateCheckTotal($check);
+            
+            // 4. Força atualização do timestamp do check para garantir disparo do evento
+            $check->touch();
         });
     }
 }

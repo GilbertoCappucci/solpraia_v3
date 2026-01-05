@@ -52,14 +52,24 @@ class TableCard extends Component
     
     public function onCheckUpdated($data)
     {
-        // Livewire automaticamente recalcula computed properties na próxima renderização
-        // Nenhuma ação adicional necessária, apenas receber o evento já força o re-render
+        // Verifica se o evento é para esta mesa
+        if (isset($data['tableId']) && $data['tableId'] == $this->tableId) {
+            // Limpa o cache das computed properties
+            unset($this->enrichedTable);
+            unset($this->statusTimestamps);
+            unset($this->hasDelay);
+        }
     }
     
     public function onTableUpdated($data)
     {
-        // Livewire automaticamente recalcula computed properties na próxima renderização
-        // Nenhuma ação adicional necessária, apenas receber o evento já força o re-render
+        // Verifica se o evento é para esta mesa
+        if (isset($data['tableId']) && $data['tableId'] == $this->tableId) {
+            // Limpa o cache das computed properties
+            unset($this->enrichedTable);
+            unset($this->statusTimestamps);
+            unset($this->hasDelay);
+        }
     }
     
     public function onGlobalSettingUpdated($data)
