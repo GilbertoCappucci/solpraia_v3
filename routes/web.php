@@ -2,7 +2,7 @@
 
 use App\Http\Middleware\RedirectByRole;
 use App\Livewire\Orders;
-use App\Livewire\Tables;
+use App\Livewire\Table\Tables;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;

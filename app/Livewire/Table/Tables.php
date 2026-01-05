@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Table;
 
 use App\Enums\CheckStatusEnum;
 use App\Enums\TableStatusEnum;
@@ -362,7 +362,7 @@ class Tables extends Component
         ]);
         */
 
-        return view('livewire.tables', [
+        return view('livewire.table.tables', [
             'tables' => $tables,
             'canMerge' => $canMerge,
         ]);
