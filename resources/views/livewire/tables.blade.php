@@ -19,7 +19,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             @foreach($tables as $table)
                 <livewire:components.table-card 
-                    :key="'table-card-'.$table->id.'-'.($selectionMode ? 'select' : 'normal').'-'.count($selectedTables)"
+                    :key="'table-card-'.$table->id.'-'.($table->updated_at?->timestamp ?? 'new')"
                     :table="$table" 
                     :selectionMode="$selectionMode"
                     :selectedTables="$selectedTables"

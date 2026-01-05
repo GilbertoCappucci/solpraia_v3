@@ -20,7 +20,6 @@ class TableCard extends Component
     public function getListeners()
     {
         return [
-            "echo-private:global-setting-updated.{$this->table->user_id},.global.setting.updated" => 'handleTableUpdated',
             "echo-private:tables-updated.{$this->table->user_id},.table.updated" => 'handleTableUpdated',
         ];
     }
@@ -31,10 +30,11 @@ class TableCard extends Component
 
         // Verifica se o evento é para esta mesa
         if (isset($data['tableId']) && $data['tableId'] == $this->table->id) {
-            logger('🔄 Updating TableCard data', ['tableId' => $this->table->id]);
-            // Recarrega os dados da mesa
-            $this->table->refresh();
+
         }
+
+        // Recarrega os dados da mesa
+        $this->dispatch('$refresh');
     }
 
     public function boot(TableService $tableService)

@@ -119,6 +119,9 @@ class Tables extends Component
         $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
         
         logger('✅ timeLimits atualizados:', $this->timeLimits);
+
+        // Força refresh dos dados
+        $this->dispatch('$refresh');
     }
 
     public function onFiltersChanged($filters)
