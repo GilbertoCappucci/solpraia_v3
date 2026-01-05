@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Table;
 
-use App\Services\OrderService;
+use App\Services\Order\OrderService;
 use App\Services\Table\TableService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;

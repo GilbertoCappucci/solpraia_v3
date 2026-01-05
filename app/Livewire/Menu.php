@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use App\Models\GlobalSetting;
 use App\Services\MenuService;
-use App\Services\OrderService;
+use App\Services\Order\OrderService;
 use App\Models\Table;
 use App\Services\GlobalSettingService;
 use App\Services\StockService;

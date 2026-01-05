@@ -3,7 +3,7 @@
 namespace App\Livewire\Order;
 
 use App\Services\CheckService;
-use App\Services\OrderService;
+use App\Services\Order\OrderService;
 use Livewire\Component;
 
 class OrderStatusModal extends Component

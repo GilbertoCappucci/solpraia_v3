@@ -5,7 +5,7 @@ namespace App\Livewire;
 use App\Enums\TableStatusEnum;
 use App\Services\CheckService;
 use App\Services\GlobalSettingService;
-use App\Services\OrderService;
+use App\Services\Order\OrderService;
 use App\Services\PixService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;

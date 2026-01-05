@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Order;
 
-use App\Services\OrderService;
+use App\Services\Order\OrderService;
 use Livewire\Component;
 
 class OrderDetailsModal extends Component

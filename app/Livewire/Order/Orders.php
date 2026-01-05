@@ -3,7 +3,7 @@
 namespace App\Livewire\Order;
 
 use App\Enums\OrderStatusEnum;
-use App\Services\OrderService;
+use App\Services\Order\OrderService;
 use App\Models\Table;
 use App\Services\CheckService;
 use App\Services\GlobalSettingService;
