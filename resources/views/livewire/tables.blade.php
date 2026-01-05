@@ -30,7 +30,7 @@
     </div>
 
     {{-- Modais --}}
-    <livewire:create-table-modal wire:key="create-table-modal" />
+    <livewire:table-create-modal wire:key="table-create-modal" />
     <livewire:table-status-modal wire:key="table-status-modal" />
     
     {{-- Modal de União --}}

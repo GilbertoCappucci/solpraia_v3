@@ -7,7 +7,7 @@ use App\Enums\TableStatusEnum;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-class CreateTableModal extends Component
+class TableCreateModal extends Component
 {
     public $showModal = false;
     public $newTableName = '';
@@ -62,6 +62,6 @@ class CreateTableModal extends Component
 
     public function render()
     {
-        return view('livewire.create-table-modal');
+        return view('livewire.table-create-modal');
     }
 }
