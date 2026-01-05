@@ -586,19 +586,19 @@ class Tables extends Component
 
     public function mergeTables()
     {
-        // 1. Validações finais
+        // 1. Validações básicas
         if (count($this->selectedTables) < 2) {
             session()->flash('error', 'Selecione pelo menos duas mesas para unir.');
             $this->closeMergeModal();
             return;
         }
+        
         if (!$this->mergeDestinationTableId) {
             session()->flash('error', 'Selecione uma mesa de destino para a união.');
             $this->closeMergeModal();
             return;
         }
 
-        // 2. Coletar IDs das comandas
         $allSelectedTableIds = $this->selectedTables;
         $destinationTableId = $this->mergeDestinationTableId;
 
@@ -609,66 +609,79 @@ class Tables extends Component
             return;
         }
 
-        // Encontra as mesas e seus checks ativos
-        $selectedTablesData = $this->tableService->getFilteredTables(
-            Auth::user()->user_id,
-            [],
-            [],
-            [],
-            [],
-            'OR'
-        )->whereIn('id', $allSelectedTableIds);
-
-        $destinationTable = $selectedTablesData->where('id', $destinationTableId)->first();
-        if (!$destinationTable || !$destinationTable->checkId) {
-            session()->flash('error', "A mesa de destino (Mesa {$destinationTable->number}) não possui uma comanda ativa para receber os pedidos.");
-            $this->closeMergeModal();
-            return;
-        }
-        $destinationCheckId = $destinationTable->checkId;
+        // 2. Buscar check ativo da mesa de destino diretamente do banco
+        $destinationCheck = Check::where('table_id', $destinationTableId)
+            ->whereIn('status', [
+                CheckStatusEnum::OPEN->value,
+                CheckStatusEnum::CLOSED->value,
+            ])
+            ->orderBy('created_at', 'desc')
+            ->first();
 
         $sourceTableIds = array_diff($allSelectedTableIds, [$destinationTableId]);
         $sourceCheckIds = [];
         $tablesToFree = [];
 
+        // 3. Verificar se alguma mesa de origem tem check ativo
+        $hasSourceChecks = false;
         foreach ($sourceTableIds as $tableId) {
-            $table = $selectedTablesData->where('id', $tableId)->first();
-            if ($table && $table->checkId) {
-                $sourceCheckIds[] = $table->checkId;
-                $tablesToFree[] = $table->id;
-            } else {
-                // Caso alguma mesa de origem não tenha check ativo, apenas liberamos ela
-                if ($table) {
-                    $tablesToFree[] = $table->id;
-                }
+            // Buscar check ativo diretamente do banco para cada mesa de origem
+            $sourceCheck = Check::where('table_id', $tableId)
+                ->whereIn('status', [
+                    CheckStatusEnum::OPEN->value,
+                    CheckStatusEnum::CLOSED->value,
+                ])
+                ->orderBy('created_at', 'desc')
+                ->first();
+            
+            if ($sourceCheck) {
+                $sourceCheckIds[] = $sourceCheck->id;
+                $hasSourceChecks = true;
             }
+            
+            $tablesToFree[] = $tableId;
         }
 
-        // Se não houver comandas de origem válidas para unir, mas houver mesas para liberar, liberamos.
-        if (empty($sourceCheckIds) && !empty($tablesToFree)) {
+        // 4. Se não há checks de origem nem de destino, só liberar as mesas
+        if (!$hasSourceChecks && !$destinationCheck) {
             $this->tableService->releaseTables($tablesToFree);
             session()->flash('success', 'As mesas selecionadas foram liberadas.');
             $this->closeMergeModal();
             $this->toggleSelectionMode();
             return;
-        } elseif (empty($sourceCheckIds)) {
+        }
+
+        // 5. Se há checks de origem mas não há check de destino, criar um novo check na mesa de destino
+        if ($hasSourceChecks && !$destinationCheck) {
+            $destinationCheck = Check::create([
+                'table_id' => $destinationTableId,
+                'status' => CheckStatusEnum::OPEN->value,
+                'user_id' => Auth::id(),
+                'total' => 0.00,
+            ]);
+        }
+
+        // 6. Se não há checks de origem, não há o que unir
+        if (!$hasSourceChecks) {
             session()->flash('error', 'Nenhuma comanda de origem válida encontrada para unir.');
             $this->closeMergeModal();
             return;
         }
 
-        // 3. Chamar o serviço de união
+        $destinationCheckId = $destinationCheck->id;
+
+        // 7. Chamar o serviço de união
         $mergeResult = $this->orderService->mergeChecks($sourceCheckIds, $destinationCheckId);
 
-        if ($mergeResult['success']) {
-            // 4. Liberar mesas de origem
+        if (!empty($mergeResult['success'])) {
+            // 8. Liberar mesas de origem
             $this->tableService->releaseTables($tablesToFree);
-            session()->flash('success', $mergeResult['message']);
+            session()->flash('success', $mergeResult['message'] ?? 'Mesas unidas com sucesso.');
         } else {
-            session()->flash('error', $mergeResult['message']);
+            session()->flash('error', $mergeResult['message'] ?? 'Erro ao unir mesas.');
         }
 
-        // 5. Resetar estado e atualizar UI
+        // 9. Resetar estado e atualizar UI
         $this->closeMergeModal();
         $this->toggleSelectionMode();
     }
