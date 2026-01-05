@@ -416,8 +416,10 @@ class TableService
         // Calcula tempo desde que a mesa está em RELEASING
         if ($table->status === 'releasing' && $table->updated_at) {
             $table->releasingMinutes = abs((int) now()->diffInMinutes($table->updated_at));
+            $table->releasingTimestamp = $table->updated_at;
         } else {
             $table->releasingMinutes = 0;
+            $table->releasingTimestamp = null;
         }
         $table->completedMinutes = 0;
     }

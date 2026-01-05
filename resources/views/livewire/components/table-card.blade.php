@@ -4,6 +4,10 @@
         timeLimits: @js($timeLimits),
         timestamps: @js($this->statusTimestamps),
         checkDelay() {
+            console.log('🔍 CheckDelay iniciado para mesa {{ $table->id }}');
+            console.log('📊 Timestamps:', this.timestamps);
+            console.log('⏱️ Limits:', this.timeLimits);
+            
             const now = Math.floor(Date.now() / 1000);
             let delay = false;
             
