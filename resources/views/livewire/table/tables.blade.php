@@ -6,7 +6,7 @@
         'selectionMode' => $selectionMode,
         'selectedTablesCount' => count($selectedTables),
         'canMerge' => $canMerge,
-        'hasActiveFilters' => false,
+        'hasActiveFilters' => $hasActiveFilters,
         'title' => $title
     ])
 
