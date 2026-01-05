@@ -43,17 +43,31 @@ class Tables extends Component
 
     protected $tableService;
     protected $globalSettingService;
+    protected $userPreferenceService;
 
-    public function boot(TableService $tableService, GlobalSettingService $globalSettingService)
+    public function boot(TableService $tableService, GlobalSettingService $globalSettingService, \App\Services\UserPreferenceService $userPreferenceService)
     {
         $this->tableService = $tableService;
         $this->globalSettingService = $globalSettingService;
+        $this->userPreferenceService = $userPreferenceService;
     }
 
     public function mount()
     {
         $this->userId = Auth::user()->user_id;
         $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
+        
+        // Carrega filtros iniciais
+        $this->filterTableStatuses = $this->userPreferenceService->getPreference('table_filter_table', []);
+        $this->filterCheckStatuses = $this->userPreferenceService->getPreference('table_filter_check', []);
+        $this->filterOrderStatuses = $this->userPreferenceService->getPreference('table_filter_order', []);
+        $this->filterDepartaments = $this->userPreferenceService->getPreference('table_filter_departament', []);
+        $this->globalFilterMode = $this->userPreferenceService->getPreference('table_filter_mode', 'AND');
+        
+        $this->hasActiveFilters = !empty($this->filterTableStatuses) || 
+                                 !empty($this->filterCheckStatuses) || 
+                                 !empty($this->filterOrderStatuses) || 
+                                 !empty($this->filterDepartaments);
     }
 
     public function getListeners()
@@ -67,7 +81,6 @@ class Tables extends Component
             'select-table-for-merge' => 'selectTableForMerge',
             'toggle-selection-mode' => 'toggleSelectionMode',
             'cancel-selection' => 'cancelSelection',
-            'toggle-filters' => 'toggleFilters',
             'open-create-modal' => 'openCreateModal',
             'open-merge-modal' => 'openMergeModal',
             'table-created' => '$refresh',
@@ -89,6 +102,12 @@ class Tables extends Component
             $this->selectedTables = [];
             $this->canMerge = false;
         }
+        
+        // Notifica todos os TableCards sobre a mudança de modo
+        $this->dispatch('selection-mode-changed', 
+            selectionMode: $this->selectionMode,
+            selectedTables: $this->selectedTables
+        );
     }
 
     public function onMergeCompleted()
@@ -132,6 +151,9 @@ class Tables extends Component
         }
         
         $this->updateCanMerge();
+        
+        // Notifica todos os TableCards sobre a mudança na seleção
+        $this->dispatch('selected-tables-updated', selectedTables: $this->selectedTables);
     }
 
     protected function updateCanMerge()
@@ -151,12 +173,12 @@ class Tables extends Component
     public function onFiltersUpdated($filters)
     {
         // Recebe filtros atualizados do componente TableFilters
-        // O componente será re-renderizado automaticamente
-    }
-
-    public function toggleFilters()
-    {
-        $this->showFilters = !$this->showFilters;
+        $this->filterTableStatuses = $filters['tableStatuses'] ?? [];
+        $this->filterCheckStatuses = $filters['checkStatuses'] ?? [];
+        $this->filterOrderStatuses = $filters['orderStatuses'] ?? [];
+        $this->filterDepartaments = $filters['departaments'] ?? [];
+        $this->globalFilterMode = $filters['mode'] ?? 'AND';
+        $this->hasActiveFilters = $filters['hasActive'] ?? false;
     }
 
     public function openCreateModal()
@@ -164,6 +186,9 @@ class Tables extends Component
         $this->showCreateModal = true;
         $this->newTableName = '';
         $this->newTableNumber = '';
+        
+        // Despacha evento para o componente TableCreateModal abrir
+        $this->dispatch('open-create-modal-component');
     }
 
     public function closeCreateModal()
@@ -189,6 +214,11 @@ class Tables extends Component
     {
         if (count($this->selectedTables) >= 2) {
             $this->showMergeModal = true;
+            
+            // Despacha evento para o componente TableMergeModal abrir
+            $this->dispatch('open-merge-modal-component', 
+                selectedTables: $this->selectedTables
+            );
         }
     }
 
@@ -225,11 +255,11 @@ class Tables extends Component
     {
         $tables = $this->tableService->getFilteredTables(
             $this->userId,
-            [],
-            [],
-            [],
-            [],
-            'AND'
+            $this->filterTableStatuses,
+            $this->filterCheckStatuses,
+            $this->filterOrderStatuses,
+            $this->filterDepartaments,
+            $this->globalFilterMode
         );
         
         $canMerge = $this->tableService->canMergeTables($tables);

@@ -8,6 +8,7 @@ use App\Services\OrderService;
 use App\Services\TableService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\Attributes\Computed;
 
 class TableMergeModal extends Component
 {
@@ -24,18 +25,43 @@ class TableMergeModal extends Component
         $this->tableService = $tableService;
         $this->orderService = $orderService;
     }
+    
+    #[Computed]
+    public function selectedTablesData()
+    {
+        if (empty($this->selectedTables)) {
+            return [];
+        }
+        
+        return $this->tableService->getTablesByIds($this->selectedTables)
+            ->map(function ($table) {
+                // Busca check ativo
+                $check = Check::where('table_id', $table->id)
+                    ->whereIn('status', [CheckStatusEnum::OPEN->value, CheckStatusEnum::CLOSED->value])
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+                
+                return [
+                    'id' => $table->id,
+                    'number' => $table->number,
+                    'name' => $table->name,
+                    'checkId' => $check?->id,
+                    'checkTotal' => $check?->total ?? 0,
+                ];
+            })
+            ->toArray();
+    }
 
     public function getListeners()
     {
         return [
-            'open-merge-modal' => 'openModal',
+            'open-merge-modal-component' => 'openModal',
         ];
     }
 
-    public function openModal($selectedTables, $tables)
+    public function openModal($selectedTables)
     {
         $this->selectedTables = $selectedTables;
-        $this->tables = $tables;
         $this->mergeDestinationTableId = $selectedTables[0] ?? null;
         $this->showModal = true;
     }

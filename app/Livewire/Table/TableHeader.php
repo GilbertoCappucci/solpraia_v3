@@ -39,7 +39,7 @@ class TableHeader extends Component
 
     public function toggleFilters()
     {
-        $this->dispatch('toggle-filters')->to(Tables::class);
+        $this->dispatch('toggle-filters');
     }
 
     public function openCreateModal()

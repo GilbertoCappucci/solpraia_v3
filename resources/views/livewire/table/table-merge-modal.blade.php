@@ -34,7 +34,7 @@
                     </p>
 
                     <div class="space-y-2">
-                        @foreach($selectedTablesData as $table)
+                        @foreach($this->selectedTablesData as $table)
                             <label class="flex items-center p-3 border-2 rounded-lg cursor-pointer transition {{ $mergeDestinationTableId == $table['id'] ? 'bg-orange-50 border-orange-500 ring-2 ring-orange-200' : 'border-gray-300 hover:border-orange-400' }}">
                                 <input type="radio" wire:model.live="mergeDestinationTableId" value="{{ $table['id'] }}" class="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                 <span class="ml-3 font-medium text-gray-800">
@@ -76,7 +76,7 @@
                             Cancelar
                         </button>
                         <button 
-                            wire:click="merge"
+                            wire:click="mergeTables"
                             wire:loading.attr="disabled"
                             class="flex-1 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:shadow-lg font-medium transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed">
                             <span wire:loading.remove>Confirmar União</span>

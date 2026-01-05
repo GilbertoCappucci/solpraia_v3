@@ -16,7 +16,7 @@ class TableCreateModal extends Component
     public function getListeners()
     {
         return [
-            'open-create-modal' => 'openModal',
+            'open-create-modal-component' => 'openModal',
         ];
     }
 

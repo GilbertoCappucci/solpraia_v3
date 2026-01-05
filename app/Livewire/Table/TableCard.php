@@ -5,12 +5,18 @@ namespace App\Livewire\Table;
 use App\Models\Table;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Reactive;
 
 class TableCard extends Component
 {
     public $tableId;
+    
+    #[Reactive]
     public $selectionMode = false;
+    
+    #[Reactive]
     public $selectedTables = [];
+    
     public $timeLimits = [];
 
     public function mount($tableId, $selectionMode = false, $selectedTables = [], $timeLimits = [])
@@ -19,6 +25,25 @@ class TableCard extends Component
         $this->selectionMode = $selectionMode;
         $this->selectedTables = $selectedTables;
         $this->timeLimits = $timeLimits;
+    }
+    
+    public function getListeners()
+    {
+        return [
+            'selection-mode-changed' => 'updateSelectionMode',
+            'selected-tables-updated' => 'updateSelectedTables',
+        ];
+    }
+    
+    public function updateSelectionMode($selectionMode, $selectedTables)
+    {
+        $this->selectionMode = $selectionMode;
+        $this->selectedTables = $selectedTables;
+    }
+    
+    public function updateSelectedTables($selectedTables)
+    {
+        $this->selectedTables = $selectedTables;
     }
 
     #[Computed]
