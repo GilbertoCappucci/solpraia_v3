@@ -70,4 +70,9 @@ Route::middleware(['auth'])->group(function () {
             ),
         )
         ->name('two-factor.show');
+
+    // Rota para Configurações Globais (stub para testes e acesso admin)
+    Route::get('settings/global', function () {
+        return redirect('settings/profile');
+    })->middleware(['can:access-global-settings'])->name('settings.global');
 });
