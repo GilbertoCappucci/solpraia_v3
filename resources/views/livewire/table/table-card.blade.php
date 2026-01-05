@@ -1,5 +1,5 @@
 <div
-    wire:key="table-card-{{ $tableId }}-{{ md5(json_encode($this->statusTimestamps)) }}"
+    wire:key="table-card-{{ $tableId }}-{{ md5(json_encode($this->statusTimestamps) . json_encode($timeLimits)) }}"
     x-data="{
         hasDelay: false,
         timeLimits: @js($timeLimits),

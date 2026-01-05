@@ -78,7 +78,10 @@ class TableCard extends Component
         $globalSettingService = app(\App\Services\GlobalSettingService::class);
         $this->timeLimits = $globalSettingService->getTimeLimits(\Illuminate\Support\Facades\Auth::user());
         
-        // Força re-render para atualizar os dados do Alpine.js
+        // Limpa o cache das computed properties para forçar recálculo
+        unset($this->enrichedTable);
+        unset($this->statusTimestamps);
+        unset($this->hasDelay);
     }
     
     public function updateSelectionMode($selectionMode, $selectedTables)
