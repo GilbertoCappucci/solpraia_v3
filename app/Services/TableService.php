@@ -567,9 +567,16 @@ class TableService
         // - close: mesa está fechada permanentemente
         // - reserved: mesa está reservada
         $excludedStatuses = ['releasing', 'close', 'reserved'];
-        $tables = !in_array($table->status, $excludedStatuses);
+        $canMerge = !in_array($table->status, $excludedStatuses);
 
-        return $tables;
+        logger('🔍 canTableBeMerged', [
+            'tableId' => $table->id,
+            'tableName' => $table->name,
+            'status' => $table->status,
+            'canMerge' => $canMerge,
+        ]);
+
+        return $canMerge;
     }
 
     /**

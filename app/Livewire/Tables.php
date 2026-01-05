@@ -265,16 +265,20 @@ class Tables extends Component
             return;
         }
 
-        $tables = $this->tableService->getFilteredTables(
-            $this->userId,
-            $this->filterTableStatuses,
-            $this->filterCheckStatuses,
-            $this->filterOrderStatuses,
-            $this->filterDepartaments,
-            $this->globalFilterMode
-        )->whereIn('id', $this->selectedTables);
+        $tables = \App\Models\Table::whereIn('id', $this->selectedTables)
+            ->where('user_id', $this->userId)
+            ->get();
+
+        logger('🔍 updateCanMerge', [
+            'selectedTables' => $this->selectedTables,
+            'tablesFound' => $tables->count(),
+            'tableIds' => $tables->pluck('id')->toArray(),
+            'tableStatuses' => $tables->pluck('status')->toArray(),
+        ]);
 
         $this->canMerge = $this->tableService->canMergeTables($tables);
+        
+        logger('✅ canMerge result', ['canMerge' => $this->canMerge]);
     }
 
     public function selectTable($tableId)
@@ -324,7 +328,18 @@ class Tables extends Component
             $this->globalFilterMode
         );
 
+        // canMerge indica se há mesas suficientes disponíveis para união (independente de seleção)
         $canMerge = $this->tableService->canMergeTables($tables);
+        
+        // Atualiza a propriedade do componente
+        $this->canMerge = $canMerge;
+
+        logger('📊 Tables render', [
+            'totalTables' => $tables->count(),
+            'canMerge' => $canMerge,
+            'selectionMode' => $this->selectionMode,
+            'selectedCount' => count($this->selectedTables),
+        ]);
 
         return view('livewire.tables', [
             'tables' => $tables,

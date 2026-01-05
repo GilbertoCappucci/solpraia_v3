@@ -7,7 +7,7 @@
         :selected-tables="$selectedTables" 
         :can-merge="$canMerge" 
         :has-active-filters="$hasActiveFilters"
-        :key="'table-header-'.($selectionMode ? 'select' : 'normal').'-'.count($selectedTables)" 
+        :key="'table-header-'.($selectionMode ? 'select' : 'normal').'-'.count($selectedTables).'-'.($canMerge ? 'can' : 'cant')" 
     />
 
     <div class="p-4 relative">
