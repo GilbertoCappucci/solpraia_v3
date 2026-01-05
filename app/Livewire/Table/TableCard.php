@@ -3,6 +3,7 @@
 namespace App\Livewire\Table;
 
 use App\Models\Table;
+use App\Services\TableEnrichmentService;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Reactive;
@@ -49,9 +50,11 @@ class TableCard extends Component
     #[Computed]
     public function table()
     {
-        // Carrega mesa com relacionamentos necessários
+        // Carrega mesa com relacionamentos necessários para o TableEnrichmentService
         return Table::with(['checks' => function ($query) {
-            $query->with(['orders.currentStatusHistory', 'orders.product']);
+            $query->with(['orders' => function ($query) {
+                $query->with('product');
+            }]);
         }])
         ->find($this->tableId);
     }
@@ -65,51 +68,9 @@ class TableCard extends Component
             return null;
         }
 
-        // Enriquece com dados computados (similar ao TableService::enrichTableData)
-        $currentCheck = $table->checks->sortByDesc('created_at')->first();
-        
-        $table->checkId = $currentCheck?->id;
-        $table->checkStatus = $currentCheck?->status;
-        $table->checkTotal = $currentCheck?->total ?? 0;
-        
-        if ($currentCheck) {
-            $orders = $currentCheck->orders;
-            
-            $table->ordersPending = $orders->filter(fn($o) => $o->currentStatusHistory?->status === 'pending')->count();
-            $table->ordersInProduction = $orders->filter(fn($o) => $o->currentStatusHistory?->status === 'in_production')->count();
-            $table->ordersInTransit = $orders->filter(fn($o) => $o->currentStatusHistory?->status === 'in_transit')->count();
-            
-            // Timestamps
-            $pendingOrder = $orders->firstWhere(fn($o) => $o->currentStatusHistory?->status === 'pending');
-            $productionOrder = $orders->firstWhere(fn($o) => $o->currentStatusHistory?->status === 'in_production');
-            $transitOrder = $orders->firstWhere(fn($o) => $o->currentStatusHistory?->status === 'in_transit');
-            
-            $table->pendingTimestamp = $pendingOrder?->currentStatusHistory?->changed_at;
-            $table->productionTimestamp = $productionOrder?->currentStatusHistory?->changed_at;
-            $table->transitTimestamp = $transitOrder?->currentStatusHistory?->changed_at;
-            
-            if ($pendingOrder) {
-                $table->pendingMinutes = abs((int) now()->diffInMinutes($table->pendingTimestamp));
-            }
-            if ($productionOrder) {
-                $table->productionMinutes = abs((int) now()->diffInMinutes($table->productionTimestamp));
-            }
-            if ($transitOrder) {
-                $table->transitMinutes = abs((int) now()->diffInMinutes($table->transitTimestamp));
-            }
-            
-            if ($currentCheck->status === 'Closed') {
-                $table->closedTimestamp = $currentCheck->updated_at;
-                $table->closedMinutes = abs((int) now()->diffInMinutes($table->closedTimestamp));
-            }
-        }
-        
-        if ($table->status === 'releasing') {
-            $table->releasingTimestamp = $table->updated_at;
-            $table->releasingMinutes = abs((int) now()->diffInMinutes($table->releasingTimestamp));
-        }
-        
-        return $table;
+        // Usa o TableEnrichmentService para enriquecer a mesa
+        $enrichmentService = app(TableEnrichmentService::class);
+        return $enrichmentService->enrichTableData($table);
     }
 
     #[Computed]

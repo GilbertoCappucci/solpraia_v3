@@ -142,7 +142,7 @@
         </div>
         @else
         <div class="text-xs font-medium italic {{ $this->showCenterLabel ? 'text-gray-600' : ($this->enrichedTable->status === 'close' ? 'text-red-700 font-semibold' : 'text-gray-400') }}">
-            {{ $this->enrichedTable->checkStatusLabel ?? ($this->enrichedTable->status === 'close' ? 'Fechada' : 'Disponível') }}
+            {{ $this->enrichedTable->checkStatusLabel ?? 'Livre' }}
         </div>
         @endif
     </div>
