@@ -279,13 +279,256 @@
         {{-- Grid de Locais - Responsivo --}}
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             @foreach($tables as $table)
-                <livewire:components.table-card 
-                    :key="'table-card-'.$table->id.'-'.($table->updated_at?->timestamp ?? 'new')"
-                    :table="$table" 
-                    :selectionMode="$selectionMode"
-                    :selectedTables="$selectedTables"
-                    :timeLimits="$timeLimits"
-                />
+                @php
+                    // Table Card computed properties
+                    $isSelected = $selectionMode && in_array($table->id, $selectedTables);
+                    $canTableBeMerged = in_array($table->status, ['occupied', 'reserved']) && isset($table->checkId);
+                    $isDisabled = $selectionMode && !$canTableBeMerged;
+                    
+                    $activeStatuses = 0;
+                    if (isset($table->ordersPending) && $table->ordersPending > 0) $activeStatuses++;
+                    if (isset($table->ordersInProduction) && $table->ordersInProduction > 0) $activeStatuses++;
+                    if (isset($table->ordersInTransit) && $table->ordersInTransit > 0) $activeStatuses++;
+                    
+                    $gridClass = match($activeStatuses) {
+                        1 => 'grid-cols-1',
+                        2 => 'grid-cols-2',
+                        3 => 'grid-cols-3',
+                        default => 'grid-cols-1'
+                    };
+                    
+                    $dotSize = match($activeStatuses) {
+                        1 => 'w-6 h-6',
+                        2 => 'w-4 h-4',
+                        default => 'w-3 h-3'
+                    };
+                    
+                    $textSize = match($activeStatuses) {
+                        1 => 'text-2xl',
+                        2 => 'text-lg',
+                        default => 'text-sm'
+                    };
+                    
+                    $padding = match($activeStatuses) {
+                        1 => 'py-4',
+                        2 => 'py-3',
+                        default => 'py-2'
+                    };
+                    
+                    $cardClasses = match(true) {
+                        $table->status === 'releasing' => 'bg-gradient-to-br from-teal-50 to-teal-100 border-teal-400 hover:border-teal-500',
+                        $table->checkStatus === 'Open' => 'bg-white border-green-400 hover:border-green-500',
+                        $table->checkStatus === 'Closed' => 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-400 hover:border-orange-500',
+                        $table->checkStatus === 'Paid' => 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-400 hover:border-gray-500',
+                        $table->status === 'occupied' => 'bg-white border-green-400 hover:border-green-500',
+                        $table->status === 'reserved' => 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-400 hover:border-purple-500',
+                        $table->status === 'close' => 'bg-gradient-to-br from-red-50 to-red-100 border-red-600 hover:border-red-700',
+                        default => 'bg-white border-gray-300 hover:border-gray-400'
+                    };
+                    
+                    $bottomBarBg = match(true) {
+                        $table->status === 'releasing' => 'bg-teal-100',
+                        $table->checkStatus === 'Open' => 'bg-white',
+                        $table->checkStatus === 'Closed' => 'bg-orange-100',
+                        $table->checkStatus === 'Paid' => 'bg-gray-100',
+                        $table->status === 'occupied' => 'bg-white',
+                        $table->status === 'reserved' => 'bg-purple-100',
+                        $table->status === 'close' => 'bg-red-100',
+                        default => 'bg-white'
+                    };
+                    
+                    $showCenterLabel = $table->checkStatus === 'Paid' && $activeStatuses === 0;
+                    $showClosedIndicator = $table->checkStatus === 'Closed' && $activeStatuses === 0;
+                    $showReleasingIndicator = $table->status === 'releasing';
+                    
+                    $hasDelay = false;
+                    if (isset($table->pendingMinutes) && $table->pendingMinutes > ($timeLimits['pending'] ?? 0)) $hasDelay = true;
+                    if (isset($table->productionMinutes) && $table->productionMinutes > ($timeLimits['in_production'] ?? 0)) $hasDelay = true;
+                    if (isset($table->transitMinutes) && $table->transitMinutes > ($timeLimits['in_transit'] ?? 0)) $hasDelay = true;
+                    if (isset($table->closedMinutes) && $table->closedMinutes > ($timeLimits['closed'] ?? 0)) $hasDelay = true;
+                    if (isset($table->releasingMinutes) && $table->releasingMinutes > ($timeLimits['releasing'] ?? 0)) $hasDelay = true;
+                    
+                    $statusTimestamps = [
+                        'pending' => $table->pendingTimestamp ?? null,
+                        'production' => $table->productionTimestamp ?? null,
+                        'transit' => $table->transitTimestamp ?? null,
+                        'closed' => $table->closedTimestamp ?? null,
+                        'releasing' => $table->releasingTimestamp ?? null,
+                    ];
+                    
+                    $selectionClasses = '';
+                    if ($selectionMode) {
+                        if ($isDisabled) {
+                            $selectionClasses = 'opacity-40 cursor-not-allowed grayscale';
+                        } else {
+                            $selectionClasses = 'cursor-pointer';
+                            if ($isSelected) {
+                                $selectionClasses .= ' ring-4 ring-offset-2 ring-blue-500';
+                            }
+                        }
+                    }
+                @endphp
+                
+                {{-- TABLE CARD --}}
+                <div
+                    x-data="{
+                        hasDelay: false,
+                        timeLimits: @js($timeLimits),
+                        timestamps: @js($statusTimestamps),
+                        checkDelay() {
+                            const now = Math.floor(Date.now() / 1000);
+                            let delay = false;
+                            
+                            if (this.timestamps.pending) {
+                                const pendingMinutes = Math.floor((now - new Date(this.timestamps.pending).getTime() / 1000) / 60);
+                                if (pendingMinutes > (this.timeLimits.pending || 0)) delay = true;
+                            }
+                            
+                            if (this.timestamps.production) {
+                                const productionMinutes = Math.floor((now - new Date(this.timestamps.production).getTime() / 1000) / 60);
+                                if (productionMinutes > (this.timeLimits.in_production || 0)) delay = true;
+                            }
+                            
+                            if (this.timestamps.transit) {
+                                const transitMinutes = Math.floor((now - new Date(this.timestamps.transit).getTime() / 1000) / 60);
+                                if (transitMinutes > (this.timeLimits.in_transit || 0)) delay = true;
+                            }
+                            
+                            if (this.timestamps.closed) {
+                                const closedMinutes = Math.floor((now - new Date(this.timestamps.closed).getTime() / 1000) / 60);
+                                if (closedMinutes > (this.timeLimits.closed || 0)) delay = true;
+                            }
+                            
+                            if (this.timestamps.releasing) {
+                                const releasingMinutes = Math.floor((now - new Date(this.timestamps.releasing).getTime() / 1000) / 60);
+                                if (releasingMinutes > (this.timeLimits.releasing || 0)) delay = true;
+                            }
+                            
+                            this.hasDelay = delay;
+                        }
+                    }"
+                    x-init="checkDelay(); setInterval(() => checkDelay(), 5000)"
+                    @if(!$isDisabled) wire:click="selectTable({{ $table->id }})" @endif
+                    :class="hasDelay ? 'animate-pulse-warning' : ''"
+                    class="relative aspect-square rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center justify-center border-2 {{ $cardClasses }} {{ $selectionClasses }}">
+
+                    {{-- Indicador de Seleção (Checkbox) --}}
+                    @if($selectionMode && !$isDisabled)
+                    <div class="absolute top-2 right-2 w-6 h-6 border-2 {{ $isSelected ? 'bg-blue-500 border-white' : 'bg-white/50 border-gray-400' }} rounded-md flex items-center justify-center z-20 pointer-events-none">
+                        @if($isSelected)
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        @endif
+                    </div>
+                    @endif
+
+                    {{-- Badge topo esquerdo (Numero e Nome) --}}
+                    <div class="absolute top-2 left-2 right-2 flex items-baseline justify-between z-1 pointer-events-none">
+                        <span class="text-3xl font-bold text-gray-900 leading-none">{{ $table->number }}</span>
+                        <span class="text-xs text-gray-600 font-medium leading-none">{{ $table->name }}</span>
+                    </div>
+
+                    {{-- Indicadores de Status dos Pedidos ou Label Central --}}
+                    <div class="flex items-center justify-center grow pointer-events-none z-1">
+                        @if($table->checkStatus && $activeStatuses > 0)
+                        <div class="grid {{ $gridClass }} gap-1 w-full px-2">
+                            @if($table->ordersPending > 0)
+                            <livewire:components.order-status-indicator 
+                                :key="'pending-'.$table->id"
+                                status="pending" 
+                                :count="$table->ordersPending ?? 0" 
+                                :minutes="$table->pendingMinutes ?? 0" 
+                                :timestamp="$table->pendingTimestamp"
+                                :dotSize="$dotSize" 
+                                :textSize="$textSize" 
+                                :padding="$padding" 
+                            />
+                            @endif
+                            @if($table->ordersInProduction > 0)
+                            <livewire:components.order-status-indicator 
+                                :key="'production-'.$table->id"
+                                status="production" 
+                                :count="$table->ordersInProduction ?? 0" 
+                                :minutes="$table->productionMinutes ?? 0" 
+                                :timestamp="$table->productionTimestamp"
+                                :dotSize="$dotSize" 
+                                :textSize="$textSize" 
+                                :padding="$padding" 
+                            />
+                            @endif
+                            @if($table->ordersInTransit > 0)
+                            <livewire:components.order-status-indicator 
+                                :key="'transit-'.$table->id"
+                                status="transit" 
+                                :count="$table->ordersInTransit ?? 0" 
+                                :minutes="$table->transitMinutes ?? 0" 
+                                :timestamp="$table->transitTimestamp"
+                                :dotSize="$dotSize" 
+                                :textSize="$textSize" 
+                                :padding="$padding" 
+                            />
+                            @endif
+                        </div>
+                        @elseif($showClosedIndicator)
+                        <div 
+                            x-data="{
+                                minutes: {{ $table->closedMinutes ?? 0 }},
+                                timestamp: @js($table->closedTimestamp),
+                                updateMinutes() {
+                                    if (this.timestamp) {
+                                        const now = Math.floor(Date.now() / 1000);
+                                        const statusTime = Math.floor(new Date(this.timestamp).getTime() / 1000);
+                                        this.minutes = Math.floor((now - statusTime) / 60);
+                                    }
+                                }
+                            }"
+                            x-init="if (timestamp) { updateMinutes(); setInterval(() => updateMinutes(), 5000); }"
+                            class="flex flex-col items-center justify-center gap-1">
+                            <div class="w-6 h-6 bg-orange-500 rounded-full"></div>
+                            <div class="flex flex-col items-center leading-tight">
+                                <span class="text-2xl font-bold text-orange-700" x-text="minutes + 'm'">{{ $table->closedMinutes ?? 0 }}m</span>
+                                <span class="text-[10px] font-bold text-orange-600 uppercase tracking-wider">Fechando</span>
+                            </div>
+                        </div>
+                        @elseif($showReleasingIndicator)
+                        <div 
+                            x-data="{
+                                minutes: {{ $table->releasingMinutes ?? 0 }},
+                                timestamp: @js($table->releasingTimestamp),
+                                updateMinutes() {
+                                    if (this.timestamp) {
+                                        const now = Math.floor(Date.now() / 1000);
+                                        const statusTime = Math.floor(new Date(this.timestamp).getTime() / 1000);
+                                        this.minutes = Math.floor((now - statusTime) / 60);
+                                    }
+                                }
+                            }"
+                            x-init="if (timestamp) { updateMinutes(); setInterval(() => updateMinutes(), 5000); }"
+                            class="flex flex-col items-center justify-center gap-1">
+                            <div class="w-6 h-6 bg-teal-500 rounded-full"></div>
+                            <div class="flex flex-col items-center leading-tight">
+                                <span class="text-2xl font-bold text-teal-700" x-text="minutes + 'm'">{{ $table->releasingMinutes ?? 0 }}m</span>
+                                <span class="text-[10px] font-bold text-teal-600 uppercase tracking-wider">Liberando</span>
+                            </div>
+                        </div>
+                        @else
+                        <div class="text-xs font-medium italic {{ $showCenterLabel ? 'text-gray-600' : ($table->status === 'close' ? 'text-red-700 font-semibold' : ($table->checkStatusColor === 'green' ? 'text-green-600' : ($table->checkStatusColor === 'purple' ? 'text-purple-600' : 'text-gray-400'))) }}">
+                            {{ $table->checkStatusLabel }}
+                        </div>
+                        @endif
+                    </div>
+
+                    {{-- Barra Inferior: Valor do Check --}}
+                    @if(isset($table->checkTotal) && $table->checkTotal > 0 && $table->status !== 'releasing')
+                    <div class="absolute bottom-0 left-0 right-0 flex items-center justify-center px-3 py-2 {{ $bottomBarBg }} z-1 rounded-b-xl pointer-events-none">
+                        <span class="text-xl font-bold text-orange-600">
+                            R$ {{ number_format($table->checkTotal, 2, ',', '.') }}
+                        </span>
+                    </div>
+                    @endif
+                </div>
+                {{-- END TABLE CARD --}}
             @endforeach
         </div>
     </div>
