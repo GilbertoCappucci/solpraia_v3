@@ -30,10 +30,34 @@ class TableCard extends Component
     
     public function getListeners()
     {
-        return [
+        // Obtém o userId da table para escutar eventos específicos
+        $table = Table::find($this->tableId);
+        $userId = $table ? $table->user_id : null;
+        
+        $listeners = [
             'selection-mode-changed' => 'updateSelectionMode',
             'selected-tables-updated' => 'updateSelectedTables',
         ];
+        
+        // Adiciona listeners para eventos de atualização de checks e tables
+        if ($userId) {
+            $listeners["echo-private:tables-updated.{$userId},.check.updated"] = 'onCheckUpdated';
+            $listeners["echo-private:tables-updated.{$userId},.table.updated"] = 'onTableUpdated';
+        }
+        
+        return $listeners;
+    }
+    
+    public function onCheckUpdated($data)
+    {
+        // Livewire automaticamente recalcula computed properties na próxima renderização
+        // Nenhuma ação adicional necessária, apenas receber o evento já força o re-render
+    }
+    
+    public function onTableUpdated($data)
+    {
+        // Livewire automaticamente recalcula computed properties na próxima renderização
+        // Nenhuma ação adicional necessária, apenas receber o evento já força o re-render
     }
     
     public function updateSelectionMode($selectionMode, $selectedTables)
