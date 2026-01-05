@@ -18,6 +18,7 @@ class TableCard extends Component
     #[Reactive]
     public $selectedTables = [];
     
+    #[Reactive]
     public $timeLimits = [];
 
     public function mount($tableId, $selectionMode = false, $selectedTables = [], $timeLimits = [])
@@ -39,10 +40,11 @@ class TableCard extends Component
             'selected-tables-updated' => 'updateSelectedTables',
         ];
         
-        // Adiciona listeners para eventos de atualização de checks e tables
+        // Adiciona listeners para eventos de atualização de checks, tables e global settings
         if ($userId) {
             $listeners["echo-private:tables-updated.{$userId},.check.updated"] = 'onCheckUpdated';
             $listeners["echo-private:tables-updated.{$userId},.table.updated"] = 'onTableUpdated';
+            $listeners["echo-private:global-setting-updated.{$userId},.global.setting.updated"] = 'onGlobalSettingUpdated';
         }
         
         return $listeners;
@@ -58,6 +60,15 @@ class TableCard extends Component
     {
         // Livewire automaticamente recalcula computed properties na próxima renderização
         // Nenhuma ação adicional necessária, apenas receber o evento já força o re-render
+    }
+    
+    public function onGlobalSettingUpdated($data)
+    {
+        // Atualiza os timeLimits a partir do serviço
+        $globalSettingService = app(\App\Services\GlobalSettingService::class);
+        $this->timeLimits = $globalSettingService->getTimeLimits(\Illuminate\Support\Facades\Auth::user());
+        
+        // Força re-render para atualizar os dados do Alpine.js
     }
     
     public function updateSelectionMode($selectionMode, $selectedTables)
