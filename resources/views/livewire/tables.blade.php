@@ -282,7 +282,8 @@
                 @php
                     // Table Card computed properties
                     $isSelected = $selectionMode && in_array($table->id, $selectedTables);
-                    $canTableBeMerged = in_array($table->status, ['occupied', 'reserved']) && isset($table->checkId);
+                    // Permite unir mesas ocupadas, reservadas e livres (mas não fechadas ou sendo liberadas)
+                    $canTableBeMerged = !in_array($table->status, ['releasing', 'close']);
                     $isDisabled = $selectionMode && !$canTableBeMerged;
                     
                     $activeStatuses = 0;

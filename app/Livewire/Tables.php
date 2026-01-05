@@ -96,17 +96,8 @@ class Tables extends Component
                                  !empty($this->filterDepartaments);
     }
 
-    public function booted()
-    {
-        // Emite evento para sincronizar filtros após a inicialização completa
-        $this->dispatch('filters-changed', [
-            'filterTableStatuses' => $this->filterTableStatuses,
-            'filterCheckStatuses' => $this->filterCheckStatuses,
-            'filterOrderStatuses' => $this->filterOrderStatuses,
-            'filterDepartaments' => $this->filterDepartaments,
-            'globalFilterMode' => $this->globalFilterMode,
-        ]);
-    }
+    // Método booted removido - não é necessário emitir eventos após inicialização
+    // Os filtros já são carregados corretamente no mount()
 
     public function getListeners()
     {
@@ -116,7 +107,6 @@ class Tables extends Component
             "echo-private:tables-updated.{$this->userId},.check.updated" => 'onCheckUpdated',
             
             // Listeners para TableFilters
-            'filters-changed' => 'onFiltersChanged',
             'toggle-filters' => 'toggleFilters',
             
             // Listeners para TableHeader
@@ -160,20 +150,6 @@ class Tables extends Component
 
         // Força refresh dos dados
         $this->dispatch('$refresh');
-    }
-
-    public function onFiltersChanged($filters)
-    {
-        $this->filterTableStatuses = $filters['filterTableStatuses'] ?? [];
-        $this->filterCheckStatuses = $filters['filterCheckStatuses'] ?? [];
-        $this->filterOrderStatuses = $filters['filterOrderStatuses'] ?? [];
-        $this->filterDepartaments = $filters['filterDepartaments'] ?? [];
-        $this->globalFilterMode = $filters['globalFilterMode'] ?? 'AND';
-        
-        $this->hasActiveFilters = !empty($this->filterTableStatuses) || 
-                                 !empty($this->filterCheckStatuses) || 
-                                 !empty($this->filterOrderStatuses) || 
-                                 !empty($this->filterDepartaments);
     }
 
     public function toggleSelectionMode()
@@ -413,7 +389,6 @@ class Tables extends Component
             $this->filterTableStatuses[] = $status;
         }
         $this->saveFiltersToSession();
-        $this->emitFiltersChanged();
     }
 
     public function toggleCheckStatusFilter($status)
@@ -424,7 +399,6 @@ class Tables extends Component
             $this->filterCheckStatuses[] = $status;
         }
         $this->saveFiltersToSession();
-        $this->emitFiltersChanged();
     }
 
     public function toggleOrderStatusFilter($status)
@@ -435,7 +409,6 @@ class Tables extends Component
             $this->filterOrderStatuses[] = $status;
         }
         $this->saveFiltersToSession();
-        $this->emitFiltersChanged();
     }
 
     public function toggleDepartamentFilter($departament)
@@ -446,14 +419,12 @@ class Tables extends Component
             $this->filterDepartaments[] = $departament;
         }
         $this->saveFiltersToSession();
-        $this->emitFiltersChanged();
     }
 
     public function toggleGlobalFilterMode()
     {
         $this->globalFilterMode = $this->globalFilterMode === 'OR' ? 'AND' : 'OR';
         $this->saveFiltersToSession();
-        $this->emitFiltersChanged();
     }
 
     public function clearFilters()
@@ -477,7 +448,6 @@ class Tables extends Component
         session()->forget('tables.showFilters');
         $this->showFilters = false;
         
-        $this->emitFiltersChanged();
         $this->dispatch('filters-toggled', false);
     }
 
@@ -497,17 +467,6 @@ class Tables extends Component
         // Mantém configurações locais da view
         session([
             'tables.showFilters' => $this->showFilters,
-        ]);
-    }
-
-    protected function emitFiltersChanged()
-    {
-        $this->dispatch('filters-changed', [
-            'filterTableStatuses' => $this->filterTableStatuses,
-            'filterCheckStatuses' => $this->filterCheckStatuses,
-            'filterOrderStatuses' => $this->filterOrderStatuses,
-            'filterDepartaments' => $this->filterDepartaments,
-            'globalFilterMode' => $this->globalFilterMode,
         ]);
     }
 

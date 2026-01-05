@@ -604,6 +604,7 @@ class TableService
     /**
      * Verifica se há mesas suficientes para realizar uma união
      * Requer pelo menos 2 mesas que podem ser unidas
+     * E pelo menos uma delas deve ter um check ativo
      * 
      * @param Collection $tables
      * @return bool
@@ -611,6 +612,17 @@ class TableService
     public function canMergeTables(Collection $tables): bool
     {
         $mergeableTables = $this->getMergeableTables($tables);
-        return $mergeableTables->count() >= 2;
+        
+        // Precisa de pelo menos 2 mesas que podem ser unidas
+        if ($mergeableTables->count() < 2) {
+            return false;
+        }
+        
+        // Pelo menos uma das mesas deve ter um check ativo
+        $hasActiveCheck = $mergeableTables->contains(function ($table) {
+            return !empty($table->checkId);
+        });
+        
+        return $hasActiveCheck;
     }
 }
