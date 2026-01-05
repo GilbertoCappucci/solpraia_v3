@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Table;
 
 use App\Services\OrderService;
 use App\Services\TableService;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class TableStatusModal extends Component
@@ -22,10 +23,10 @@ class TableStatusModal extends Component
         $this->orderService = $orderService;
     }
 
-    protected function getListeners()
+    public function getListeners()
     {
         return [
-            'open-table-status-modal' => 'openModal',
+            'open-status-modal' => 'openModal',
         ];
     }
 
@@ -36,7 +37,7 @@ class TableStatusModal extends Component
         $this->newTableStatus = $table->status;
 
         // Verifica se há check ativo (não Paid nem Canceled)
-        $activeCheck = $this->orderService->findCheck($tableId); // Apenas busca, não cria
+        $activeCheck = $this->orderService->findCheck($tableId);
         $this->hasActiveCheck = $activeCheck && in_array($activeCheck->status, ['Open', 'Closed']);
 
         $this->showModal = true;
@@ -74,12 +75,11 @@ class TableStatusModal extends Component
         session()->flash('success', 'Status da mesa atualizado com sucesso!');
         $this->closeModal();
         
-        // Notifica o componente pai para atualizar
         $this->dispatch('table-status-updated');
     }
 
     public function render()
     {
-        return view('livewire.table-status-modal');
+        return view('livewire.table.table-status-modal');
     }
 }

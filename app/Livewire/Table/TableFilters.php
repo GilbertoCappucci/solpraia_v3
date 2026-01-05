@@ -1,25 +1,48 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Table;
 
 use App\Services\UserPreferenceService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\Attributes\Computed;
 
 class TableFilters extends Component
 {
+    public $showFilters = false;
     public $filterTableStatuses = [];
     public $filterCheckStatuses = [];
     public $filterOrderStatuses = [];
     public $filterDepartaments = [];
     public $globalFilterMode = 'AND';
-    public $showFilters = false;
 
     protected $userPreferenceService;
 
     public function boot(UserPreferenceService $userPreferenceService)
     {
         $this->userPreferenceService = $userPreferenceService;
+    }
+
+    public function mount()
+    {
+        // Carrega filtros das preferências do usuário
+        $this->filterTableStatuses = $this->userPreferenceService->getPreference('table_filter_table', []);
+        $this->filterCheckStatuses = $this->userPreferenceService->getPreference('table_filter_check', []);
+        $this->filterOrderStatuses = $this->userPreferenceService->getPreference('table_filter_order', []);
+        $this->filterDepartaments = $this->userPreferenceService->getPreference('table_filter_departament', []);
+        $this->globalFilterMode = $this->userPreferenceService->getPreference('table_filter_mode', 'AND');
+        
+        // Carrega visibilidade do modal da sessão
+        $this->showFilters = session('tables.showFilters', false);
+    }
+
+    #[Computed]
+    public function hasActiveFilters()
+    {
+        return !empty($this->filterTableStatuses) || 
+               !empty($this->filterCheckStatuses) || 
+               !empty($this->filterOrderStatuses) || 
+               !empty($this->filterDepartaments);
     }
 
     public function getListeners()
@@ -29,35 +52,10 @@ class TableFilters extends Component
         ];
     }
 
-    public function mount()
-    {
-        // Carrega filtros da sessão (já foram carregados pelo UserPreferenceService no login)
-        $this->filterTableStatuses = $this->userPreferenceService->getPreference('table_filter_table', []);
-        $this->filterCheckStatuses = $this->userPreferenceService->getPreference('table_filter_check', []);
-        $this->filterOrderStatuses = $this->userPreferenceService->getPreference('table_filter_order', []);
-        $this->filterDepartaments = $this->userPreferenceService->getPreference('table_filter_departament', []);
-        $this->globalFilterMode = $this->userPreferenceService->getPreference('table_filter_mode', 'AND');
-        $this->showFilters = session('tables.showFilters', false);
-    }
-    
-    public function booted()
-    {
-        // Emite evento para sincronizar filtros com o componente pai após a inicialização completa
-        $this->dispatch('filters-changed', [
-            'filterTableStatuses' => $this->filterTableStatuses,
-            'filterCheckStatuses' => $this->filterCheckStatuses,
-            'filterOrderStatuses' => $this->filterOrderStatuses,
-            'filterDepartaments' => $this->filterDepartaments,
-            'globalFilterMode' => $this->globalFilterMode,
-        ]);
-    }
-
     public function toggleFilters()
     {
         $this->showFilters = !$this->showFilters;
-        $this->saveFiltersToSession();
-        
-        // Emite evento para notificar componente pai
+        session(['tables.showFilters' => $this->showFilters]);
         $this->dispatch('filters-toggled', $this->showFilters);
     }
 
@@ -68,8 +66,7 @@ class TableFilters extends Component
         } else {
             $this->filterTableStatuses[] = $status;
         }
-        $this->saveFiltersToSession();
-        $this->emitFiltersChanged();
+        $this->saveAndEmit();
     }
 
     public function toggleCheckStatusFilter($status)
@@ -79,8 +76,7 @@ class TableFilters extends Component
         } else {
             $this->filterCheckStatuses[] = $status;
         }
-        $this->saveFiltersToSession();
-        $this->emitFiltersChanged();
+        $this->saveAndEmit();
     }
 
     public function toggleOrderStatusFilter($status)
@@ -90,8 +86,7 @@ class TableFilters extends Component
         } else {
             $this->filterOrderStatuses[] = $status;
         }
-        $this->saveFiltersToSession();
-        $this->emitFiltersChanged();
+        $this->saveAndEmit();
     }
 
     public function toggleDepartamentFilter($departament)
@@ -101,15 +96,13 @@ class TableFilters extends Component
         } else {
             $this->filterDepartaments[] = $departament;
         }
-        $this->saveFiltersToSession();
-        $this->emitFiltersChanged();
+        $this->saveAndEmit();
     }
 
     public function toggleGlobalFilterMode()
     {
         $this->globalFilterMode = $this->globalFilterMode === 'OR' ? 'AND' : 'OR';
-        $this->saveFiltersToSession();
-        $this->emitFiltersChanged();
+        $this->saveAndEmit();
     }
 
     public function clearFilters()
@@ -133,11 +126,19 @@ class TableFilters extends Component
         session()->forget('tables.showFilters');
         $this->showFilters = false;
         
-        $this->emitFiltersChanged();
+        $this->dispatch('filters-updated', [
+            'tableStatuses' => [],
+            'checkStatuses' => [],
+            'orderStatuses' => [],
+            'departaments' => [],
+            'mode' => 'AND',
+            'hasActive' => false,
+        ]);
+        
         $this->dispatch('filters-toggled', false);
     }
 
-    protected function saveFiltersToSession()
+    protected function saveAndEmit()
     {
         $user = Auth::user();
 
@@ -150,33 +151,19 @@ class TableFilters extends Component
             'table_filter_mode' => $this->globalFilterMode,
         ]);
 
-        // Mantém configurações locais da view
-        session([
-            'tables.showFilters' => $this->showFilters,
+        // Emite evento para o componente pai atualizar
+        $this->dispatch('filters-updated', [
+            'tableStatuses' => $this->filterTableStatuses,
+            'checkStatuses' => $this->filterCheckStatuses,
+            'orderStatuses' => $this->filterOrderStatuses,
+            'departaments' => $this->filterDepartaments,
+            'mode' => $this->globalFilterMode,
+            'hasActive' => $this->hasActiveFilters,
         ]);
-    }
-
-    protected function emitFiltersChanged()
-    {
-        $this->dispatch('filters-changed', [
-            'filterTableStatuses' => $this->filterTableStatuses,
-            'filterCheckStatuses' => $this->filterCheckStatuses,
-            'filterOrderStatuses' => $this->filterOrderStatuses,
-            'filterDepartaments' => $this->filterDepartaments,
-            'globalFilterMode' => $this->globalFilterMode,
-        ]);
-    }
-
-    public function getHasActiveFiltersProperty()
-    {
-        return !empty($this->filterTableStatuses) || 
-               !empty($this->filterCheckStatuses) || 
-               !empty($this->filterOrderStatuses) || 
-               !empty($this->filterDepartaments);
     }
 
     public function render()
     {
-        return view('livewire.table-filters');
+        return view('livewire.table.table-filters');
     }
 }

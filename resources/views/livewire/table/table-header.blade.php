@@ -1,4 +1,3 @@
-{{-- Header com fundo laranja --}}
 <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 flex items-center justify-between sticky top-0 z-10 shadow-md">
     <div class="flex items-center gap-2">
         <h2 class="text-1xl font-bold">
@@ -20,12 +19,12 @@
             </button>
             <button 
                 wire:click="openMergeModal"
-                @if(count($selectedTables) < 2) disabled @endif
-                class="flex items-center gap-2 px-3 py-1.5 {{ count($selectedTables) >= 2 ? 'bg-green-500 hover:bg-green-600' : 'bg-white/20 hover:bg-white/30' }} border-2 border-white text-white rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
-                @if(count($selectedTables) >= 2)
-                    ✓ Finalizar União ({{ count($selectedTables) }})
+                @if($selectedTablesCount < 2) disabled @endif
+                class="flex items-center gap-2 px-3 py-1.5 {{ $selectedTablesCount >= 2 ? 'bg-green-500 hover:bg-green-600' : 'bg-white/20 hover:bg-white/30' }} border-2 border-white text-white rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
+                @if($selectedTablesCount >= 2)
+                    ✓ Finalizar União ({{ $selectedTablesCount }})
                 @else
-                    Unir ({{ count($selectedTables) }})
+                    Unir ({{ $selectedTablesCount }})
                 @endif
             </button>
         @else
@@ -54,7 +53,7 @@
             </button>
             
             <button 
-                wire:click="openNewTableModal"
+                wire:click="openCreateModal"
                 class="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 border-2 border-white/30 text-white rounded-lg text-sm font-medium transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>

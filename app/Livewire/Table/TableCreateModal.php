@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Table;
 
-use App\Models\Table;
 use App\Enums\TableStatusEnum;
+use App\Models\Table;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -13,13 +13,20 @@ class TableCreateModal extends Component
     public $newTableName = '';
     public $newTableNumber = '';
 
-    protected $listeners = ['open-new-table-modal' => 'openModal'];
+    public function getListeners()
+    {
+        return [
+            'open-create-modal' => 'openModal',
+        ];
+    }
 
     public function openModal()
     {
         $this->showModal = true;
         $this->newTableName = '';
         $this->newTableNumber = '';
+        $this->resetErrorBag();
+        $this->resetValidation();
     }
 
     public function closeModal()
@@ -62,6 +69,6 @@ class TableCreateModal extends Component
 
     public function render()
     {
-        return view('livewire.table-create-modal');
+        return view('livewire.table.table-create-modal');
     }
 }

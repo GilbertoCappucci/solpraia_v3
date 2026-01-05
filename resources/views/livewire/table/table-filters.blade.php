@@ -1,12 +1,12 @@
 <div>
-{{-- Backdrop escuro quando filtros estão abertos --}}
-@if($showFilters)
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" wire:click="toggleFilters"></div>
-@endif
+    {{-- Backdrop escuro quando filtros estão abertos --}}
+    @if($showFilters)
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" wire:click="toggleFilters"></div>
+    @endif
 
-{{-- Modal de Filtros --}}
-@if($showFilters)
-    <div class="fixed top-2 left-1/2 -translate-x-1/2 w-[95%] max-w-2xl max-h-[calc(100vh-2.5rem)] overflow-y-auto bg-white rounded-2xl shadow-2xl border-2 border-gray-300 z-50">
+    {{-- Modal de Filtros --}}
+    @if($showFilters)
+        <div class="fixed top-2 left-1/2 -translate-x-1/2 w-[95%] max-w-2xl max-h-[calc(100vh-2.5rem)] overflow-y-auto bg-white rounded-2xl shadow-2xl border-2 border-gray-300 z-50">
         
         {{-- Header do Modal --}}
         <div class="sticky top-0 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-3 rounded-t-2xl shadow-lg z-10">
@@ -203,5 +203,5 @@
             </div>
         </div>
     </div>
-@endif
+    @endif
 </div>
