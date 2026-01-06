@@ -1,10 +1,10 @@
-<div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 sticky bottom-0 z-10 shadow-lg">
+<div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 mb-4 sticky bottom-0 z-10 shadow-lg">
     <div class="flex items-center justify-between gap-4">
         {{-- Total Geral (Esquerda) --}}
         <div class="flex-1">
             <div class="flex items-center justify-between">
-                <span class="text-lg font-semibold">Total Geral:</span>
-                <span class="text-2xl font-bold">R$ {{ number_format($checkTotal, 2, ',', '.') }}</span>
+                <span class="text-lg font-semibold">Total:</span>
+                <span class="text-lg font-bold">R$ {{ number_format($checkTotal, 2, ',', '.') }}</span>
             </div>
         </div>
 
@@ -29,11 +29,11 @@
             @else
             <button
                 wire:click="goToMenu"
-                class="bg-white text-orange-600 hover:bg-orange-50 px-6 py-3 rounded-xl font-bold shadow-lg transition flex items-center gap-2">
+                class="bg-white text-orange-600 hover:bg-orange-50 px-2 py-3 rounded-xl font-bold shadow-lg transition flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Adicionar Pedidos
+                Adicionar
             </button>
             @endif
         </div>

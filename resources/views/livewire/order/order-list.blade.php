@@ -46,7 +46,7 @@
             class="group cursor-pointer {{ $delayAnimation }} mb-4 md:mb-0 md:rounded-none md:shadow-none md:border-0 md:p-0"
         >
             <div
-                class="bg-white rounded-2xl shadow-md border border-gray-200 p-4 flex flex-col gap-2 md:flex-row md:items-center md:gap-4 md:rounded-none md:shadow-none md:border-0 md:p-4 hover:bg-gray-50 transition"
+                class="bg-white rounded-2xl shadow-md border border-gray-200 p-4 flex flex-col gap-2 md:flex-row md:items-center md:gap-0 md:rounded-none md:shadow-none md:border-0 md:p-4 hover:bg-gray-50 transition"
                 x-data="{
                     minutes: {{ $order->status_changed_at ? abs((int) now()->diffInMinutes($order->status_changed_at)) : 0 }},
                     timestamp: @js($order->status_changed_at ? $order->status_changed_at->toISOString() : null),
@@ -60,15 +60,12 @@
                 }"
                 x-init="if (timestamp) { updateMinutes(); setInterval(() => updateMinutes(), 30000); }"
             >
-                {{-- Linha 1: Número e Checkbox --}}
-                <div class="flex items-center justify-between w-full">
-                    <div class="flex-shrink-0 w-14 text-left">
-                        <span class="text-3xl font-bold text-gray-700">{{ $order->total_quantity }}</span>
-                    </div>
+                {{-- Desktop: esquerda --}}
+                <div class="flex flex-col gap-2 md:flex-row md:items-center md:w-2/3">
                     <button
                         wire:key="select-{{ $order->id }}"
                         wire:click.stop="toggleSelection({{ $order->id }}, '{{ $order->status }}', {{ $order->is_paid ? 'true' : 'false' }}, {{ $order->product_id }})"
-                        class="flex items-center justify-center gap-2 p-0 m-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                        class="flex items-center justify-center gap-2 p-0 m-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition md:mr-4"
                         style="min-width: 44px; min-height: 44px; width: 44px; height: 44px;"
                         aria-label="Selecionar pedido"
                     >
@@ -76,18 +73,17 @@
                             <input type="checkbox" class="w-6 h-6 cursor-pointer accent-blue-600" style="min-width: 24px; min-height: 24px;" {{ in_array($order->id, $selectedOrderIds) ? 'checked' : '' }} readOnly>
                         </span>
                     </button>
-                </div>
-
-                {{-- Linha 2: Nome e tempo --}}
-                <div class="flex items-center justify-between w-full">
-                    <div class="flex-1 min-w-0">
+                    <div class="flex-shrink-0 w-14 text-left md:mr-4">
+                        <span class="text-3xl font-bold text-gray-700">{{ $order->total_quantity }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0 md:mr-4">
                         <h3 class="font-semibold text-gray-900 truncate">{{ $order->product_name }}</h3>
                     </div>
-                    <p class="text-sm text-gray-500 ml-2" x-text="minutes + ' min'"></p>
+                    <p class="text-sm text-gray-500 ml-2 md:ml-0">{{ $order->status_changed_at ? abs((int) now()->diffInMinutes($order->status_changed_at)) : 0 }} min</p>
                 </div>
 
-                {{-- Linha 3: Status e botão pagar --}}
-                <div class="flex items-center justify-between w-full gap-2">
+                {{-- Desktop: direita --}}
+                <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-end md:w-1/3">
                     <div>
                         @if($order->is_paid)
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border bg-emerald-100 text-emerald-800 border-emerald-200">
@@ -106,23 +102,16 @@
                         💳 Pagar
                     </button>
                     @endif
-                </div>
-
-                {{-- Ícone Indicador (desktop) --}}
-                <div class="flex-shrink-0 text-gray-400 hidden md:block self-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
+                    <div class="flex-shrink-0 text-gray-400 hidden md:block self-center md:ml-4">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
         @endforeach
 
-        {{-- Total Geral --}}
-        <div class="p-4 bg-gray-50 flex items-center justify-between">
-            <span class="text-lg font-semibold text-gray-700">Total Geral:</span>
-            <span class="text-2xl font-bold text-gray-700">R$ {{ number_format($checkTotal, 2, ',', '.') }}</span>
-        </div>
     </div>
     @endif
     {{-- Barra de ações quando tiver seleção --}}
