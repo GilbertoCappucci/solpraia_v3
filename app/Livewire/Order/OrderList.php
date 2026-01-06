@@ -7,8 +7,8 @@ use Livewire\Attributes\Reactive;
 
 class OrderList extends Component
 {
-    #[Reactive]
-    public $groupedOrders;
+
+    public $listOrders;
     
     #[Reactive]
     public $checkTotal = 0;
@@ -21,9 +21,9 @@ class OrderList extends Component
     public $selectedOrderIds = [];
     public $selectedMeta = null;
 
-    public function mount($groupedOrders, $checkTotal = 0, $statusFilters = [], $timeLimits = [], $userId = null)
+    public function mount($listOrders, $checkTotal = 0, $statusFilters = [], $timeLimits = [], $userId = null)
     {
-        $this->groupedOrders = $groupedOrders;
+        $this->listOrders = $listOrders;
         $this->checkTotal = $checkTotal;
         $this->statusFilters = $statusFilters;
         $this->timeLimits = $timeLimits;
@@ -55,6 +55,9 @@ class OrderList extends Component
 
     public function toggleSelection($orderId, $status, $isPaid, $productId)
     {
+
+        dd( $orderId, $status, $isPaid, $productId);
+
         // If already selected, unselect
         if (in_array($orderId, $this->selectedOrderIds)) {
             $this->selectedOrderIds = array_values(array_diff($this->selectedOrderIds, [$orderId]));

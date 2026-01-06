@@ -97,8 +97,7 @@ class Orders extends Component
         $this->dispatch('$refresh');
     }
 
-    #[Computed]
-    public function groupedOrders()
+    public function getListOrders()
     {
         if (!$this->currentCheck) {
             return collect();
@@ -118,6 +117,7 @@ class Orders extends Component
         // preservando a estrutura esperada pela view (`product_id`, `product_name`, etc.).
         $grouped = $filteredOrders->map(function ($order) {
             return (object) [
+                'id' => $order->id,
                 'product_id' => $order->product_id,
                 'product_name' => $order->product?->name ?? '',
                 'status' => $order->status,
@@ -153,7 +153,7 @@ class Orders extends Component
     public function render()
     {
         return view('livewire.order.orders', [
-            'groupedOrders' => $this->groupedOrders,
+            'listOrders' => $this->getListOrders(),
             'checkTotal' => $this->checkTotal,
             'orders' => $this->orders,
         ]);

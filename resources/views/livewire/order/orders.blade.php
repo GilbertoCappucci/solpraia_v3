@@ -9,7 +9,7 @@
 
     {{-- Order List --}}
     <livewire:order.order-list 
-        :groupedOrders="$groupedOrders" 
+        :listOrders="$listOrders" 
         :checkTotal="$checkTotal"
         :statusFilters="$statusFilters"
         :timeLimits="$timeLimits"
