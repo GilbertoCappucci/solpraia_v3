@@ -114,20 +114,18 @@ class Orders extends Component
             return in_array($order->status, $this->statusFilters);
         });
 
-        // Agrupa por product_id e status
-        $grouped = $filteredOrders->groupBy(function ($order) {
-            return $order->product_id . '_' . $order->status;
-        })->map(function ($group) {
-            $first = $group->first();
+        // Retorna cada pedido como um item individual (sem agrupamento automático),
+        // preservando a estrutura esperada pela view (`product_id`, `product_name`, etc.).
+        $grouped = $filteredOrders->map(function ($order) {
             return (object) [
-                'product_id' => $first->product_id,
-                'product_name' => $first->product->name,
-                'status' => $first->status,
-                'total_quantity' => $group->sum('quantity'),
-                'order_count' => $group->count(),
-                'orders' => $group,
-                'status_changed_at' => $group->min('status_changed_at'),
-                'is_paid' => $group->every(fn($order) => $order->is_paid),
+                'product_id' => $order->product_id,
+                'product_name' => $order->product?->name ?? '',
+                'status' => $order->status,
+                'total_quantity' => $order->quantity,
+                'order_count' => 1,
+                'orders' => collect([$order]),
+                'status_changed_at' => $order->status_changed_at,
+                'is_paid' => $order->is_paid,
             ];
         });
 
