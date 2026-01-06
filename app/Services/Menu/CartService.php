@@ -21,13 +21,6 @@ class CartService
     {
         $productId = $product->id;
 
-        \Log::debug('🛒 CartService.addItem iniciado', [
-            'productId' => $productId,
-            'product_name' => $product->name,
-            'product_price' => $product->price,
-            'product_attributes' => $product->getAttributes()
-        ]);
-
         // Check stock availability
         $currentQty = isset($cart[$productId]) ? $cart[$productId]['quantity'] : 0;
         if (!$this->stockService->hasStock($productId, $currentQty + 1)) {
@@ -36,7 +29,6 @@ class CartService
 
         if (isset($cart[$productId])) {
             $cart[$productId]['quantity']++;
-            \Log::debug('🛒 Incrementado quantidade existente', ['cart_item' => $cart[$productId]]);
         } else {
             $cart[$productId] = [
                 'product' => [
@@ -46,7 +38,6 @@ class CartService
                 ],
                 'quantity' => 1,
             ];
-            \Log::debug('🛒 Novo item adicionado ao carrinho', ['cart_item' => $cart[$productId]]);
         }
 
         return true;

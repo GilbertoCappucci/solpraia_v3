@@ -106,6 +106,7 @@ class Orders extends Component
 
         $orders = \App\Models\Order::with(['product', 'currentStatusHistory'])
             ->where('check_id', $this->currentCheck->id)
+            ->orderBy('created_at', 'asc')
             ->get();
 
         // Filtra por status selecionados

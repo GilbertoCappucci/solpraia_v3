@@ -95,14 +95,6 @@ class Menus extends Component
     #[Computed]
     public function products()
     {
-        \Log::debug('📋 Computed property products() chamado', [
-            'userId' => $this->userId,
-            'parentCategoryId' => $this->selectedParentCategoryId,
-            'childCategoryId' => $this->selectedChildCategoryId,
-            'showFavoritesOnly' => $this->showFavoritesOnly,
-            'searchTerm' => $this->searchTerm
-        ]);
-        
         $products = $this->menuService->getFilteredProducts(
             $this->userId,
             $this->selectedParentCategoryId,
@@ -112,7 +104,7 @@ class Menus extends Component
         );
         
         // Converte produtos para arrays simples para evitar serialização problemática do Livewire
-        $productsArray = $products->map(function($product) {
+        return $products->map(function($product) {
             return [
                 'id' => $product->id,
                 'name' => $product->name,
@@ -126,13 +118,6 @@ class Menus extends Component
                 ] : null
             ];
         });
-        
-        \Log::debug('📋 Products carregados', [
-            'count' => $productsArray->count(),
-            'first_product' => $productsArray->first()
-        ]);
-        
-        return $productsArray;
     }
 
     public function backToOrders()
@@ -156,16 +141,7 @@ class Menus extends Component
 
     public function handleAddToCart($productId)
     {
-        \Log::debug('🛒 handleAddToCart iniciado', ['productId' => $productId, 'userId' => $this->userId]);
-        
         $product = $this->menuService->getProductWithMenuPrice($this->userId, $productId);
-
-        \Log::debug('🛒 Produto retornado do MenuService', [
-            'product_id' => $product?->id,
-            'product_name' => $product?->name,
-            'product_price' => $product?->price,
-            'product_attributes' => $product?->getAttributes()
-        ]);
 
         if (!$product) {
             session()->flash('error', 'Produto não disponível no menu atual.');
@@ -173,7 +149,7 @@ class Menus extends Component
         }
 
         if ($this->cartService->addItem($this->cart, $product, $this->userId)) {
-            \Log::debug('🛒 Produto adicionado ao carrinho', ['cart' => $this->cart]);
+            // Success - cart updated
         } else {
             session()->flash('error', 'Estoque insuficiente.');
         }

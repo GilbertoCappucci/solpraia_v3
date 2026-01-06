@@ -21,24 +21,6 @@ class MenuProductCard extends Component
     {
         $this->stockService = $stockService;
     }
-    
-    public function mount()
-    {
-        \Log::debug('🃏 MenuProductCard montado', [
-            'product_id' => $this->product['id'] ?? null,
-            'product_name' => $this->product['name'] ?? null,
-            'product_price' => $this->product['price'] ?? null,
-        ]);
-    }
-    
-    public function updatedProduct($value)
-    {
-        \Log::debug('🃏 MenuProductCard product ATUALIZADO', [
-            'product_id' => $this->product['id'] ?? null,
-            'product_name' => $this->product['name'] ?? null,
-            'product_price' => $this->product['price'] ?? null,
-        ]);
-    }
 
     #[Computed]
     public function stockQty()
