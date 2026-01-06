@@ -13,7 +13,7 @@ class TableStatusSelector extends Component
     public function mount($table, ?string $newTableStatus = null, bool $hasActiveCheck = false)
     {
         $this->table = $table;
-        $this->newTableStatus = $newTableStatus;
+        $this->newTableStatus = $newTableStatus ?? $table->status;
         $this->hasActiveCheck = $hasActiveCheck;
     }
 

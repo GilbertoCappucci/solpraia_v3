@@ -81,7 +81,9 @@ class OrderDetailsModal extends Component
         session()->flash('success', 'Quantidade aumentada!');
         $this->dispatch('refresh-parent');
         // Recarrega os detalhes do pedido atualizado
-        $this->openModal($this->orderDetails['id']);
+        if ($this->orderDetails) {
+            $this->openModal($this->orderDetails['id']);
+        }
     }
 
     public function decrementQuantity()
@@ -111,7 +113,9 @@ class OrderDetailsModal extends Component
         session()->flash('success', 'Quantidade reduzida!');
         $this->dispatch('refresh-parent');
         // Recarrega os detalhes do pedido atualizado
-        $this->openModal($this->orderDetails['id']);
+        if ($this->orderDetails) {
+            $this->openModal($this->orderDetails['id']);
+        }
     }
 
     public function updateOrderStatus($newStatus)

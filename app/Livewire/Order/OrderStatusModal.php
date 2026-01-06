@@ -30,12 +30,52 @@ class OrderStatusModal extends Component
     {
         return [
             'open-status-modal' => 'openModal',
+            'set' => 'handleSet',
+            'check-status-selected' => 'handleCheckStatusSelected',
         ];
+    }
+
+    public function handleSet($property, $value)
+    {
+        if ($property === 'newTableStatus') {
+            $this->newTableStatus = $value;
+        }
+    }
+
+    public function handleCheckStatusSelected($status)
+    {
+        $this->newCheckStatus = $status;
+        // Atualiza os status permitidos
+        if ($this->currentCheck) {
+            $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($status, $this->currentCheck);
+        }
     }
 
     public function openModal()
     {
         $this->show = true;
+        
+        // Inicializa o status do check se não estiver definido
+        if ($this->currentCheck && !$this->newCheckStatus) {
+            $this->newCheckStatus = $this->currentCheck->status;
+        }
+        
+        // Inicializa o status da mesa se não estiver definido
+        if ($this->selectedTable && !$this->newTableStatus) {
+            $this->newTableStatus = $this->selectedTable->status;
+        }
+        
+        // Inicializa os status permitidos baseado no status atual do check
+        if ($this->currentCheck && $this->newCheckStatus) {
+            $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses(
+                $this->newCheckStatus,
+                $this->currentCheck
+            );
+        }
+        
+        // Verifica se há check ativo
+        $this->hasActiveCheck = $this->currentCheck ? true : false;
+        
         $this->dispatch('refresh-modal-data');
     }
 

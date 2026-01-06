@@ -7,6 +7,7 @@ use App\Enums\CheckStatusEnum;
 use App\Models\Check;
 use App\Models\Order;
 use App\Models\MenuItem;
+use App\Services\Order\OrderService;
 use Illuminate\Support\Facades\DB;
 
 class CheckService
