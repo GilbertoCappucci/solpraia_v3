@@ -29,8 +29,8 @@
             $inProductionCount = $orders->where('status', 'in_production')->count();
             $inTransitCount = $orders->where('status', 'in_transit')->count();
             @endphp
-            <x-check-status-selector
-                :currentCheck="$currentCheck"
+            <livewire:components.check-status-selector
+                :check="$currentCheck"
                 :newCheckStatus="$newCheckStatus"
                 :pendingCount="$pendingCount"
                 :inProductionCount="$inProductionCount"

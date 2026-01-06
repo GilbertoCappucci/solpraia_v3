@@ -327,7 +327,7 @@
             </div>
 
             <div class="space-y-4">
-                <x-check-status-selector
+                <livewire:components.check-status-selector
                     :check="$check"
                     :newCheckStatus="$newCheckStatus"
                     :pendingCount="$groupedOrders['pending']->count()"
