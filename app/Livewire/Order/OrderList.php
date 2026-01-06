@@ -55,52 +55,20 @@ class OrderList extends Component
 
     public function toggleSelection($orderId, $status, $isPaid, $productId)
     {
-
-        dd( $orderId, $status, $isPaid, $productId);
-
-        // If already selected, unselect
-        if (in_array($orderId, $this->selectedOrderIds)) {
-            $this->selectedOrderIds = array_values(array_diff($this->selectedOrderIds, [$orderId]));
-            if (empty($this->selectedOrderIds)) {
-                $this->selectedMeta = null;
-            }
-            return;
-        }
-
-        // If none selected, accept and store meta
-        if (empty($this->selectedOrderIds)) {
-            $this->selectedOrderIds[] = $orderId;
-            $this->selectedMeta = ['status' => $status, 'is_paid' => (bool) $isPaid, 'product_id' => $productId];
-            return;
-        }
-
-        // Otherwise enforce same status and same is_paid
-        if ($this->selectedMeta && ($status !== $this->selectedMeta['status'] || (bool)$isPaid !== (bool)$this->selectedMeta['is_paid'])) {
-            session()->flash('error', 'Selecione apenas pedidos com mesmo status e mesmo estado de pagamento.');
+        //Verifica se já está selecionado, retira da seleção
+        if(in_array($orderId, $this->selectedOrderIds)) {
+            $this->selectedOrderIds = array_filter($this->selectedOrderIds, fn($id) => $id !== $orderId);
+            $this->dispatch('selected-order-list-orders', $this->selectedOrderIds);
             return;
         }
 
         $this->selectedOrderIds[] = $orderId;
+        $this->dispatch('selected-order-list-orders', $this->selectedOrderIds);
     }
 
     public function openSelectedGroupActions()
     {
-        if (empty($this->selectedOrderIds)) {
-            session()->flash('error', 'Nenhum pedido selecionado.');
-            return;
-        }
-
-        $orders = \App\Models\Order::with('product', 'currentStatusHistory')
-            ->whereIn('id', $this->selectedOrderIds)
-            ->get();
-
-        $totalQuantity = $orders->sum('quantity');
-        $totalPrice = $orders->sum(fn($o) => $o->quantity * $o->price);
-
-        // Open the standard order-group-modal (shows orders for the product + status)
-        $productId = $this->selectedMeta['product_id'] ?? $orders->first()?->product_id;
-        $status = $this->selectedMeta['status'] ?? ($orders->first()?->status ?? 'pending');
-
+        dd('openSelectedGroupActions');
         $this->dispatch('open-group-modal', productId: $productId, status: $status);
         $this->clearSelection();
     }

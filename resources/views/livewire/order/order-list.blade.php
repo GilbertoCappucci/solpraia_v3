@@ -114,34 +114,4 @@
 
     </div>
     @endif
-    {{-- Barra de ações quando tiver seleção --}}
-    @if(!empty($selectedOrderIds))
-    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-lg bg-gray-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between z-[60] animate-in slide-in-from-bottom-10">
-        <div class="flex items-center gap-3">
-            <span class="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">
-                {{ count($selectedOrderIds) }}
-            </span>
-            <div class="flex flex-col">
-                <span class="font-bold text-sm leading-none">Selecionado(s)</span>
-                <span class="text-xs text-gray-400 mt-1">Mesmo status/pagamento</span>
-            </div>
-        </div>
-        
-        <div class="flex gap-2">
-            <button 
-                wire:click="clearSelection" 
-                class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition">
-                Limpar
-            </button>
-            <button 
-                wire:click="openSelectedGroupActions" 
-                class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-bold transition shadow-lg flex items-center gap-2">
-                <span>Continuar</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-            </button>
-        </div>
-    </div>
-    @endif
 </div>

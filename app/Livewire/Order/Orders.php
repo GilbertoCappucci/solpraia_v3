@@ -58,6 +58,7 @@ class Orders extends Component
             "echo-private:tables-updated.{$userId},.check.updated" => 'refreshData',
             'refresh-parent' => 'refreshData',
             'refresh-modal-data' => 'refreshModalData',
+
         ];
     }
 

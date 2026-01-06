@@ -15,6 +15,9 @@ class OrderHeader extends Component
     
     public $userId;
 
+    public $isActiveStatusButton = true;
+    public $isActiveGroupButton = false;
+
     public function mount($selectedTable, $statusFiltersCount = 5, $userId = null)
     {
         $this->selectedTable = $selectedTable;
@@ -26,6 +29,7 @@ class OrderHeader extends Component
     {
         $listeners = [
             'filters-updated' => 'onFiltersUpdated',
+            'selected-order-list-orders' => 'toggleButtonActions',
         ];
 
         if ($this->userId) {
@@ -33,6 +37,23 @@ class OrderHeader extends Component
         }
 
         return $listeners;
+    }
+
+    public function toggleButtonActions($selectedOrderIds)
+    {
+        if(empty($selectedOrderIds)) {
+            $this->isActiveStatusButton = true;
+            $this->isActiveGroupButton = false;
+            return;
+        }
+
+        $this->isActiveStatusButton = false;
+        $this->isActiveGroupButton = true;
+
+    }
+
+    public function openGroupModal(){
+        $this->dispatch('open-group-modal');
     }
 
     public function onTableUpdated($data)
