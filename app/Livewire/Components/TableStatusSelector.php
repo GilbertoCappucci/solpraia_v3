@@ -7,10 +7,10 @@ use Livewire\Component;
 class TableStatusSelector extends Component
 {
     public $table;
-    public string $newTableStatus;
+    public ?string $newTableStatus = null;
     public bool $hasActiveCheck = false;
 
-    public function mount($table, string $newTableStatus, bool $hasActiveCheck = false)
+    public function mount($table, ?string $newTableStatus = null, bool $hasActiveCheck = false)
     {
         $this->table = $table;
         $this->newTableStatus = $newTableStatus;
