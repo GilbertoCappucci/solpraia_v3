@@ -59,10 +59,15 @@
             
             {{-- Checkbox de seleção --}}
             <button
-                wire:key="select-{{ $order->id }}"  
+                wire:key="select-{{ $order->id }}"
                 wire:click.stop="toggleSelection({{ $order->id }}, '{{ $order->status }}', {{ $order->is_paid ? 'true' : 'false' }}, {{ $order->product_id }})"
-                class="flex items-center gap-2 p-1 rounded hover:bg-gray-200 transition">
-                <input type="checkbox" class="w-4 h-4 cursor-pointer" {{ in_array($order->id, $selectedOrderIds) ? 'checked' : '' }} readOnly>
+                class="flex items-center justify-center gap-2 p-0 m-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                style="min-width: 44px; min-height: 44px; width: 44px; height: 44px;"
+                aria-label="Selecionar pedido"
+            >
+                <span class="flex items-center justify-center w-full h-full">
+                    <input type="checkbox" class="w-6 h-6 cursor-pointer accent-blue-600" style="min-width: 24px; min-height: 24px;" {{ in_array($order->id, $selectedOrderIds) ? 'checked' : '' }} readOnly>
+                </span>
             </button>
 
             {{-- Quantidade Total --}}
