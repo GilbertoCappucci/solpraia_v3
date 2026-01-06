@@ -18,7 +18,7 @@ class OrderGroupModal extends Component
         ];
     }
 
-    public function openModal($productId, $status)
+    public function openModal()
     {
         // Busca todos os pedidos do check atual
         if (!$this->currentCheck) {
