@@ -4,17 +4,14 @@ namespace App\Livewire\Table;
 
 use App\Services\Order\OrderService;
 use App\Services\Table\TableService;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class TableStatusModal extends Component
 {
     public $showModal = false;
-    public $embedded = false; // Modo embedded (sem modal próprio)
     public $selectedTableId = null;
     public $newTableStatus = null;
     public $hasActiveCheck = false;
-    public $tableId;
 
     protected $tableService;
     protected $orderService;
@@ -25,15 +22,6 @@ class TableStatusModal extends Component
         $this->orderService = $orderService;
     }
 
-    public function mount(bool $embedded = false, ?int $tableId = null)
-    {
-        $this->embedded = $embedded;
-        
-        if ($embedded && $tableId) {
-            $this->loadTable($tableId);
-        }
-    }
-
     public function getListeners()
     {
         return [
@@ -42,29 +30,22 @@ class TableStatusModal extends Component
         ];
     }
 
-    public function loadTable($tableId)
+    public function openModal($tableId)
     {
         $table = $this->tableService->getTableById($tableId);
         $this->selectedTableId = $tableId;
         $this->newTableStatus = $table->status;
 
-        // Verifica se há check ativo (não Paid nem Canceled)
+        // Verifica se há check ativo
         $activeCheck = $this->orderService->findCheck($tableId);
         $this->hasActiveCheck = $activeCheck && in_array($activeCheck->status, ['Open', 'Closed']);
-    }
 
-    public function openModal($tableId)
-    {
-        $this->loadTable($tableId);
         $this->showModal = true;
     }
 
     public function closeModal()
     {
-        if (!$this->embedded) {
-            $this->showModal = false;
-        }
-        
+        $this->showModal = false;
         $this->selectedTableId = null;
         $this->newTableStatus = null;
         $this->hasActiveCheck = false;
@@ -72,8 +53,9 @@ class TableStatusModal extends Component
 
     public function setStatus($status)
     {
-        if (!$this->hasActiveCheck) {
+        if (!$this->hasActiveCheck && $this->selectedTableId) {
             $this->newTableStatus = $status;
+            $this->updateTableStatus();
         }
     }
 
@@ -83,7 +65,6 @@ class TableStatusModal extends Component
             return;
         }
 
-        // Validação: não pode alterar status da mesa com check ativo
         if ($this->hasActiveCheck) {
             session()->flash('error', 'Não é possível alterar o status da mesa. Finalize ou cancele o check primeiro.');
             return;
@@ -92,11 +73,6 @@ class TableStatusModal extends Component
         $this->tableService->updateTableStatus($this->selectedTableId, $this->newTableStatus);
 
         session()->flash('success', 'Status da mesa atualizado com sucesso!');
-        
-        if (!$this->embedded) {
-            $this->closeModal();
-        }
-        
         $this->dispatch('table-status-updated');
     }
 

@@ -1,6 +1,5 @@
 <div>
-{{-- Standalone Modal Mode --}}
-@if(!$embedded && $showModal)
+@if($showModal)
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" wire:click="closeModal">
     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" @click.stop>
         <div class="flex items-center justify-between mb-4">
@@ -13,39 +12,64 @@
         </div>
 
         <div class="space-y-4">
-            @include('livewire.table.table-status-content')
+            @if($hasActiveCheck)
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-yellow-800">
+                        <span class="font-semibold">⚠️ Atenção:</span> Não é possível alterar o status da mesa enquanto houver um check em andamento.
+                    </p>
+                </div>
+            @endif
+            
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Status da Mesa</label>
+                <div class="flex flex-wrap gap-2">
+                    <button 
+                        wire:click="setStatus('free')"
+                        @if($hasActiveCheck) disabled @endif
+                        class="px-3 py-2 rounded-lg text-sm font-medium transition
+                            {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'free' ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                        Livre
+                    </button>
+                    <button 
+                        wire:click="setStatus('occupied')"
+                        @if($hasActiveCheck) disabled @endif
+                        class="px-3 py-2 rounded-lg text-sm font-medium transition
+                            {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'occupied' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                        Ocupada
+                    </button>
+                    <button 
+                        wire:click="setStatus('reserved')"
+                        @if($hasActiveCheck) disabled @endif
+                        class="px-3 py-2 rounded-lg text-sm font-medium transition
+                            {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'reserved' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                        Reservada
+                    </button>
+                    <button 
+                        wire:click="setStatus('releasing')"
+                        @if($hasActiveCheck) disabled @endif
+                        class="px-3 py-2 rounded-lg text-sm font-medium transition
+                            {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'releasing' ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                        Liberando
+                    </button>
+                    <button 
+                        wire:click="setStatus('close')"
+                        @if($hasActiveCheck) disabled @endif
+                        class="px-3 py-2 rounded-lg text-sm font-medium transition
+                            {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'close' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                        Fechada
+                    </button>
+                </div>
+            </div>
 
-            <div class="flex gap-3">
+            <div class="flex justify-end mt-4">
                 <button 
                     wire:click="closeModal"
-                    class="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 rounded-lg font-semibold transition">
-                    Cancelar
-                </button>
-                <button 
-                    wire:click="updateTableStatus"
-                    class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-lg font-bold transition shadow-lg">
-                    Salvar
+                    class="px-4 py-3 bg-gray-200 hover:bg-gray-300 rounded-lg font-semibold transition">
+                    Fechar
                 </button>
             </div>
         </div>
     </div>
-    </div>
-@endif
-
-{{-- Embedded Mode --}}
-@if($embedded && $selectedTableId)
-    <div class="space-y-4">
-        <h4 class="text-lg font-semibold text-gray-900">Status da Mesa</h4>
-        
-        @include('livewire.table.table-status-content')
-        
-        <div class="flex justify-end">
-            <button 
-                wire:click="updateTableStatus"
-                class="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-lg font-medium transition shadow-lg">
-                Salvar Status da Mesa
-            </button>
-        </div>
     </div>
 @endif
 </div>
