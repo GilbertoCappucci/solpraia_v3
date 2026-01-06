@@ -213,6 +213,7 @@ class MenuService
      */
     public function confirmOrder(int $userId, int $tableId, Table $table, ?Check $check, array $cart, float $total): void
     {
+
         DB::transaction(function () use ($userId, $tableId, $table, &$check, $cart, $total) {
             // Valida Stock para todos os itens novamente antes de efetivar
             foreach ($cart as $productId => $item) {
@@ -228,13 +229,16 @@ class MenuService
 
             // 2. Cria os pedidos e debita estoque
             foreach ($cart as $productId => $item) {
+                
+                //dd($productId, $item);
+
                 // Debita o estoque total deste item
                 if (!$this->stockService->decrement($productId, $item['quantity'])) {
                     throw new \Exception("Erro ao debitar estoque do produto: {$item['product']['name']}");
                 }
 
                 // Cria múltiplos pedidos individuais baseados na quantidade
-                for ($i = 0; $i < $item['quantity']; $i++) {
+                //for ($i = 0; $i < $item['quantity']; $i++) {
                     // Busca o produto novamente para garantir que o preço do menu seja usado
                     $productWithCorrectPrice = $this->getProductWithMenuPrice($userId, $productId);
 
@@ -254,10 +258,10 @@ class MenuService
                         'from_status' => null,
                         'to_status' => OrderStatusEnum::PENDING->value,
                         'price' => $productWithCorrectPrice->price,
-                        'quantity' => 1,
+                        'quantity' => $item['quantity'],
                         'changed_at' => now(),
                     ]);
-                }
+                //}
             }
 
             // 3. Recalcula o total do check
