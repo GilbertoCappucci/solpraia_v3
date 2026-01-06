@@ -56,6 +56,19 @@
             }"
             x-init="if (timestamp) { updateMinutes(); setInterval(() => updateMinutes(), 30000); }">
             
+            <div class="flex-shrink-0">
+                {{-- Checkbox de seleção --}}
+                @php $orderId = $group->orders->first()->id; @endphp
+                <label class="inline-flex items-center gap-2 cursor-pointer">
+                    <span class="inline-block w-8 h-8 rounded border bg-white flex items-center justify-center">
+                        <input type="checkbox"
+                            wire:click.stop="toggleSelection({{ $orderId }}, '{{ $group->status }}', {{ $group->is_paid ? 'true' : 'false' }}, {{ $group->product_id }})"
+                            @if(in_array($orderId, $selectedOrderIds)) checked @endif
+                            class="w-4 h-4">
+                    </span>
+                </label>
+            </div>
+
             {{-- Quantidade Total --}}
             <div class="flex-shrink-0 w-14 text-center">
                 <span class="text-3xl font-bold text-gray-700">{{ $group->total_quantity }}</span>
@@ -102,6 +115,16 @@
         <div class="p-4 bg-gray-50 flex items-center justify-between">
             <span class="text-lg font-semibold text-gray-700">Total Geral:</span>
             <span class="text-2xl font-bold text-gray-700">R$ {{ number_format($checkTotal, 2, ',', '.') }}</span>
+        </div>
+    </div>
+    @endif
+    {{-- Barra de ações quando tiver seleção --}}
+    @if(!empty($selectedOrderIds))
+    <div class="fixed bottom-6 right-6 z-50">
+        <div class="bg-white p-3 rounded-lg shadow-lg flex items-center gap-3">
+            <span class="text-sm text-gray-700">{{ count($selectedOrderIds) }} selecionado(s)</span>
+            <button wire:click="openSelectedGroupActions" class="px-3 py-2 bg-orange-500 text-white rounded">Ações</button>
+            <button wire:click="clearSelection" class="px-3 py-2 bg-gray-200 text-gray-700 rounded">Limpar</button>
         </div>
     </div>
     @endif
