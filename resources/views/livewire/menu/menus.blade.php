@@ -34,14 +34,15 @@
 
         {{-- Product List --}}
         <div class="p-4 pb-32 bg-gray-50">
-            @if($products->count() > 0)
+            @if($this->products->count() > 0)
             <div class="space-y-3">
-                @foreach($products as $product)
-                    @livewire('menu.menu-product-card', [
-                        'product' => $product,
-                        'userId' => $userId,
-                        'cart' => $cart,
-                    ], key('product-'.$product->id))
+                @foreach($this->products as $product)
+                    <livewire:menu.menu-product-card 
+                        :product="$product"
+                        :userId="$userId"
+                        :cart="$cart"
+                        :key="'product-'.$product['id']"
+                    />
                 @endforeach
             </div>
             @else

@@ -10,6 +10,7 @@ use App\Services\Menu\MenuService;
 use App\Services\Order\OrderService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\Attributes\Computed;
 
 class Menus extends Component
 {
@@ -20,7 +21,6 @@ class Menus extends Component
     public $currentCheck = null;
     public $parentCategories = [];
     public $childCategories = [];
-    public $products = [];
     public $selectedParentCategoryId = null;
     public $selectedChildCategoryId = null;
     public $showFavoritesOnly = false;
@@ -55,7 +55,6 @@ class Menus extends Component
         $this->title = $this->menuService->getMenuName($this->activeMenuId);
 
         $this->loadParentCategories();
-        $this->loadProducts();
     }
 
     public function getListeners()
@@ -77,13 +76,6 @@ class Menus extends Component
         $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
         $this->title = $this->menuService->getMenuName($this->activeMenuId);
         $this->loadParentCategories();
-        $this->loadProducts();
-    }
-
-    public function hydrate()
-    {
-        $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
-        $this->loadProducts();
     }
 
     public function loadParentCategories()
@@ -100,15 +92,47 @@ class Menus extends Component
         }
     }
 
-    public function loadProducts()
+    #[Computed]
+    public function products()
     {
-        $this->products = $this->menuService->getFilteredProducts(
+        \Log::debug('📋 Computed property products() chamado', [
+            'userId' => $this->userId,
+            'parentCategoryId' => $this->selectedParentCategoryId,
+            'childCategoryId' => $this->selectedChildCategoryId,
+            'showFavoritesOnly' => $this->showFavoritesOnly,
+            'searchTerm' => $this->searchTerm
+        ]);
+        
+        $products = $this->menuService->getFilteredProducts(
             $this->userId,
             $this->selectedParentCategoryId,
             $this->selectedChildCategoryId,
             $this->showFavoritesOnly,
             $this->searchTerm
         );
+        
+        // Converte produtos para arrays simples para evitar serialização problemática do Livewire
+        $productsArray = $products->map(function($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'description' => $product->description,
+                'price' => $product->price,
+                'favorite' => $product->favorite,
+                'active' => $product->active,
+                'production_local' => $product->production_local,
+                'stock' => $product->stock ? [
+                    'quantity' => $product->stock->quantity
+                ] : null
+            ];
+        });
+        
+        \Log::debug('📋 Products carregados', [
+            'count' => $productsArray->count(),
+            'first_product' => $productsArray->first()
+        ]);
+        
+        return $productsArray;
     }
 
     public function backToOrders()
@@ -119,7 +143,6 @@ class Menus extends Component
     public function handleSearchUpdated($searchTerm)
     {
         $this->searchTerm = $searchTerm;
-        $this->loadProducts();
     }
 
     public function handleCategoryFilterChanged($filters)
@@ -129,12 +152,20 @@ class Menus extends Component
         $this->showFavoritesOnly = $filters['showFavoritesOnly'];
         
         $this->loadChildCategories();
-        $this->loadProducts();
     }
 
     public function handleAddToCart($productId)
     {
+        \Log::debug('🛒 handleAddToCart iniciado', ['productId' => $productId, 'userId' => $this->userId]);
+        
         $product = $this->menuService->getProductWithMenuPrice($this->userId, $productId);
+
+        \Log::debug('🛒 Produto retornado do MenuService', [
+            'product_id' => $product?->id,
+            'product_name' => $product?->name,
+            'product_price' => $product?->price,
+            'product_attributes' => $product?->getAttributes()
+        ]);
 
         if (!$product) {
             session()->flash('error', 'Produto não disponível no menu atual.');
@@ -142,7 +173,7 @@ class Menus extends Component
         }
 
         if ($this->cartService->addItem($this->cart, $product, $this->userId)) {
-            // Success - cart updated
+            \Log::debug('🛒 Produto adicionado ao carrinho', ['cart' => $this->cart]);
         } else {
             session()->flash('error', 'Estoque insuficiente.');
         }

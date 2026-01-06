@@ -97,24 +97,32 @@ class MenuService
     ): Collection {
         $activeMenuId = $this->getActiveMenuId($userId);
 
+        \Log::debug('📜 getFilteredProducts iniciado', [
+            'userId' => $userId,
+            'activeMenuId' => $activeMenuId,
+            'parentCategoryId' => $parentCategoryId,
+            'childCategoryId' => $childCategoryId,
+            'showFavoritesOnly' => $showFavoritesOnly,
+            'searchTerm' => $searchTerm
+        ]);
+
         if (!$activeMenuId) {
             return collect();
         }
 
         $query = Product::where('products.active', true)
             ->with(['stock'])
-            ->select('products.*')
             // Join com menu_items para garantir que o produto pertence ao menu e pegar o preço
             ->join('menu_items', 'products.id', '=', 'menu_items.product_id')
             ->where('menu_items.menu_id', $activeMenuId)
             ->where('menu_items.active', true)
             ->whereHas('category', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
-            });
-
-
-        // Seleciona o preço diretamente do item do menu
-        $query->addSelect('menu_items.price as price');
+            })
+            ->select(
+                'products.*',
+                'menu_items.price as price'
+            );
 
         // Se está mostrando apenas favoritos
         if ($showFavoritesOnly) {
@@ -141,7 +149,35 @@ class MenuService
             $query->where('products.name', 'like', '%' . $searchTerm . '%');
         }
 
-        return $query->orderBy('products.name')->get();
+        $products = $query->orderBy('products.name')->get();
+        
+        \Log::debug('📜 Products retornados da query', [
+            'count' => $products->count(),
+            'first_product_before_map' => $products->first() ? [
+                'id' => $products->first()->id,
+                'name' => $products->first()->name,
+                'price' => $products->first()->price,
+                'attributes' => $products->first()->getAttributes()
+            ] : null
+        ]);
+        
+        // Garante que o price seja um atributo da instância do produto
+        // para ser preservado durante serialização Livewire
+        $mapped = $products->map(function ($product) {
+            $product->setAttribute('price', $product->price);
+            return $product;
+        });
+        
+        \Log::debug('📜 Products após map', [
+            'first_product_after_map' => $mapped->first() ? [
+                'id' => $mapped->first()->id,
+                'name' => $mapped->first()->name,
+                'price' => $mapped->first()->price,
+                'attributes' => $mapped->first()->getAttributes()
+            ] : null
+        ]);
+        
+        return $mapped;
     }
 
     /**
@@ -153,6 +189,12 @@ class MenuService
     public function getProductWithMenuPrice(int $userId, int $productId): ?Product
     {
         $activeMenuId = $this->getActiveMenuId($userId);
+
+        \Log::debug('💰 getProductWithMenuPrice iniciado', [
+            'userId' => $userId,
+            'productId' => $productId,
+            'activeMenuId' => $activeMenuId
+        ]);
 
         if (!$activeMenuId) {
             return Product::find($productId);
@@ -174,6 +216,13 @@ class MenuService
                     ->where('menu_items.menu_id', '=', $activeMenuId);
             })
             ->first();
+
+        \Log::debug('💰 Produto carregado da query', [
+            'product_id' => $product?->id,
+            'product_name' => $product?->name,
+            'product_price' => $product?->price,
+            'product_attributes' => $product?->getAttributes()
+        ]);
 
         return $product;
     }

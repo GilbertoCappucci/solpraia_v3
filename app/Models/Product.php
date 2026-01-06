@@ -17,6 +17,7 @@ class Product extends Model
         'description',
         'active',
         'favorite',
+        'price', // Atributo dinâmico do menu_item
     ];
 
     public function category()

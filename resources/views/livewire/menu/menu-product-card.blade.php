@@ -1,11 +1,11 @@
 <div class="bg-white rounded-xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition">
     <div class="flex-1">
-        <h3 class="font-semibold text-base text-gray-800">{{ $product->name }}</h3>
-        @if($product->description)
-        <p class="text-sm text-gray-500 line-clamp-2 mt-1">{{ $product->description }}</p>
+        <h3 class="font-semibold text-base text-gray-800">{{ $product['name'] }}</h3>
+        @if($product['description'])
+        <p class="text-sm text-gray-500 line-clamp-2 mt-1">{{ $product['description'] }}</p>
         @endif
         <p class="text-lg font-bold text-orange-600 mt-2">
-            R$ {{ number_format($product->price, 2, ',', '.') }}
+            R$ {{ number_format($product['price'], 2, ',', '.') }}
         </p>
     </div>
 

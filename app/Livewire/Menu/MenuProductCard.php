@@ -21,11 +21,29 @@ class MenuProductCard extends Component
     {
         $this->stockService = $stockService;
     }
+    
+    public function mount()
+    {
+        \Log::debug('🃏 MenuProductCard montado', [
+            'product_id' => $this->product['id'] ?? null,
+            'product_name' => $this->product['name'] ?? null,
+            'product_price' => $this->product['price'] ?? null,
+        ]);
+    }
+    
+    public function updatedProduct($value)
+    {
+        \Log::debug('🃏 MenuProductCard product ATUALIZADO', [
+            'product_id' => $this->product['id'] ?? null,
+            'product_name' => $this->product['name'] ?? null,
+            'product_price' => $this->product['price'] ?? null,
+        ]);
+    }
 
     #[Computed]
     public function stockQty()
     {
-        return $this->product->stock?->quantity ?? 0;
+        return $this->product['stock']['quantity'] ?? 0;
     }
 
     #[Computed]
@@ -37,13 +55,13 @@ class MenuProductCard extends Component
     #[Computed]
     public function isInCart()
     {
-        return isset($this->cart[$this->product->id]);
+        return isset($this->cart[$this->product['id']]);
     }
 
     #[Computed]
     public function cartQuantity()
     {
-        return $this->isInCart ? $this->cart[$this->product->id]['quantity'] : 0;
+        return $this->cart[$this->product['id']]['quantity'] ?? 0;
     }
 
     #[Computed]
@@ -60,12 +78,12 @@ class MenuProductCard extends Component
 
     public function addToCart()
     {
-        $this->dispatch('add-to-cart', productId: $this->product->id);
+        $this->dispatch('add-to-cart', productId: $this->product['id']);
     }
 
     public function removeFromCart()
     {
-        $this->dispatch('remove-from-cart', productId: $this->product->id);
+        $this->dispatch('remove-from-cart', productId: $this->product['id']);
     }
 
     public function render()
