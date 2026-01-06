@@ -136,6 +136,13 @@ class Check extends Component
         $this->newCheckStatus = null;
     }
 
+    public function setCheckStatus($status)
+    {
+        $this->newCheckStatus = $status;
+        $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($this->newCheckStatus, $this->check);
+        $this->updateCheckStatus();
+    }
+
     public function updateCheckStatus()
     {
         if (!$this->newCheckStatus) {
@@ -160,6 +167,9 @@ class Check extends Component
         // Se foi CANCELED, libera direto para FREE
         if ($this->newCheckStatus === 'Canceled') {
             $this->table->update(['status' => TableStatusEnum::FREE->value]);
+            session()->flash('success', 'Check cancelado com sucesso!');
+            $this->loadCheck();
+            return;
         }
 
         // Se voltou para Open, redireciona para orders
@@ -167,6 +177,16 @@ class Check extends Component
             session()->flash('success', 'Check reaberto!');
             return redirect()->route('orders', ['tableId' => $this->table->id]);
         }
+
+        // Para Closed, apenas atualiza sem fechar o modal
+        if ($this->newCheckStatus === 'Closed') {
+            session()->flash('success', 'Check fechado com sucesso!');
+            $this->loadCheck();
+            return;
+        }
+
+        session()->flash('success', 'Status atualizado com sucesso!');
+        $this->loadCheck();
 
         session()->flash('success', 'Status da comanda atualizado com sucesso!');
         $this->closeStatusModal();

@@ -7,27 +7,29 @@ use Livewire\Component;
 
 class CheckStatusSelector extends Component
 {
-    #[Reactive]
     public $check;
-    
-    #[Reactive]
     public $newCheckStatus;
-    
-    #[Reactive]
     public $pendingCount = 0;
-    
-    #[Reactive]
     public $inProductionCount = 0;
-    
-    #[Reactive]
     public $inTransitCount = 0;
-    
-    #[Reactive]
     public $checkStatusAllowed = [];
+
+    public function mount($check, $newCheckStatus, $pendingCount = 0, $inProductionCount = 0, $inTransitCount = 0, $checkStatusAllowed = [])
+    {
+        $this->check = $check;
+        $this->newCheckStatus = $newCheckStatus;
+        $this->pendingCount = $pendingCount;
+        $this->inProductionCount = $inProductionCount;
+        $this->inTransitCount = $inTransitCount;
+        $this->checkStatusAllowed = $checkStatusAllowed;
+    }
 
     public function selectStatus($status)
     {
-        $this->dispatch('check-status-selected', status: $status);
+        $this->newCheckStatus = $status;
+        
+        // Atualiza diretamente o componente pai
+        $this->dispatch('updateCheckStatus', status: $status)->to('order.order-status-modal');
     }
 
     public function render()

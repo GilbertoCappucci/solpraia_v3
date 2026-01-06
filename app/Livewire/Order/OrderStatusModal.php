@@ -6,6 +6,11 @@ use App\Services\CheckService;
 use App\Services\Order\OrderService;
 use Livewire\Component;
 
+/**
+ * @deprecated Este componente foi substituído pelo OrderStatusCoordinator
+ * que delega responsabilidades para TableStatusModal e CheckStatusModal.
+ * Manter por compatibilidade até migração completa.
+ */
 class OrderStatusModal extends Component
 {
     public $show = false;
@@ -31,7 +36,6 @@ class OrderStatusModal extends Component
         return [
             'open-status-modal' => 'openModal',
             'set' => 'handleSet',
-            'check-status-selected' => 'handleCheckStatusSelected',
         ];
     }
 
@@ -42,47 +46,46 @@ class OrderStatusModal extends Component
         }
     }
 
-    public function handleCheckStatusSelected($status)
+    public function setCheckStatus($status)
     {
+        logger('📶 OrderStatusModal received updateCheckStatus event', ['status' => $status]);
         $this->newCheckStatus = $status;
-        // Atualiza os status permitidos
-        if ($this->currentCheck) {
-            $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($status, $this->currentCheck);
-        }
     }
+
+
 
     public function openModal()
     {
         $this->show = true;
         
-        // Inicializa o status do check se não estiver definido
-        if ($this->currentCheck && !$this->newCheckStatus) {
+        // Inicializa com o status atual
+        if ($this->currentCheck) {
             $this->newCheckStatus = $this->currentCheck->status;
         }
         
-        // Inicializa o status da mesa se não estiver definido
-        if ($this->selectedTable && !$this->newTableStatus) {
+        if ($this->selectedTable) {
             $this->newTableStatus = $this->selectedTable->status;
         }
         
-        // Inicializa os status permitidos baseado no status atual do check
-        if ($this->currentCheck && $this->newCheckStatus) {
+        $this->hasActiveCheck = $this->currentCheck ? true : false;
+        
+        // Calcula status permitidos
+        if ($this->currentCheck) {
             $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses(
                 $this->newCheckStatus,
                 $this->currentCheck
             );
         }
         
-        // Verifica se há check ativo
-        $this->hasActiveCheck = $this->currentCheck ? true : false;
-        
         $this->dispatch('refresh-modal-data');
     }
 
     public function updatedNewCheckStatus($value)
     {
-        // Atualiza os status permitidos para o check com base no novo status selecionado
-        $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($value, $this->currentCheck);
+        // Atualiza os status permitidos quando o status muda
+        if ($this->currentCheck) {
+            $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses($value, $this->currentCheck);
+        }
     }
 
     public function closeModal()

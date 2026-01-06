@@ -26,10 +26,10 @@
     {{-- Modals --}}
     <livewire:order.order-filters />
     
-    <livewire:order.order-status-modal 
+    {{-- Modal único que gerencia Table + Check internamente --}}
+    <livewire:order.order-status-manager 
         :selectedTable="$selectedTable"
-        :currentCheck="$currentCheck"
-        :orders="$orders" />
+        :currentCheck="$currentCheck" />
     
     <livewire:order.order-cancel-modal />
     

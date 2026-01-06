@@ -10,9 +10,11 @@ use Livewire\Component;
 class TableStatusModal extends Component
 {
     public $showModal = false;
+    public $embedded = false; // Modo embedded (sem modal próprio)
     public $selectedTableId = null;
     public $newTableStatus = null;
     public $hasActiveCheck = false;
+    public $tableId;
 
     protected $tableService;
     protected $orderService;
@@ -23,14 +25,24 @@ class TableStatusModal extends Component
         $this->orderService = $orderService;
     }
 
+    public function mount(bool $embedded = false, ?int $tableId = null)
+    {
+        $this->embedded = $embedded;
+        
+        if ($embedded && $tableId) {
+            $this->loadTable($tableId);
+        }
+    }
+
     public function getListeners()
     {
         return [
             'open-status-modal' => 'openModal',
+            'open-table-status-modal' => 'openModal',
         ];
     }
 
-    public function openModal($tableId)
+    public function loadTable($tableId)
     {
         $table = $this->tableService->getTableById($tableId);
         $this->selectedTableId = $tableId;
@@ -39,13 +51,20 @@ class TableStatusModal extends Component
         // Verifica se há check ativo (não Paid nem Canceled)
         $activeCheck = $this->orderService->findCheck($tableId);
         $this->hasActiveCheck = $activeCheck && in_array($activeCheck->status, ['Open', 'Closed']);
+    }
 
+    public function openModal($tableId)
+    {
+        $this->loadTable($tableId);
         $this->showModal = true;
     }
 
     public function closeModal()
     {
-        $this->showModal = false;
+        if (!$this->embedded) {
+            $this->showModal = false;
+        }
+        
         $this->selectedTableId = null;
         $this->newTableStatus = null;
         $this->hasActiveCheck = false;
@@ -73,7 +92,10 @@ class TableStatusModal extends Component
         $this->tableService->updateTableStatus($this->selectedTableId, $this->newTableStatus);
 
         session()->flash('success', 'Status da mesa atualizado com sucesso!');
-        $this->closeModal();
+        
+        if (!$this->embedded) {
+            $this->closeModal();
+        }
         
         $this->dispatch('table-status-updated');
     }
