@@ -22,6 +22,11 @@ class OrderGroupModal extends Component
     {
 
         $this->selectedOrderIds = $selectedOrderIds;
+        $this->groupOrders = \App\Models\Order::with('product')
+            ->whereIn('id', $this->selectedOrderIds)
+            ->get()
+            ->toArray();
+        //dd( $this->groupOrders);
         $this->show = true;
     }
 
