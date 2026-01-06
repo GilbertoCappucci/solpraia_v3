@@ -42,7 +42,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:device'])->group(function () {
     Route::get('tables', Tables::class)->name('tables');
     Route::get('orders/{tableId}', Orders::class)->name('orders');
-    Route::get('menu/{tableId}', \App\Livewire\Menu::class)->name('menu');
+    Route::get('menu/{tableId}', \App\Livewire\Menu\Menus::class)->name('menu');
     Route::get('check/{checkId}', \App\Livewire\Check::class)->name('check');
     // Removida a rota antiga de settings gerais do device
     // Route::get('settings/app', \App\Livewire\Settings::class)->name('settings.app');

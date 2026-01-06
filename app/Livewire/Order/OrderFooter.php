@@ -75,7 +75,10 @@ class OrderFooter extends Component
 
     public function render()
     {
-        $isCheckOpen = $this->currentCheck && $this->currentCheck->status === 'Open';
+        // isCheckOpen deve ser true quando:
+        // 1. Não há check (null) - primeiro pedido
+        // 2. OU o check existe e está com status "Open"
+        $isCheckOpen = !$this->currentCheck || ($this->currentCheck && $this->currentCheck->status === 'Open');
         
         return view('livewire.order.order-footer', [
             'isCheckOpen' => $isCheckOpen,

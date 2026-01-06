@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Menu;
 
 use App\Models\GlobalSetting;
-use App\Services\MenuService;
-use App\Services\Order\OrderService;
 use App\Models\Table;
 use App\Services\GlobalSettingService;
-use App\Services\StockService;
+use App\Services\Menu\CartService;
+use App\Services\MenuService;
+use App\Services\Order\OrderService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-class Menu extends Component
+class Menus extends Component
 {
     public $title = 'Cardápio';
     public $userId;
@@ -30,27 +30,29 @@ class Menu extends Component
 
     protected $menuService;
     protected $orderService;
-    protected $stockService;
+    protected $cartService;
     protected $globalSettingsService;
 
-    public function boot(MenuService $menuService, OrderService $orderService, StockService $stockService, GlobalSettingService $globalSettingsService)
-    {
+    public function boot(
+        MenuService $menuService,
+        OrderService $orderService,
+        CartService $cartService,
+        GlobalSettingService $globalSettingsService
+    ) {
         $this->menuService = $menuService;
         $this->orderService = $orderService;
-        $this->stockService = $stockService;
+        $this->cartService = $cartService;
         $this->globalSettingsService = $globalSettingsService;
     }
 
     public function mount($tableId)
     {
         $this->userId = Auth::user()->user_id;
-
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
-        $this->currentCheck = $this->orderService->findCheck($tableId); // Apenas busca, não cria
+        $this->currentCheck = $this->orderService->findCheck($tableId);
         $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
         $this->title = $this->menuService->getMenuName($this->activeMenuId);
-
 
         $this->loadParentCategories();
         $this->loadProducts();
@@ -60,22 +62,22 @@ class Menu extends Component
     {
         return [
             'global.setting.updated' => 'refreshSetting',
+            'back-to-orders' => 'backToOrders',
+            'search-updated' => 'handleSearchUpdated',
+            'category-filter-changed' => 'handleCategoryFilterChanged',
+            'add-to-cart' => 'handleAddToCart',
+            'remove-from-cart' => 'handleRemoveFromCart',
+            'clear-cart' => 'handleClearCart',
+            'confirm-order' => 'handleConfirmOrder',
         ];
     }
 
     public function refreshSetting($data = null)
     {
-        // Atualizar configurações globais
         $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
         $this->title = $this->menuService->getMenuName($this->activeMenuId);
-        
-        // Recarregar produtos e categorias
         $this->loadParentCategories();
         $this->loadProducts();
-        
-        logger('✅ Menu: Configurações atualizadas', [
-            'activeMenuId' => $this->activeMenuId
-        ]);
     }
 
     public function hydrate()
@@ -109,36 +111,28 @@ class Menu extends Component
         );
     }
 
-    public function selectParentCategory($categoryId)
+    public function backToOrders()
     {
-        $this->selectedParentCategoryId = $categoryId === $this->selectedParentCategoryId ? null : $categoryId;
-        $this->selectedChildCategoryId = null; // Reset categoria filha
-        $this->showFavoritesOnly = false; // Reset favoritos
+        return redirect()->route('orders', ['tableId' => $this->tableId]);
+    }
+
+    public function handleSearchUpdated($searchTerm)
+    {
+        $this->searchTerm = $searchTerm;
+        $this->loadProducts();
+    }
+
+    public function handleCategoryFilterChanged($filters)
+    {
+        $this->selectedParentCategoryId = $filters['parentCategoryId'];
+        $this->selectedChildCategoryId = $filters['childCategoryId'];
+        $this->showFavoritesOnly = $filters['showFavoritesOnly'];
+        
         $this->loadChildCategories();
         $this->loadProducts();
     }
 
-    public function selectFavorites()
-    {
-        $this->showFavoritesOnly = !$this->showFavoritesOnly;
-        $this->selectedParentCategoryId = null;
-        $this->selectedChildCategoryId = null;
-        $this->childCategories = [];
-        $this->loadProducts();
-    }
-
-    public function selectChildCategory($categoryId)
-    {
-        $this->selectedChildCategoryId = $categoryId === $this->selectedChildCategoryId ? null : $categoryId;
-        $this->loadProducts();
-    }
-
-    public function updatedSearchTerm()
-    {
-        $this->loadProducts();
-    }
-
-    public function addToCart($productId)
+    public function handleAddToCart($productId)
     {
         $product = $this->menuService->getProductWithMenuPrice($this->userId, $productId);
 
@@ -147,62 +141,24 @@ class Menu extends Component
             return;
         }
 
-        if (isset($this->cart[$productId])) {
-            $currentQty = $this->cart[$productId]['quantity'];
-            if (!$this->stockService->hasStock($productId, $currentQty + 1)) {
-                session()->flash('error', 'Estoque insuficiente.');
-                return;
-            }
-            $this->cart[$productId]['quantity']++;
+        if ($this->cartService->addItem($this->cart, $product, $this->userId)) {
+            // Success - cart updated
         } else {
-            if (!$this->stockService->hasStock($productId, 1)) {
-                session()->flash('error', 'Produto sem estoque.');
-                return;
-            }
-            // Armazena apenas dados primitivos para evitar perda na serialização do Livewire
-            $this->cart[$productId] = [
-                'product' => [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => $product->price, // Preço do menu item
-                ],
-                'quantity' => 1,
-            ];
+            session()->flash('error', 'Estoque insuficiente.');
         }
     }
 
-    public function removeFromCart($productId)
+    public function handleRemoveFromCart($productId)
     {
-        if (isset($this->cart[$productId])) {
-            if ($this->cart[$productId]['quantity'] > 1) {
-                $this->cart[$productId]['quantity']--;
-            } else {
-                unset($this->cart[$productId]);
-            }
-        }
+        $this->cartService->removeItem($this->cart, $productId);
     }
 
-    public function clearCart()
+    public function handleClearCart()
     {
-        $this->cart = [];
+        $this->cartService->clearCart($this->cart);
     }
 
-    public function backToOrders()
-    {
-        return redirect()->route('orders', ['tableId' => $this->tableId]);
-    }
-
-    public function getCartTotalProperty()
-    {
-        return $this->menuService->calculateCartTotal($this->cart);
-    }
-
-    public function getCartItemCountProperty()
-    {
-        return $this->menuService->calculateCartItemCount($this->cart);
-    }
-
-    public function confirmOrder()
+    public function handleConfirmOrder()
     {
         if (empty($this->cart)) {
             session()->flash('error', 'Carrinho vazio.');
@@ -215,7 +171,7 @@ class Menu extends Component
             $this->selectedTable,
             $this->currentCheck,
             $this->cart,
-            $this->cartTotal
+            $this->cartService->calculateTotal($this->cart)
         );
 
         session()->flash('success', 'Pedido confirmado com sucesso!');
@@ -224,6 +180,6 @@ class Menu extends Component
 
     public function render()
     {
-        return view('livewire.menu');
+        return view('livewire.menu.menus');
     }
 }
