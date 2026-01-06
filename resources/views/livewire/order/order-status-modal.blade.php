@@ -13,12 +13,12 @@
         </div>
 
         {{-- Status da Mesa --}}
-        <div class="space-y-4 mb-6" wire:key="table-status-section">
-            <livewire:components.table-status-selector
-                :key="'table-status-selector'"
-                :table="$selectedTable"
-                :newTableStatus="$newTableStatus"
-                :hasActiveCheck="$hasActiveCheck" />
+        <div class="space-y-4 mb-6">
+            @livewire('components.table-status-selector', [
+                'table' => $selectedTable,
+                'newTableStatus' => $newTableStatus,
+                'hasActiveCheck' => $hasActiveCheck
+            ], key('table-status-selector'))
         </div>
 
         {{-- Status do Check --}}

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Menu;
 
 use App\Enums\CheckStatusEnum;
 use App\Enums\OrderStatusEnum;
@@ -15,8 +15,10 @@ use App\Models\Product;
 use App\Models\Table;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use App\Services\CheckService;
 use App\Services\GlobalSettingService;
 use App\Services\Order\OrderService;
+use App\Services\StockService;
 
 class MenuService
 {

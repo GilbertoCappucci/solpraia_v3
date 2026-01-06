@@ -6,7 +6,7 @@ use App\Models\GlobalSetting;
 use App\Models\Table;
 use App\Services\GlobalSettingService;
 use App\Services\Menu\CartService;
-use App\Services\MenuService;
+use App\Services\Menu\MenuService;
 use App\Services\Order\OrderService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;

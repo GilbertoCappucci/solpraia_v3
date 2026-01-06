@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Menu;
 
-use App\Services\MenuService;
+use App\Services\Menu\MenuService;
 use Livewire\Attributes\Reactive;
 use Livewire\Component;
 
