@@ -80,9 +80,11 @@ class OrderDetailsModal extends Component
 
         session()->flash('success', 'Quantidade aumentada!');
         $this->dispatch('refresh-parent');
-        // Recarrega os detalhes do pedido atualizado
-        if ($this->orderDetails) {
+        // Recarrega os detalhes do pedido atualizado se ainda existir
+        if ($this->orderDetails && \App\Models\Order::find($this->orderDetails['id'])) {
             $this->openModal($this->orderDetails['id']);
+        } else {
+            $this->closeModal();
         }
     }
 
@@ -112,9 +114,11 @@ class OrderDetailsModal extends Component
 
         session()->flash('success', 'Quantidade reduzida!');
         $this->dispatch('refresh-parent');
-        // Recarrega os detalhes do pedido atualizado
-        if ($this->orderDetails) {
+        // Recarrega os detalhes do pedido atualizado se ainda existir
+        if ($this->orderDetails && \App\Models\Order::find($this->orderDetails['id'])) {
             $this->openModal($this->orderDetails['id']);
+        } else {
+            $this->closeModal();
         }
     }
 
@@ -143,8 +147,9 @@ class OrderDetailsModal extends Component
             return;
         }
 
+        $orderId = $this->orderDetails['id'];
         $this->closeModal();
-        $this->dispatch('open-cancel-modal', orderId: $this->orderDetails['id']);
+        $this->dispatch('open-cancel-modal', orderId: $orderId);
     }
 
     public function render()

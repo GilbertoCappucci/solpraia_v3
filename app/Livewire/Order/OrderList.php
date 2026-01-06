@@ -61,6 +61,15 @@ class OrderList extends Component
         $this->dispatch('open-group-modal', productId: $productId, status: $status);
     }
 
+    public function payOrder($productId, $status)
+    {
+        // Redireciona para tela de pagamento com productId e status para identificar o grupo
+        return redirect()->route('payment', [
+            'productId' => $productId,
+            'status' => $status
+        ]);
+    }
+
     public function render()
     {
         return view('livewire.order.order-list');

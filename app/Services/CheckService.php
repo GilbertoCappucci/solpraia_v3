@@ -17,7 +17,7 @@ class CheckService
      * Considera apenas pedidos que NÃO estão em PENDING nem CANCELED
      */
     /**
-     * Calcula o total do check baseado nas regras de negócio (ignora Pending/Canceled)
+     * Calcula o total do check baseado nas regras de negócio (ignora Pending/Canceled e Pagos)
      * Não persiste no banco.
      */
     public function calculateTotal(Check $check): float
@@ -25,10 +25,11 @@ class CheckService
         // Busca todos os pedidos do check (se já estiverem carregados, usa a coleção, senão carrega)
         $orders = $check->relationLoaded('orders') ? $check->orders : $check->orders()->with(['currentStatusHistory', 'product'])->get();
 
-        // Filtra pedidos ativos (não cancelados nem aguardando)
+        // Filtra pedidos ativos (não cancelados, não aguardando e NÃO PAGOS)
         $activeOrders = $orders->filter(function ($order) {
             return $order->status !== OrderStatusEnum::CANCELED->value
-                && $order->status !== OrderStatusEnum::PENDING->value;
+                && $order->status !== OrderStatusEnum::PENDING->value
+                && !$order->is_paid;  // ← NOVO: Ignora pedidos já pagos
         });
 
         // Retorna a soma

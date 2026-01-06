@@ -69,10 +69,25 @@
 
             {{-- Status Badge --}}
             <div class="flex-shrink-0">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border {{ $statusConfig['color'] }}">
-                    {{ $statusConfig['label'] }}
-                </span>
+                @if($group->is_paid)
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border bg-emerald-100 text-emerald-800 border-emerald-200">
+                        ✓ Pago
+                    </span>
+                @else
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border {{ $statusConfig['color'] }}">
+                        {{ $statusConfig['label'] }}
+                    </span>
+                @endif
             </div>
+
+            {{-- Botão Pagar (apenas para completed e não pagos) --}}
+            @if($group->status === 'completed' && !$group->is_paid)
+            <button 
+                wire:click.stop="payOrder({{ $group->product_id }}, '{{ $group->status }}')"
+                class="flex-shrink-0 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition shadow-md">
+                💳 Pagar
+            </button>
+            @endif
 
             {{-- Ícone Indicador --}}
             <div class="flex-shrink-0 text-gray-400">

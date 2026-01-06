@@ -126,6 +126,7 @@ class Orders extends Component
                 'order_count' => $group->count(),
                 'orders' => $group,
                 'status_changed_at' => $group->min('status_changed_at'),
+                'is_paid' => $group->every(fn($order) => $order->is_paid),
             ];
         });
 
