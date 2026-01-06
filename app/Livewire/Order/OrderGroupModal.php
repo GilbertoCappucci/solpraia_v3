@@ -18,26 +18,10 @@ class OrderGroupModal extends Component
         ];
     }
 
-    public function openModal()
+    public function openModal($selectedOrderIds)
     {
-        // Busca todos os pedidos do check atual
-        if (!$this->currentCheck) {
-            return;
-        }
 
-        $allOrders = \App\Models\Order::with(['product', 'currentStatusHistory'])
-            ->where('check_id', $this->currentCheck->id)
-            ->where('product_id', $productId)
-            ->get();
-
-        // Filtra manualmente por status usando o atributo virtual
-        $orders = $allOrders->filter(function ($order) use ($status) {
-            return $order->status === $status;
-        });
-
-        $this->groupOrders = $orders->values()->toArray();
-        $this->selectedOrderIds = [];
-
+        $this->selectedOrderIds = $selectedOrderIds;
         $this->show = true;
     }
 

@@ -15,6 +15,7 @@ class OrderHeader extends Component
     
     public $userId;
 
+    public $selectedOrderIds = [];
     public $isActiveStatusButton = true;
     public $isActiveGroupButton = false;
 
@@ -47,13 +48,13 @@ class OrderHeader extends Component
             return;
         }
 
+        $this->selectedOrderIds = $selectedOrderIds;
         $this->isActiveStatusButton = false;
         $this->isActiveGroupButton = true;
-
     }
 
     public function openGroupModal(){
-        $this->dispatch('open-group-modal');
+        $this->dispatch('open-group-modal', $this->selectedOrderIds);
     }
 
     public function onTableUpdated($data)
