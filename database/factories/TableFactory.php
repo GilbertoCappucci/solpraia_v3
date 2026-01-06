@@ -20,28 +20,16 @@ class TableFactory extends Factory
      */
     public function definition(): array
     {
-        $userId = $this->getRamdomUserId();
-
+        $userId = User::where(['role' => RoleEnum::ADMIN->value, 'active' => true])
+            ->inRandomOrder()
+            ->first()
+            ->id;
         return [
             'user_id' => $userId,
             'name' => null,
-            'number' => $this->getNextUmbrellaNumber($userId),
+            'number' => fake()->unique()->numberBetween(1, 10),
             'status' => $this->faker->randomElement(array_column(TableStatusEnum::cases(), 'value')),
         ];
     }
 
-    public function getRamdomUserId(): int
-    {
-        return User::where(['role' => RoleEnum::ADMIN->value])
-            ->inRandomOrder()
-            ->first()->id;
-    }
-
-    public function getNextUmbrellaNumber(int $userId): int
-    {
-        $lastUmbrella = Table::where('user_id', $userId)
-            ->orderBy('number', 'desc')
-            ->first();
-        return $lastUmbrella ? $lastUmbrella->number + 1 : 1;
-    }   
 }

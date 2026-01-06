@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
             MenuItemSeeder::class,
             TableSeeder::class,
             //CheckSeeder::class,
-            OrderSeeder::class,
+            //OrderSeeder::class,
             GlobalSettingSeeder::class,
         ]);
     }

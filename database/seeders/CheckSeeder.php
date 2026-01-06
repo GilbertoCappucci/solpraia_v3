@@ -17,22 +17,5 @@ class CheckSeeder extends Seeder
     public function run(): void
     {
 
-        /*
-        foreach(User::where('role', RoleEnum::ADMIN->value)->get() as $user) {
-
-            $tables = $user->tables()->where('active', true)->get();
-        
-            foreach ($tables as $table) {
-            
-                Check::factory()->create([
-                    'table_id' => $table->id,
-                    'total' => 0,
-                    'status' => CheckStatusEnum::OPEN->value,
-                    'opened_at' => now(),
-                    'closed_at' => null,
-                ]);
-            }
-        }
-        */
     }
 }

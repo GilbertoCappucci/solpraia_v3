@@ -22,6 +22,7 @@ class TableSeeder extends Seeder
             [
                 'user_id' => 1,
                 'number' => 1,
+                'name' => 'Venda Direta',
                 'status' => TableStatusEnum::FREE->value,
             ],
             [

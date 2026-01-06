@@ -16,6 +16,13 @@ class Order extends Model
         'user_id',
         'check_id',
         'product_id',
+        'is_paid',
+        'paid_at',
+    ];
+
+    protected $casts = [
+        'is_paid' => 'boolean',
+        'paid_at' => 'datetime',
     ];
 
     // Atributos virtuais (buscam do histórico)

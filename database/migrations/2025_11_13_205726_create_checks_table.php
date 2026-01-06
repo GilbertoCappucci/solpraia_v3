@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::create('checks', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('table_id')->constrained('tables')->onDelete('cascade');
             $table->enum('status', array_column(CheckStatusEnum::cases(), 'value'))->default(CheckStatusEnum::OPEN->value);
             $table->decimal('total', 10, 2);
