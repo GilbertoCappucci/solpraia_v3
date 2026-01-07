@@ -25,6 +25,11 @@ class OrderDetailsModal extends Component
         ];
     }
 
+    public function payOrder($orderId)
+    {
+        redirect()->route('pay.order', ['orderId' => $orderId]);
+    }
+
     public function openModal($orderId)
     {
         $order = \App\Models\Order::with('product')->find($orderId);
@@ -48,6 +53,7 @@ class OrderDetailsModal extends Component
             'created_at' => $order->created_at,
             'total' => $order->quantity * $order->price,
             'available_stock' => $availableStock,
+            'is_paid' => $order->is_paid,
         ];
 
         $this->show = true;

@@ -70,6 +70,20 @@
             </div>
             @endif
 
+            {{-- Botao de pagamento --}}
+            @if($orderDetails['status'] === 'completed' && !$orderDetails['is_paid'])
+            <div>
+                <button
+                    wire:click="payOrder({{ $orderDetails['id'] }})"
+                    class="w-full px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold transition shadow-md flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Pagar
+                </button>
+            </div>
+            @endif
+
             {{-- Alteração de Status --}}
             <div class="space-y-2">
                 {{-- Botões para Alterar Status --}}
