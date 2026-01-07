@@ -80,6 +80,7 @@ class OrderDetailsModal extends Component
 
         session()->flash('success', 'Quantidade aumentada!');
         $this->dispatch('refresh-parent');
+
         // Recarrega os detalhes do pedido atualizado se ainda existir
         if ($this->orderDetails && \App\Models\Order::find($this->orderDetails['id'])) {
             $this->openModal($this->orderDetails['id']);

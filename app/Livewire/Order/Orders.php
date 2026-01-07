@@ -106,7 +106,6 @@ class Orders extends Component
 
         $orders = \App\Models\Order::with(['product', 'currentStatusHistory'])
             ->where('check_id', $this->currentCheck->id)
-            ->orderBy('created_at', 'asc')
             ->get();
 
         // Filtra por status selecionados
@@ -130,7 +129,7 @@ class Orders extends Component
             ];
         });
 
-        return $grouped->sortBy('status_changed_at')->values();
+        return $grouped->sortBy('id')->values();
     }
 
     #[Computed]

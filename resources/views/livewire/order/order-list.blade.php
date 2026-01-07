@@ -95,13 +95,6 @@
                             </span>
                         @endif
                     </div>
-                    @if($order->status === 'completed' && !$order->is_paid)
-                    <button 
-                        wire:click.stop="payOrder({{ $order->product_id }}, '{{ $order->status }}')"
-                        class="flex-shrink-0 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition shadow-md ml-2">
-                        💳 Pagar
-                    </button>
-                    @endif
                     <div class="flex-shrink-0 text-gray-400 hidden md:block self-center md:ml-4">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

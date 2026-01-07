@@ -2,12 +2,15 @@
 
 namespace App\Livewire\Order;
 
+use App\Models\User;
+use App\Services\GlobalSettingService;
 use Livewire\Component;
 use Livewire\Attributes\Reactive;
 
 class OrderList extends Component
 {
 
+    #[Reactive]
     public $listOrders;
     
     #[Reactive]
@@ -16,18 +19,22 @@ class OrderList extends Component
     #[Reactive]
     public $statusFilters = [];
     
+    #[Reactive]
     public $timeLimits = [];
+
     public $userId;
     public $selectedOrderIds = [];
     public $selectedMeta = null;
+    public $globalSettingsService;
 
     public function mount($listOrders, $checkTotal = 0, $statusFilters = [], $timeLimits = [], $userId = null)
     {
+
         $this->listOrders = $listOrders;
         $this->checkTotal = $checkTotal;
         $this->statusFilters = $statusFilters;
-        $this->timeLimits = $timeLimits;
         $this->userId = $userId;
+
     }
 
     public function getListeners()
@@ -87,15 +94,6 @@ class OrderList extends Component
     public function openGroupModal($productId, $status)
     {
         $this->dispatch('open-group-modal', productId: $productId, status: $status);
-    }
-
-    public function payOrder($productId, $status)
-    {
-        // Redireciona para tela de pagamento com productId e status para identificar o grupo
-        return redirect()->route('payment', [
-            'productId' => $productId,
-            'status' => $status
-        ]);
     }
 
     public function render()
