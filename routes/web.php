@@ -32,14 +32,14 @@ Route::get('/home', function () {
 // =============================================
 // ROTAS ADMIN
 // =============================================
-Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
 });
 
 // =============================================
 // ROTAS DEVICE - Mobile
 // =============================================
-Route::middleware(['auth', 'role:device'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('tables', Tables::class)->name('tables');
     Route::get('orders/{tableId}', Orders::class)->name('orders');
     Route::get('menu/{tableId}', \App\Livewire\Menu\Menus::class)->name('menu');
