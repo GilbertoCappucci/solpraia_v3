@@ -5,40 +5,54 @@ namespace App\Livewire\Payment;
 use App\Models\Check;
 use App\Models\Order;
 use App\Models\Table;
+use App\Services\GlobalSettingService;
 use Livewire\Component;
 use App\Services\Payment\PaymentService;
+use Illuminate\Support\Facades\Auth;
 
-class PayOrder extends Component
+class PayOrders extends Component
 {
 
-    public Table $table;
-    public Order $order;
-    public Check $check;
+    public $table;
+
     public $checkOrders;
+    public $orders;
+
     public float $checkTotal = 0.0;
     public $pix_enabled;
     public $pixPayload;
     public $pixKey;
+    
+    protected GlobalSettingService $globalSettings;
+    protected PaymentService $paymentService;
 
-    public PaymentService $paymentService;
-
-    public function mount($orderId)
+    public function mount(GlobalSettingService $globalSettings, PaymentService $paymentService)
     {
-        $this->order = Order::find($orderId);
-        $this->table = Table::find($this->order->check->table->id);
-        
-        $orders = collect([$this->order]);
-        $this->checkOrders = $orders
-            ->groupBy(function ($order) {
-                return $order->product->name;
-            });
+        $userId = Auth::user()->user_id;
+        $this->globalSettings = $globalSettings;
+        $this->paymentService = $paymentService;
 
-        $this->checkTotal = $orders->sum(function ($order) {
+        $this->orders = session('pay_orders', []);
+
+        $this->checkOrders = Order::with('product')
+            ->whereIn('id', $this->orders)
+            ->get()
+            ->groupBy(fn ($order) => $order->product->name);
+
+        $firstCollection = $this->checkOrders->first();
+        $firstOrder = $firstCollection->first();
+        $table = $firstOrder->check->table;
+
+        $this->table = Table::find($table->id);
+
+        $this->checkTotal = $this->checkOrders->first()->sum(function ($order) {
             return $order->price * $order->quantity;
         });
 
-        $this->pix_enabled = config('payment.pix_enabled');
-
+        $this->pix_enabled = $this->globalSettings->getPixEnabled($userId);
+        $this->pixKey = $this->globalSettings->getPixKey($userId);
+        $this->pixPayload = $this->paymentService->qrCodeOrders($this->orders);
+        
     }
 
     public function goBack()
@@ -72,6 +86,6 @@ class PayOrder extends Component
 
     public function render()
     {
-        return view('livewire.payment.pay-order');
+        return view('livewire.payment.pay-orders');
     }
 }

@@ -25,9 +25,14 @@ class OrderDetailsModal extends Component
         ];
     }
 
-    public function payOrder($orderId)
+    public function payOrder()
     {
-        redirect()->route('pay.order', ['orderId' => $orderId]);
+
+        session([
+            'pay_orders' => [$this->orderDetails['id']]
+        ]);
+
+        redirect()->route('pay.orders');
     }
 
     public function openModal($orderId)

@@ -76,6 +76,12 @@ class GlobalSettingService
         $settings = GlobalSetting::where('user_id', $user_id)->first();
         return $settings->pix_enabled ?? false;
     }
+
+    public static function getPixKey(int $user_id): ?string
+    {
+        $settings = GlobalSetting::where('user_id', $user_id)->first();
+        return $settings->pix_key ?? null;
+    }
     
 
 }

@@ -79,6 +79,14 @@
                 </p>
             </div>
             <button
+                wire:click="payOrders"
+                class="w-full px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold transition shadow-md flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Pagar
+            </button>
+            <button
                 wire:click="openGroupActionsModal"
                 class="w-full px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold transition shadow-md">
                 Ações em Grupo

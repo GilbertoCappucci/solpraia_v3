@@ -44,7 +44,7 @@ Route::middleware(['auth', 'role:device'])->group(function () {
     Route::get('orders/{tableId}', Orders::class)->name('orders');
     Route::get('menu/{tableId}', \App\Livewire\Menu\Menus::class)->name('menu');
     Route::get('check/{checkId}', \App\Livewire\Check::class)->name('check');
-    Route::get('pay-order/{orderId}', \App\Livewire\Payment\PayOrder::class)->name('pay.order');
+    Route::get('pay-orders', \App\Livewire\Payment\PayOrders::class)->name('pay.orders');
 });
 
 // =============================================

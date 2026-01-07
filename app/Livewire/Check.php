@@ -6,6 +6,7 @@ use App\Enums\TableStatusEnum;
 use App\Services\CheckService;
 use App\Services\GlobalSettingService;
 use App\Services\Order\OrderService;
+use App\Services\Payment\PaymentService;
 use App\Services\PixService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -31,17 +32,20 @@ class Check extends Component
     protected $orderService;
     protected $pixService;
     protected $globalSettingService;
+    protected $paymentService;
 
     public function boot(
         CheckService $checkService,
         OrderService $orderService,
         PixService $pixService,
-        GlobalSettingService $globalSettingService)
+        GlobalSettingService $globalSettingService,
+        PaymentService $paymentService)
     {
         $this->checkService = $checkService;
         $this->orderService = $orderService;
         $this->pixService = $pixService;
         $this->globalSettingService = $globalSettingService;
+        $this->paymentService = $paymentService;
     }
 
     public function mount($checkId)
@@ -74,6 +78,11 @@ class Check extends Component
     }
     //Monta o PIX
     public function pix(){
+
+        $this->pixEnabled = $this->globalSettingService->getPixEnabled(Auth::user()->user_id);
+        $this->pixPayload = $this->paymentService->qrCodeCheck($this->check);
+
+        /*
         // PIX Generation
         $globalSetting = $this->globalSettingService->loadGlobalSettings(Auth::user());
         $this->pixEnabled = $globalSetting->pix_enabled;
@@ -107,6 +116,7 @@ class Check extends Component
                 }
             }
         }
+        */
     }
 
     public function loadCheck()

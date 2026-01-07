@@ -67,16 +67,6 @@
                 <span class="text-gray-600 font-medium">Local:</span>
                 <span class="text-gray-900 font-bold text-lg">{{ $table->number }} - {{ $table->name }}</span>
             </div>
-            <div class="flex justify-between items-center">
-                <span class="text-gray-600 font-medium">Abertura:</span>
-                <span class="text-gray-900">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/y - H:i') }}</span>
-            </div>
-            @if($order->closed_at)
-            <div class="flex justify-between items-center">
-                <span class="text-gray-600 font-medium">Fechamento:</span>
-                <span class="text-gray-900">{{ \Carbon\Carbon::parse($order->updated_at)->format('d/m/y - H:i') }}</span>
-            </div>
-            @endif
         </div>
 
         {{-- Linha separadora --}}
@@ -89,22 +79,27 @@
                 <thead>
                     <tr class="border-b border-gray-300">
                         <th class="text-left py-2 font-bold text-gray-700">Item</th>
+                        <th class="text-center py-2 font-bold text-gray-700">Qut</th>
+                        <th class="text-right py-2 font-bold text-gray-700">Preço</th>
                         <th class="text-right py-2 font-bold text-gray-700">Valor</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($checkOrders as $productName => $orders)
-                        <tr>
                         @foreach($orders as $order)
+                        <tr>
                             <td class="py-2 text-gray-900">{{ $productName }}</td>
-                            <td class="py-2 text-right text-gray-900 font-medium">R$ {{ number_format($orders->sum('price'), 2, ',', '.') }}</td>
-                        @endforeach
+                            <td class="py-2 text-center text-gray-900">{{ $order->currentStatusHistory->quantity }}</td>
+                            <td class="py-2 text-right text-gray-900">R$ {{ number_format($order->first()->price, 2, ',', '.') }}</td>
+                            <td class="py-2 text-right text-gray-900 font-medium">R$ {{ number_format($order->currentStatusHistory->quantity * $order->currentStatusHistory->price, 2, ',', '.') }}</td>
                         </tr>
+                        @endforeach
+                        
                     @endforeach
                 </tbody>
             </table>
         </div>
-
+        
         {{-- Linha separadora antes do total --}}
         <div class="border-t-2 border-gray-800 my-4"></div>
 
@@ -114,18 +109,17 @@
             <span class="text-2xl font-bold text-gray-900">R$ {{ number_format($checkTotal, 2, ',', '.') }}</span>
         </div>
 
-        {{-- Quantidade de itens --}}
-        <div class="text-center text-gray-600 text-sm">
-            {{ $checkOrders->count() }} {{ $checkOrders->count() === 1 ? 'item' : 'itens' }}
-        </div>
         @else
         <div class="text-center text-gray-500 py-8">
             Nenhum item na comanda
         </div>
         @endif
 
+
+
         {{-- QR Code PIX --}}
         @if($pix_enabled && isset($pixPayload) && $pixPayload)
+
         <div class="flex flex-col items-center justify-center mt-6 mb-4">
             <p class="text-sm font-bold text-gray-900 mb-2">Pagamento via PIX</p>
 
@@ -160,6 +154,11 @@
                 Aponte a câmera do seu celular
             </p>
         </div>
+        @else
+        <div class="text-center text-gray-500 mt-6 mb-4">
+            Pagamento via PIX indisponível.
+        </div>
+
         @endif
 
         {{-- Linha separadora final --}}
@@ -168,5 +167,7 @@
         </div>
     </div>
 
+    {{-- Estilos para impressão --}}
     <link rel="stylesheet" href="{{ asset('css/print.css') }}" media="print">
+
 </div>

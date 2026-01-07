@@ -38,6 +38,15 @@ class CheckService
         });
     }
 
+    public function calculateTotalOrders($orders):float {
+
+        $total = Order::whereIn('id', $orders)->get()->sum(function ($order) {
+            return $order->currentStatusHistory->quantity * $order->currentStatusHistory->price;
+        });
+
+        return $total;
+    }
+
     /**
      * Recalcula e persiste o total de um check específico
      */

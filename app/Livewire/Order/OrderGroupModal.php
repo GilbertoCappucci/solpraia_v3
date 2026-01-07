@@ -18,6 +18,16 @@ class OrderGroupModal extends Component
         ];
     }
 
+    public function payOrders()
+    {
+        session([
+            'pay_orders' => $this->selectedOrderIds
+        ]);
+        
+        $this->closeModal();
+        redirect()->route('pay.orders');
+    }   
+
     public function openModal($selectedOrderIds)
     {
 
