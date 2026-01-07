@@ -1,5 +1,4 @@
 <div>
-
     <x-flash-message />
 
     {{-- Botões de navegação e impressão - Escondidos na impressão --}}
