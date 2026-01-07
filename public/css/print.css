@@ -1,0 +1,45 @@
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Oculta tudo que não deve ser impresso */
+        .print\:hidden {
+            display: none !important;
+        }
+
+        /* Ajusta o layout para impressora térmica */
+        .max-w-sm {
+            max-width: 100% !important;
+            width: 80mm;
+            /* Largura típica de impressora térmica */
+        }
+
+        /* Remove cores de fundo para economizar tinta */
+        * {
+            background: white !important;
+            color: black !important;
+        }
+
+        /* Ajusta tamanhos de fonte para impressão */
+        body {
+            font-size: 12pt;
+            line-height: 1.3;
+        }
+
+        /* Remove sombras e efeitos */
+        * {
+            box-shadow: none !important;
+            text-shadow: none !important;
+        }
+
+        /* Garante quebras de página adequadas */
+        table {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+    }

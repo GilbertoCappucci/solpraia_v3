@@ -55,17 +55,6 @@
         </div>
     </div>
 
-    {{-- Layout tipo recibo para impressão --}}
-    @php
-    // Se o check estiver fechado, mostra apenas entregues; caso contrário, mostra todos exceto pending e canceled
-    if ($check->status === 'Closed' || $check->status === 'Paid') {
-    $checkOrders = $check->orders->where('status', 'completed')->sortBy('created_at');
-    } else {
-    $checkOrders = $check->orders->whereNotIn('status', ['pending', 'canceled'])->sortBy('created_at');
-    }
-    $checkTotal = $checkOrders->sum(fn($order) => $order->price);
-    @endphp
-
     <div class="max-w-sm mx-auto bg-white p-6 print:p-4 print:max-w-none">
         {{-- Cabeçalho do recibo --}}
         <div class="text-center border-b-2 border-dashed border-gray-400 pb-4 mb-4">
@@ -105,11 +94,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($checkOrders as $order)
-                    <tr class="border-b border-gray-200">
-                        <td class="py-2 text-gray-900">{{ $order->product->name }}</td>
-                        <td class="py-2 text-right text-gray-900 font-medium">R$ {{ number_format($order->price, 2, ',', '.') }}</td>
-                    </tr>
+                    @foreach($checkOrders as $productName => $orders)
+                        <tr>
+                        @foreach($orders as $order)
+                            <td class="py-2 text-gray-900">{{ $productName }}</td>
+                            <td class="py-2 text-right text-gray-900 font-medium">R$ {{ number_format($orders->sum('price'), 2, ',', '.') }}</td>
+                        @endforeach
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -396,52 +387,5 @@
     </div>
     @endif
 
-    {{-- Estilos específicos para impressão --}}
-    <style>
-        @media print {
-            body {
-                margin: 0;
-                padding: 0;
-            }
-
-            /* Oculta tudo que não deve ser impresso */
-            .print\:hidden {
-                display: none !important;
-            }
-
-            /* Ajusta o layout para impressora térmica */
-            .max-w-sm {
-                max-width: 100% !important;
-                width: 80mm;
-                /* Largura típica de impressora térmica */
-            }
-
-            /* Remove cores de fundo para economizar tinta */
-            * {
-                background: white !important;
-                color: black !important;
-            }
-
-            /* Ajusta tamanhos de fonte para impressão */
-            body {
-                font-size: 12pt;
-                line-height: 1.3;
-            }
-
-            /* Remove sombras e efeitos */
-            * {
-                box-shadow: none !important;
-                text-shadow: none !important;
-            }
-
-            /* Garante quebras de página adequadas */
-            table {
-                page-break-inside: avoid;
-            }
-
-            tr {
-                page-break-inside: avoid;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/print.css') }}" media="print">
 </div>

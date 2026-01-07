@@ -111,4 +111,14 @@ class CheckManagementService
 
         return ['valid' => true, 'message' => null];
     }
+
+    public function getOrdersInCheckNotPaid(Check $check)
+    {
+        //Retorna orders que nao foram pagas e que nao estao em pending em seu historico de status
+        $orders = $check->orders()
+            ->where('is_paid', false)
+            ->get();
+
+        return $orders;
+    }
 }

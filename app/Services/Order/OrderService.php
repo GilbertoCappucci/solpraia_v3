@@ -56,6 +56,11 @@ class OrderService
         return $this->checkManagement->validateCheckForNewOrders($check);
     }
 
+    public function getOrdersInCheckNotPaid(Check $check)
+    {
+        return $this->checkManagement->getOrdersInCheckNotPaid($check);
+    }
+
     // ========== OrderStatusService ==========
 
     public function updateStatuses(

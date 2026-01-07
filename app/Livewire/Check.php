@@ -81,7 +81,7 @@ class Check extends Component
         if ($this->pixEnabled) {
             $pixKey = $globalSetting->pix_key;
             if ($pixKey) {
-                
+ 
                 if ($this->check->status === 'Closed' || $this->check->status === 'Paid') {
                     $checkOrders = $this->check->orders->where('status', 'completed');
                 } else {
@@ -89,8 +89,6 @@ class Check extends Component
                 }
 
                 $checkTotal = $this->checkService->calculateTotal($this->check);
-
-                //dd($checkTotal);
 
                 if ($checkTotal > 0) {
                     $pixKeyType = $globalSetting->pix_key_type;
@@ -121,6 +119,7 @@ class Check extends Component
         // Recalcula o total do check
         $this->checkService->recalculateCheckTotal($this->check);
 
+        //dd($this->check);
         $this->currentCheck = $this->check;
 
         // Define status permitidos para o check com base no status da mesa
@@ -208,25 +207,10 @@ class Check extends Component
 
     public function render()
     {
-        // Se o check estiver fechado, mostra apenas pedidos entregues
-        if ($this->check->status === 'Closed' || $this->check->status === 'Paid') {
-            $groupedOrders = [
-                'pending' => collect([]),
-                'inProduction' => collect([]),
-                'inTransit' => collect([]),
-                'delivered' => $this->check->orders->where('status', 'completed'),
-                'canceled' => collect([]),
-            ];
-        } else {
-            // Agrupa pedidos por status (exibição normal)
-            $groupedOrders = [
-                'pending' => $this->check->orders->where('status', 'pending'),
-                'inProduction' => $this->check->orders->where('status', 'in_production'),
-                'inTransit' => $this->check->orders->where('status', 'in_transit'),
-                'delivered' => $this->check->orders->where('status', 'completed'),
-                'canceled' => $this->check->orders->where('status', 'canceled'),
-            ];
-        }
+        $groupedOrders = $this->orderService->getOrdersInCheckNotPaid($this->check)
+            ->groupBy(function ($order) {
+                return $order->product->name;
+            });
 
         // Regra simplificada: só pode alterar se TODOS os pedidos (exceto cancelados) estão entregues
         $activeOrders = $this->check->orders->whereNotIn('status', ['canceled']);
@@ -234,7 +218,8 @@ class Check extends Component
         $hasIncompleteOrders = !$allDelivered && $activeOrders->count() > 0;
 
         return view('livewire.check', [
-            'groupedOrders' => $groupedOrders,
+            'checkOrders' => $groupedOrders,
+            'checkTotal' => $this->check->total,
             'hasIncompleteOrders' => $hasIncompleteOrders,
             'pixPayload' => $this->pixPayload,
             'pix_enabled' => $this->pixEnabled,
