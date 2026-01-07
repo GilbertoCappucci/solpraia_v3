@@ -27,7 +27,10 @@
                     <span class="text-sm text-gray-600">Preço Unitário</span>
                     <span class="font-semibold text-gray-900">R$ {{ number_format($orderDetails['price'], 2, ',', '.') }}</span>
                 </div>
-
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">Quantidade</span>
+                    <span class="font-semibold text-gray-900">{{ $orderDetails['quantity'] }}</span>
+                </div>
                 <div class="flex items-center justify-between border-t pt-3">
                     <span class="text-sm font-semibold text-gray-700">Total</span>
                     <span class="text-xl font-bold text-orange-600">R$ {{ number_format($orderDetails['total'], 2, ',', '.') }}</span>
