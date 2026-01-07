@@ -14,10 +14,7 @@ class PayOrders extends Component
 {
 
     public $table;
-
-    public $checkOrders;
     public $orders;
-
     public float $checkTotal = 0.0;
     public $pix_enabled;
     public $pixPayload;
@@ -34,20 +31,23 @@ class PayOrders extends Component
 
         $this->orders = session('pay_orders', []);
 
-        $this->checkOrders = Order::with('product')
-            ->whereIn('id', $this->orders)
-            ->get()
-            ->groupBy(fn ($order) => $order->product->name);
+        if (empty($this->orders)) {
+            session()->flash('error', 'Nenhum pedido encontrado.');
+            return redirect()->route('tables');
+        }
 
-        $firstCollection = $this->checkOrders->first();
-        $firstOrder = $firstCollection->first();
-        $table = $firstOrder->check->table;
+        // Get table from first order
+        $firstOrder = Order::with('check.table')->whereIn('id', $this->orders)->first();
+        if (!$firstOrder) {
+            session()->flash('error', 'Nenhum pedido encontrado.');
+            return redirect()->route('tables');
+        }
+        
+        $this->table = $firstOrder->check->table;
 
-        $this->table = Table::find($table->id);
-
-        $this->checkTotal = $this->checkOrders->first()->sum(function ($order) {
-            return $order->price * $order->quantity;
-        });
+        // Calculate total using CheckService
+        $checkService = app(\App\Services\CheckService::class);
+        $this->checkTotal = $checkService->calculateTotalOrders($this->orders);
 
         $this->pix_enabled = $this->globalSettings->getPixEnabled($userId);
         $this->pixKey = $this->globalSettings->getPixKey($userId);
@@ -57,8 +57,19 @@ class PayOrders extends Component
 
     public function goBack()
     {
-        return redirect()->route('orders', $this->order->check->table->id);
-    }   
+        return redirect()->route('orders', $this->table->id);
+    }
+
+    public function goToOrders()
+    {
+        return redirect()->route('orders', $this->table->id);
+    }
+
+    public function openStatusModal()
+    {
+        // TODO: Implement status modal logic
+        session()->flash('info', 'Status modal não implementado ainda.');
+    }
 
     public function processPayment($orders)
     {
@@ -86,6 +97,14 @@ class PayOrders extends Component
 
     public function render()
     {
-        return view('livewire.payment.pay-orders');
+        // Calculate checkOrders on render to avoid Livewire serialization issues
+        $checkOrders = Order::with(['product', 'currentStatusHistory'])
+            ->whereIn('id', $this->orders)
+            ->get()
+            ->groupBy(fn ($order) => $order->product->name);
+
+        return view('livewire.payment.pay-orders', [
+            'checkOrders' => $checkOrders
+        ]);
     }
 }

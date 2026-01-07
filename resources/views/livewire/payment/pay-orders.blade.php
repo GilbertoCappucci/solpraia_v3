@@ -89,9 +89,9 @@
                         @foreach($orders as $order)
                         <tr>
                             <td class="py-2 text-gray-900">{{ $productName }}</td>
-                            <td class="py-2 text-center text-gray-900">{{ $order->currentStatusHistory->quantity }}</td>
-                            <td class="py-2 text-right text-gray-900">R$ {{ number_format($order->first()->price, 2, ',', '.') }}</td>
-                            <td class="py-2 text-right text-gray-900 font-medium">R$ {{ number_format($order->currentStatusHistory->quantity * $order->currentStatusHistory->price, 2, ',', '.') }}</td>
+                            <td class="py-2 text-center text-gray-900">{{ $order->quantity }}</td>
+                            <td class="py-2 text-right text-gray-900">R$ {{ number_format($order->price, 2, ',', '.') }}</td>
+                            <td class="py-2 text-right text-gray-900 font-medium">R$ {{ number_format($order->quantity * $order->price, 2, ',', '.') }}</td>
                         </tr>
                         @endforeach
                         
