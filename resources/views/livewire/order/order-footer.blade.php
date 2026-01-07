@@ -2,7 +2,7 @@
     <div class="flex items-center justify-between gap-4">
         {{-- Total Geral (Esquerda) --}}
         <div class="flex-1">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-left gap-2">
                 <span class="text-lg font-semibold">Total:</span>
                 <span class="text-lg font-bold">R$ {{ number_format($checkTotal, 2, ',', '.') }}</span>
             </div>
