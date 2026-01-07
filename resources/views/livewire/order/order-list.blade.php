@@ -40,9 +40,9 @@
         $delayAnimation = ($isDelayed) ? 'animate-pulse-warning' : '';
         @endphp
 
-        {{-- Card mobile, lista desktop --}}
+        {{-- Lista das orders --}}
         <div
-            wire:click="{{ $order->order_count === 1 ? 'openDetailsModal(' . $order->orders->first()->id . ')' : 'openGroupModal(' . $order->product_id . ', \'' . $order->status . '\')' }}"
+            wire:click="{{ $order->order_count === 1 ? 'openDetailsModal(' . $order->orders->first()->id . ')' : 'openGroupModal(' . $order->product_id . ', \' ' . $order->status . '\')' }}"
             class="group cursor-pointer {{ $delayAnimation }} mb-4 md:mb-0 md:rounded-none md:shadow-none md:border-0 md:p-0"
         >
             <div
@@ -60,45 +60,79 @@
                 }"
                 x-init="if (timestamp) { updateMinutes(); setInterval(() => updateMinutes(), 30000); }"
             >
-                {{-- Desktop: esquerda --}}
-                <div class="flex flex-col gap-2 md:flex-row md:items-center md:w-2/3">
-                    <button
-                        wire:key="select-{{ $order->id }}"
-                        wire:click.stop="toggleSelection({{ $order->id }}, '{{ $order->status }}', {{ $order->is_paid ? 'true' : 'false' }}, {{ $order->product_id }})"
-                        class="flex items-center justify-center gap-2 p-0 m-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition md:mr-4"
-                        style="min-width: 44px; min-height: 44px; width: 44px; height: 44px;"
-                        aria-label="Selecionar pedido"
-                    >
-                        <span class="flex items-center justify-center w-full h-full">
-                            <input type="checkbox" class="w-6 h-6 cursor-pointer accent-blue-600" style="min-width: 24px; min-height: 24px;" {{ in_array($order->id, $selectedOrderIds) ? 'checked' : '' }} readOnly>
+                <!-- MOBILE: duas linhas -->
+                <div class="flex flex-col gap-1 md:hidden cursor-pointer">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <button
+                                wire:key="select-{{ $order->id }}"
+                                wire:click.stop="toggleSelection({{ $order->id }}, '{{ $order->status }}', {{ $order->is_paid ? 'true' : 'false' }}, {{ $order->product_id }})"
+                                class="flex items-center justify-center gap-2 p-0 m-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                                style="min-width: 36px; min-height: 36px; width: 36px; height: 36px;"
+                                aria-label="Selecionar pedido"
+                            >
+                                <span class="flex items-center justify-center w-full h-full">
+                                    <input type="checkbox" class="w-6 h-6 cursor-pointer accent-blue-600" style="min-width: 24px; min-height: 24px;" {{ in_array($order->id, $selectedOrderIds) ? 'checked' : '' }} readOnly>
+                                </span>
+                            </button>
+                            <span class="text-2xl font-bold text-gray-700">{{ $order->total_quantity }}</span>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 truncate ml-2">{{ $order->product_name }}</h3>
+                    </div>
+                    <div class="flex items-center justify-between mt-1">
+                        <span class="text-sm text-gray-500">{{ $order->status_changed_at ? abs((int) now()->diffInMinutes($order->status_changed_at)) : 0 }} min</span>
+                        <span>
+                            @if($order->is_paid)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-emerald-100 text-emerald-800 border-emerald-200">
+                                    ✓ Pago
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border {{ $statusConfig['color'] }}">
+                                    {{ $statusConfig['label'] }}
+                                </span>
+                            @endif
                         </span>
-                    </button>
-                    <div class="flex-shrink-0 w-14 text-left md:mr-4">
-                        <span class="text-3xl font-bold text-gray-700">{{ $order->total_quantity }}</span>
                     </div>
-                    <div class="flex-1 min-w-0 md:mr-4">
-                        <h3 class="font-semibold text-gray-900 truncate">{{ $order->product_name }}</h3>
-                    </div>
-                    <p class="text-sm text-gray-500 ml-2 md:ml-0">{{ $order->status_changed_at ? abs((int) now()->diffInMinutes($order->status_changed_at)) : 0 }} min</p>
                 </div>
-
-                {{-- Desktop: direita --}}
-                <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-end md:w-1/3">
-                    <div>
-                        @if($order->is_paid)
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border bg-emerald-100 text-emerald-800 border-emerald-200">
-                                ✓ Pago
+                <!-- DESKTOP/TABLET: layout antigo -->
+                <div class="hidden md:flex md:flex-row md:items-center md:w-full">
+                    <div class="flex flex-row items-center md:w-2/3">
+                        <button
+                            wire:key="select-{{ $order->id }}"
+                            wire:click.stop="toggleSelection({{ $order->id }}, '{{ $order->status }}', {{ $order->is_paid ? 'true' : 'false' }}, {{ $order->product_id }})"
+                            class="flex items-center justify-center gap-2 p-0 m-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition md:mr-4"
+                            style="min-width: 44px; min-height: 44px; width: 44px; height: 44px;"
+                            aria-label="Selecionar pedido"
+                        >
+                            <span class="flex items-center justify-center w-full h-full">
+                                <input type="checkbox" class="w-6 h-6 cursor-pointer accent-blue-600" style="min-width: 24px; min-height: 24px;" {{ in_array($order->id, $selectedOrderIds) ? 'checked' : '' }} readOnly>
                             </span>
-                        @else
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border {{ $statusConfig['color'] }}">
-                                {{ $statusConfig['label'] }}
-                            </span>
-                        @endif
+                        </button>
+                        <div class="flex-shrink-0 w-14 text-left md:mr-4">
+                            <span class="text-3xl font-bold text-gray-700">{{ $order->total_quantity }}</span>
+                        </div>
+                        <div class="flex-1 min-w-0 md:mr-4">
+                            <h3 class="font-semibold text-gray-900 truncate">{{ $order->product_name }}</h3>
+                        </div>
+                        <p class="text-sm text-gray-500 ml-2 md:ml-0">{{ $order->status_changed_at ? abs((int) now()->diffInMinutes($order->status_changed_at)) : 0 }} min</p>
                     </div>
-                    <div class="flex-shrink-0 text-gray-400 hidden md:block self-center md:ml-4">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
+                    <div class="flex flex-row items-center md:justify-end md:w-1/3">
+                        <div>
+                            @if($order->is_paid)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border bg-emerald-100 text-emerald-800 border-emerald-200">
+                                    ✓ Pago
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border {{ $statusConfig['color'] }}">
+                                    {{ $statusConfig['label'] }}
+                                </span>
+                            @endif
+                        </div>
+                        <div class="flex-shrink-0 text-gray-400 hidden md:block self-center md:ml-4">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
             </div>
