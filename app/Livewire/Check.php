@@ -81,13 +81,16 @@ class Check extends Component
         if ($this->pixEnabled) {
             $pixKey = $globalSetting->pix_key;
             if ($pixKey) {
-                // Calculate total based on the same logic as view
+                
                 if ($this->check->status === 'Closed' || $this->check->status === 'Paid') {
                     $checkOrders = $this->check->orders->where('status', 'completed');
                 } else {
                     $checkOrders = $this->check->orders->whereNotIn('status', ['pending', 'canceled']);
                 }
-                $checkTotal = $checkOrders->sum(fn($order) => $order->price);
+
+                $checkTotal = $this->checkService->calculateTotal($this->check);
+
+                //dd($checkTotal);
 
                 if ($checkTotal > 0) {
                     $pixKeyType = $globalSetting->pix_key_type;

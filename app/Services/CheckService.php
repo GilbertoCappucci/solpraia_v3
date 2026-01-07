@@ -51,6 +51,16 @@ class CheckService
         }
     }
 
+    public static function updateCheckTotalAfterOrderPayment(int $checkId): void
+    {
+        $check = Check::find($checkId);
+        
+        if ($check) {
+            $service = new CheckService();
+            $service->recalculateCheckTotal($check);
+        }
+    }
+
     /**
      * Valida e atualiza o status de um check
      * Retorna array com 'success' (bool) e 'errors' (array)

@@ -3,12 +3,14 @@
 namespace App\Livewire\Payment;
 
 use Livewire\Component;
+use App\Services\Payment\PaymentService;
 
 class PayOrder extends Component
 {
 
     public $orderId;
-    
+    public PaymentService $paymentService;
+
     public function mount($orderId)
     {
         $this->orderId = $orderId;
@@ -27,6 +29,9 @@ class PayOrder extends Component
 
         $order->is_paid = true;
         $order->save();
+        
+        $paymentService = new PaymentService();
+        $paymentService->processOrderPayment($this->orderId);
 
         // Exemplo simples de feedback
         session()->flash('message', 'Pagamento processado com sucesso para o pedido #' . $this->orderId);
