@@ -11,7 +11,6 @@ use Livewire\Component;
 use App\Services\Payment\PaymentService;
 use Illuminate\Support\Facades\Auth;
 
-use function Pest\Laravel\session;
 use function PHPUnit\Framework\isNull;
 
 class PayOrders extends Component
@@ -80,14 +79,13 @@ class PayOrders extends Component
 
         if($orderStatusHistory->to_status === \App\Enums\OrderStatusEnum::PENDING->value) {
             logger("Order ID {$order->id} new status not permitted", ['order_id' => $order->id]);
-            session()->flash(['error' => "O pedido #{$order->id} voltou ao status Pendente. Por favor, verifique os pedidos novamente."]);
-
+            session()->flash('error', "O pedido #{$order->id} voltou ao status Pendente. Por favor, verifique os pedidos novamente.");
+            
+            $this->forgotSessionOrders();
             return redirect()->route('orders', $this->table->id);
         }   
 
         logger("Refreshing PayOrders component due to order status history change", ['order_id' => $order->id, 'new_status' => $orderStatusHistory->to_status]);
-
-        $this->dispatch('$refresh');
     }
 
     public function mount(GlobalSettingService $globalSettings, PaymentService $paymentService, CheckService $checkService)
@@ -125,10 +123,10 @@ class PayOrders extends Component
 
     private function setOrders()
     {
-        $this->ordersId = session(['pay_orders']);
+        $this->ordersId = session('pay_orders');
         if (empty($this->ordersId) || isNull($this->ordersId)) {
 
-            session()->flash(['error' => 'Nenhum pedido encontrado.']);
+            session()->flash('error', 'Nenhum pedido encontrado.');
             //return redirect()->route('tables');
         }
 
