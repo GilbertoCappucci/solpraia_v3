@@ -22,6 +22,9 @@ class PayOrders extends Component
     public $pix_enabled;
     public $pixPayload;
     public $pixKey;
+
+    public $showConfirmModal = false;
+    public $paymentTypeToProcess = null;
     
     protected GlobalSettingService $globalSettings;
     protected PaymentService $paymentService;
@@ -93,10 +96,15 @@ class PayOrders extends Component
         return redirect()->route('orders', $this->table->id);
     }
 
-    public function processPayment($type)
+    public function confirmProcessPayment($type)
+    {
+        $this->paymentTypeToProcess = $type;
+        $this->showConfirmModal = true;
+    }
+
+    public function processPayment()
     {
         $this->setOrders();
-
 
         $this->paymentService = app(PaymentService::class);
 
@@ -108,6 +116,8 @@ class PayOrders extends Component
         session()->flash('message', 'Pagamento processado com sucesso para os pedidos selecionados.');
 
         $this->forgotSessionOrders();
+        $this->showConfirmModal = false;
+        $this->paymentTypeToProcess = null;
         return redirect()->route('tables');
     }
 

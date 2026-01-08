@@ -1,4 +1,4 @@
-<div>
+<div x-data="{}">
     <x-flash-message />
 
     {{-- Botões de navegação e impressão - Escondidos na impressão --}}
@@ -29,22 +29,33 @@
         <!-- Segunda linha: meios de pagamento distribuídos -->
         <div class="grid grid-cols-3 gap-2 mt-2">
             <div class="flex justify-start">
-                <button wire:click="processPayment('card')"
+                <button wire:click="confirmProcessPayment('card')"
                     class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition w-full max-w-[120px]">
                     Cartão
                 </button>
             </div>
             <div class="flex justify-center">
-                <button wire:click="processPayment('cash')"
+                <button wire:click="confirmProcessPayment('cash')"
                     class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition w-full max-w-[120px]">
                     Dinheiro
                 </button>
             </div>
             <div class="flex justify-end">
-                <button wire:click="processPayment('pix')"
+                <button wire:click="confirmProcessPayment('pix')"
                     class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition w-full max-w-[120px]">
                     PIX
                 </button>
+            </div>
+        </div>
+        <!-- Modal de Confirmação -->
+        <div x-show="$wire.showConfirmModal" style="display: none;" class="fixed inset-0 flex items-center justify-center z-50 bg-gray-500/50">
+            <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs">
+                <h2 class="text-lg font-bold mb-4 text-gray-800">Confirmar Pagamento</h2>
+                <p class="mb-6 text-gray-700">Tem certeza que deseja processar o pagamento?</p>
+                <div class="flex justify-end gap-2">
+                    <button @click="$wire.showConfirmModal = false" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded">Cancelar</button>
+                    <button wire:click="processPayment" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded">Confirmar</button>
+                </div>
             </div>
         </div>
     </div>
