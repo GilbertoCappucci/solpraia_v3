@@ -17,7 +17,7 @@ class CartService
     /**
      * Add item to cart with stock validation
      */
-    public function addItem(array &$cart, Product $product, int $userId): bool
+    public function addItem(array &$cart, Product $product, int $adminId): bool
     {
         $productId = $product->id;
 

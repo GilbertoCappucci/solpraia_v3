@@ -31,9 +31,9 @@ class TableCard extends Component
     
     public function getListeners()
     {
-        // Obtém o userId da table para escutar eventos específicos
+        // Obtém o adminId da table para escutar eventos específicos
         $table = Table::find($this->tableId);
-        $userId = $table ? $table->admin_id : null;
+        $adminId = $table ? $table->admin_id : null;
         
         $listeners = [
             'selection-mode-changed' => 'updateSelectionMode',
@@ -41,10 +41,10 @@ class TableCard extends Component
         ];
         
         // Adiciona listeners para eventos de atualização de checks, tables e global settings
-        if ($userId) {
-            $listeners["echo-private:tables-updated.{$userId},.check.updated"] = 'onCheckUpdated';
-            $listeners["echo-private:tables-updated.{$userId},.table.updated"] = 'onTableUpdated';
-            $listeners["echo-private:global-setting-updated.{$userId},.global.setting.updated"] = 'onGlobalSettingUpdated';
+        if ($adminId) {
+            $listeners["echo-private:tables-updated.{$adminId},.check.updated"] = 'onCheckUpdated';
+            $listeners["echo-private:tables-updated.{$adminId},.table.updated"] = 'onTableUpdated';
+            $listeners["echo-private:global-setting-updated.{$adminId},.global.setting.updated"] = 'onGlobalSettingUpdated';
         }
         
         return $listeners;

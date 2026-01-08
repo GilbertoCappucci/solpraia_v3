@@ -32,15 +32,15 @@ class PayOrders extends Component
     protected PaymentService $paymentService;
     protected CheckService $checkService;
 
-    private $userId;
+    private $adminId;
     private $firstOrder;  
 
     public function getListeners()
     {        
-        $userId = Auth::user()->admin_id ?? null;
+        $adminId = Auth::user()->admin_id ?? null;
         return [
-            "echo-private:global-setting-updated.{$userId},.global.setting.updated" => 'refreshSetting',
-            "echo-private:order-status-history-created.{$userId},.order.status.history.created" => 'handleOrderStatusHistoryCreated',
+            "echo-private:global-setting-updated.{$adminId},.global.setting.updated" => 'refreshSetting',
+            "echo-private:order-status-history-created.{$adminId},.order.status.history.created" => 'handleOrderStatusHistoryCreated',
         ];
     }
 
@@ -89,7 +89,7 @@ class PayOrders extends Component
 
     public function mount(GlobalSettingService $globalSettings, PaymentService $paymentService, CheckService $checkService)
     {
-        $this->userId = Auth::user()->admin_id;
+        $this->adminId = Auth::user()->admin_id;
         $this->globalSettings = $globalSettings;
         $this->paymentService = $paymentService;
         $this->checkService = $checkService;
@@ -138,8 +138,8 @@ class PayOrders extends Component
 
     private function setPix()
     {
-        $this->pix_enabled = $this->globalSettings->getPixEnabled($this->userId);
-        $this->pixKey = $this->globalSettings->getPixKey($this->userId);
+        $this->pix_enabled = $this->globalSettings->getPixEnabled($this->adminId);
+        $this->pixKey = $this->globalSettings->getPixKey($this->adminId);
         $this->pixPayload = $this->paymentService->qrCodeOrders($this->ordersId);
     }
 

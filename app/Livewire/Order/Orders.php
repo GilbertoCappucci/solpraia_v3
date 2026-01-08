@@ -14,7 +14,7 @@ use Livewire\Attributes\Computed;
 class Orders extends Component
 {
     public $title = 'Pedidos';
-    public $userId;
+    public $adminId;
     public $tableId;
     public $selectedTable = null;
     public $currentCheck = null;
@@ -37,7 +37,7 @@ class Orders extends Component
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $this->userId = $user->isAdmin()
+        $this->adminId = $user->isAdmin()
             ? $user->id
             : ($user->admin_id ?? Auth::id());
 
@@ -50,12 +50,12 @@ class Orders extends Component
 
     public function getListeners()
     {
-        $userId = $this->userId ?: (Auth::user()?->isAdmin() ? Auth::id() : Auth::user()?->admin_id ?? Auth::id());
+        $adminId = $this->adminId ?: (Auth::user()?->isAdmin() ? Auth::id() : Auth::user()?->admin_id ?? Auth::id());
         
         return [
-            "echo-private:global-setting-updated.{$userId},.global.setting.updated" => 'refreshSetting',
-            "echo-private:tables-updated.{$userId},.table.updated" => 'refreshData',
-            "echo-private:tables-updated.{$userId},.check.updated" => 'refreshData',
+            "echo-private:global-setting-updated.{$adminId},.global.setting.updated" => 'refreshSetting',
+            "echo-private:tables-updated.{$adminId},.table.updated" => 'refreshData',
+            "echo-private:tables-updated.{$adminId},.check.updated" => 'refreshData',
             'refresh-parent' => 'refreshData',
             'refresh-modal-data' => 'refreshModalData',
 

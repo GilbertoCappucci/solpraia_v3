@@ -19,20 +19,20 @@ class MenuFactory extends Factory
     public function definition(): array
     {
 
-        $userId = User::where('role', RoleEnum::ADMIN->value)
+        $adminId = User::where('role', RoleEnum::ADMIN->value)
             ->where('active', true)
             ->inRandomOrder()
             ->first()->id;
 
         return [
-            'admin_id' => $userId,
+            'admin_id' => $adminId,
             'name' => $this->faker->word(),
-            'active' => ($this->hasMenus($userId)) ? false : true,
+            'active' => ($this->hasMenus($adminId)) ? false : true,
         ];
     }
 
-    public function hasMenus(int $userId): bool
+    public function hasMenus(int $adminId): bool
     {
-        return User::find($userId)->menus()->exists();
+        return User::find($adminId)->menus()->exists();
     }
 }

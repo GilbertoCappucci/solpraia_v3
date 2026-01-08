@@ -12,7 +12,7 @@ use Livewire\Component;
 class Tables extends Component
 {
     public $title = 'Locais';
-    public $userId;
+    public $adminId;
     
     // Estados de seleção
     public $selectionMode = false;
@@ -55,7 +55,7 @@ class Tables extends Component
 
     public function mount()
     {
-        $this->userId = Auth::user()->admin_id;
+        $this->adminId = Auth::user()->admin_id;
         $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
         
         // Carrega filtros iniciais
@@ -74,9 +74,9 @@ class Tables extends Component
     public function getListeners()
     {
         return [
-            "echo-private:global-setting-updated.{$this->userId},.global.setting.updated" => 'refreshSetting',
-            "echo-private:tables-updated.{$this->userId},.table.updated" => 'onTableUpdated',
-            "echo-private:tables-updated.{$this->userId},.check.updated" => 'onCheckUpdated',
+            "echo-private:global-setting-updated.{$this->adminId},.global.setting.updated" => 'refreshSetting',
+            "echo-private:tables-updated.{$this->adminId},.table.updated" => 'onTableUpdated',
+            "echo-private:tables-updated.{$this->adminId},.check.updated" => 'onCheckUpdated',
             'filters-updated' => 'onFiltersUpdated',
             'table-selected' => 'selectTable',
             'select-table-for-merge' => 'selectTableForMerge',
@@ -120,14 +120,14 @@ class Tables extends Component
 
     public function onTableUpdated($data)
     {
-        if (isset($data['userId']) && $data['userId'] == $this->userId) {
+        if (isset($data['adminId']) && $data['adminId'] == $this->adminId) {
             $this->dispatch('$refresh');
         }
     }
 
     public function onCheckUpdated($data)
     {
-        if (isset($data['userId']) && $data['userId'] == $this->userId) {
+        if (isset($data['adminId']) && $data['adminId'] == $this->adminId) {
             $this->dispatch('$refresh');
         }
     }
@@ -165,7 +165,7 @@ class Tables extends Component
         }
 
         $tables = \App\Models\Table::whereIn('id', $this->selectedTables)
-            ->where('admin_id', $this->userId)
+            ->where('admin_id', $this->adminId)
             ->get();
 
         $this->canMerge = $this->tableService->canMergeTables($tables);
@@ -255,7 +255,7 @@ class Tables extends Component
     public function render()
     {
         $tables = $this->tableService->getFilteredTables(
-            $this->userId,
+            $this->adminId,
             $this->filterTableStatuses,
             $this->filterCheckStatuses,
             $this->filterOrderStatuses,

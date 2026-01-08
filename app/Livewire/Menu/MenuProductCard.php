@@ -10,7 +10,7 @@ use Livewire\Component;
 class MenuProductCard extends Component
 {
     public $product;
-    public $userId;
+    public $adminId;
 
     #[Reactive]
     public $cart = [];

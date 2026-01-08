@@ -30,7 +30,7 @@ class TableUpdatedEvent implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        logger('📡 Broadcasting TableUpdatedEvent', ['tableId' => $this->table->id, 'userId' => $this->table->admin_id]);
+        logger('📡 Broadcasting TableUpdatedEvent', ['tableId' => $this->table->id, 'adminId' => $this->table->admin_id]);
         return [
             new PrivateChannel('tables-updated.' . $this->table->admin_id),
         ];
@@ -51,7 +51,7 @@ class TableUpdatedEvent implements ShouldBroadcastNow
     {
         return [
             'tableId' => $this->table->id,
-            'userId' => $this->table->admin_id,
+            'adminId' => $this->table->admin_id,
             'status' => $this->table->status,
             'number' => $this->table->number,
             'name' => $this->table->name,

@@ -22,18 +22,18 @@ class OrderList extends Component
     #[Reactive]
     public $timeLimits = [];
 
-    public $userId;
+    public $adminId;
     public $selectedOrderIds = [];
     public $selectedMeta = null;
     public $globalSettingsService;
 
-    public function mount($listOrders, $checkTotal = 0, $statusFilters = [], $timeLimits = [], $userId = null)
+    public function mount($listOrders, $checkTotal = 0, $statusFilters = [], $timeLimits = [], $adminId = null)
     {
 
         $this->listOrders = $listOrders;
         $this->checkTotal = $checkTotal;
         $this->statusFilters = $statusFilters;
-        $this->userId = $userId;
+        $this->adminId = $adminId;
 
     }
 
@@ -43,8 +43,8 @@ class OrderList extends Component
             'filters-updated' => 'onFiltersUpdated',
         ];
 
-        if ($this->userId) {
-            $listeners["echo-private:tables-updated.{$this->userId},.check.updated"] = 'onCheckUpdated';
+        if ($this->adminId) {
+            $listeners["echo-private:tables-updated.{$this->adminId},.check.updated"] = 'onCheckUpdated';
         }
 
         return $listeners;

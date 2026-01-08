@@ -22,9 +22,9 @@ class TrackUserActivity
             Cache::forever('user-is-online-' . Auth::id(), true);
         } else {
             // Se não está autenticado, verifica se tinha cache anterior e remove
-            $userId = $request->session()->previousUrl() ? $request->session()->get('_previous_user_id') : null;
-            if ($userId) {
-                Cache::forget('user-is-online-' . $userId);
+            $adminId = $request->session()->previousUrl() ? $request->session()->get('_previous_user_id') : null;
+            if ($adminId) {
+                Cache::forget('user-is-online-' . $adminId);
             }
         }
 

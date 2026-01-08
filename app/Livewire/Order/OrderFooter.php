@@ -16,16 +16,16 @@ class OrderFooter extends Component
     #[Reactive]
     public $checkTotal = 0;
     
-    public $userId;
+    public $adminId;
     public $tableId;
 
-    public function mount($selectedTable, $currentCheck, $checkTotal = 0, $tableId = null, $userId = null)
+    public function mount($selectedTable, $currentCheck, $checkTotal = 0, $tableId = null, $adminId = null)
     {
         $this->selectedTable = $selectedTable;
         $this->currentCheck = $currentCheck;
         $this->checkTotal = $checkTotal;
         $this->tableId = $tableId;
-        $this->userId = $userId;
+        $this->adminId = $adminId;
     }
 
     public function getListeners()
@@ -34,9 +34,9 @@ class OrderFooter extends Component
             'check-updated' => 'onCheckUpdated',
         ];
 
-        if ($this->userId) {
-            $listeners["echo-private:tables-updated.{$this->userId},.table.updated"] = 'onTableUpdated';
-            $listeners["echo-private:tables-updated.{$this->userId},.check.updated"] = 'onCheckUpdated';
+        if ($this->adminId) {
+            $listeners["echo-private:tables-updated.{$this->adminId},.table.updated"] = 'onTableUpdated';
+            $listeners["echo-private:tables-updated.{$this->adminId},.check.updated"] = 'onCheckUpdated';
         }
 
         return $listeners;

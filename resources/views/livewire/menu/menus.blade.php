@@ -39,7 +39,7 @@
                 @foreach($this->products as $product)
                     <livewire:menu.menu-product-card 
                         :product="$product"
-                        :userId="$userId"
+                        :adminId="$adminId"
                         :cart="$cart"
                         :key="'product-'.$product['id']"
                     />

@@ -40,9 +40,9 @@ class MenuService
         return Menu::find($menuId)->name;
     }
 
-    public function getActiveMenu(int $userId): ?Menu
+    public function getActiveMenu(int $adminId): ?Menu
     {
-        $menuId = $this->getActiveMenuId($userId);
+        $menuId = $this->getActiveMenuId($adminId);
 
         if (!$menuId) {
             return null;
@@ -55,19 +55,19 @@ class MenuService
      * Obter o ID do menu ativo para o usuário
      * Menu pai aonde menu_id é null
      */
-    public function getActiveMenuId(int $userId): int
+    public function getActiveMenuId(int $adminId): int
     {
-        $activeMenu = $this->globalSettingService->getActiveMenu($userId);
+        $activeMenu = $this->globalSettingService->getActiveMenu($adminId);
         return $activeMenu->id;
     }
 
     /**
      * Carrega categorias pai (category_id é null)
      */
-    public function getParentCategories(int $userId): Collection
+    public function getParentCategories(int $adminId): Collection
     {
         return Category::where('active', true)
-            ->where('admin_id', $userId)
+            ->where('admin_id', $adminId)
             ->whereNull('category_id')
             ->orderBy('name')
             ->get();
@@ -76,10 +76,10 @@ class MenuService
     /**
      * Carrega categorias filhas de uma categoria pai
      */
-    public function getChildCategories(int $userId, int $parentCategoryId): Collection
+    public function getChildCategories(int $adminId, int $parentCategoryId): Collection
     {
         return Category::where('active', true)
-            ->where('admin_id', $userId)
+            ->where('admin_id', $adminId)
             ->where('category_id', $parentCategoryId)
             ->orderBy('name')
             ->get();
@@ -89,13 +89,13 @@ class MenuService
      * Carrega produtos filtrados por categoria pai/filha ou favoritos
      */
     public function getFilteredProducts(
-        int $userId,
+        int $adminId,
         ?int $parentCategoryId = null,
         ?int $childCategoryId = null,
         bool $showFavoritesOnly = false,
         ?string $searchTerm = null
     ): Collection {
-        $activeMenuId = $this->getActiveMenuId($userId);
+        $activeMenuId = $this->getActiveMenuId($adminId);
 
         if (!$activeMenuId) {
             return collect();
@@ -107,8 +107,8 @@ class MenuService
             ->join('menu_items', 'products.id', '=', 'menu_items.product_id')
             ->where('menu_items.menu_id', $activeMenuId)
             ->where('menu_items.active', true)
-            ->whereHas('category', function ($q) use ($userId) {
-                $q->where('admin_id', $userId);
+            ->whereHas('category', function ($q) use ($adminId) {
+                $q->where('admin_id', $adminId);
             })
             ->select(
                 'products.*',
@@ -156,9 +156,9 @@ class MenuService
      * Caso tenha preço no menu, retorna o preço do menu
      * Caso não tenha preço no menu, retorna o preço normal do produto
      */
-    public function getProductWithMenuPrice(int $userId, int $productId): ?Product
+    public function getProductWithMenuPrice(int $adminId, int $productId): ?Product
     {
-        $activeMenuId = $this->getActiveMenuId($userId);
+        $activeMenuId = $this->getActiveMenuId($adminId);
 
         if (!$activeMenuId) {
             return Product::find($productId);
@@ -211,10 +211,10 @@ class MenuService
     /**
      * Confirma pedido e atualiza check e mesa
      */
-    public function confirmOrder(int $userId, int $tableId, Table $table, ?Check $check, array $cart, float $total): void
+    public function confirmOrder(int $adminId, int $tableId, Table $table, ?Check $check, array $cart, float $total): void
     {
 
-        DB::transaction(function () use ($userId, $tableId, $table, &$check, $cart, $total) {
+        DB::transaction(function () use ($adminId, $tableId, $table, &$check, $cart, $total) {
             // Valida Stock para todos os itens novamente antes de efetivar
             foreach ($cart as $productId => $item) {
                 if (!$this->stockService->hasStock($productId, $item['quantity'])) {
@@ -240,14 +240,14 @@ class MenuService
                 // Cria múltiplos pedidos individuais baseados na quantidade
                 //for ($i = 0; $i < $item['quantity']; $i++) {
                     // Busca o produto novamente para garantir que o preço do menu seja usado
-                    $productWithCorrectPrice = $this->getProductWithMenuPrice($userId, $productId);
+                    $productWithCorrectPrice = $this->getProductWithMenuPrice($adminId, $productId);
 
                     if (!$productWithCorrectPrice) {
                         throw new \Exception("Produto não encontrado ao confirmar o pedido: {$item['product']['name']}");
                     }
 
                     $order = Order::create([
-                        'admin_id' => $userId,
+                        'admin_id' => $adminId,
                         'check_id' => $check->id,
                         'product_id' => $productId,
                     ]);

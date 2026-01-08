@@ -20,7 +20,7 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
 
-        $admin_id = $this->getRamdomUserId();
+        $admin_id = $this->getRamdomadminId();
 
         return [
             'admin_id' => $admin_id,
@@ -31,7 +31,7 @@ class CategoryFactory extends Factory
         ];
     }
 
-    public function getRamdomUserId(): int
+    public function getRamdomadminId(): int
     {
         return User::where(['role' => RoleEnum::ADMIN->value])
             ->inRandomOrder()

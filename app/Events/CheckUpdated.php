@@ -51,7 +51,7 @@ class CheckUpdated implements ShouldBroadcastNow
         return [
             'checkId' => $this->check->id,
             'tableId' => $this->check->table_id,
-            'userId' => $this->check->table->admin_id,
+            'adminId' => $this->check->table->admin_id,
             'checkStatus' => $this->check->status,
             'checkTotal' => $this->check->total,
             'updated_at' => $this->check->updated_at->toISOString(),

@@ -23,14 +23,14 @@ class TableService
      */
 
     public function getFilteredTables(
-        int $userId,
+        int $adminId,
         array $filterTableStatuses = [],
         array $filterCheckStatuses = [],
         array $filterOrderStatuses = [],
         array $filterDepartaments = [],
         string $globalFilterMode = 'OR'
     ): Collection {
-        $query = Table::where('admin_id', $userId);
+        $query = Table::where('admin_id', $adminId);
 
         return $query->with(['checks' => function ($query) {
             $query->with(['orders.currentStatusHistory', 'orders.product']);
@@ -61,10 +61,10 @@ class TableService
     /**
      * Busca uma table por ID
      */
-    public function createTable(int $userId, string $name, int $number): Table
+    public function createTable(int $adminId, string $name, int $number): Table
     {
         return Table::create([
-            'admin_id' => $userId,
+            'admin_id' => $adminId,
             'name' => $name,
             'number' => $number,
             'status' => TableStatusEnum::FREE->value,
@@ -76,7 +76,7 @@ class TableService
      */
     public function validateTableData(array $data): array
     {
-        $userId = $data['userId'] ?? null;
+        $adminId = $data['adminId'] ?? null;
 
         $rules = [
             'newTableName' => 'nullable|string|max:255',
@@ -84,8 +84,8 @@ class TableService
                 'required',
                 'integer',
                 'min:1',
-                function ($attribute, $value, $fail) use ($userId) {
-                    if ($userId && Table::where('admin_id', $userId)->where('number', $value)->exists()) {
+                function ($attribute, $value, $fail) use ($adminId) {
+                    if ($adminId && Table::where('admin_id', $adminId)->where('number', $value)->exists()) {
                         $fail('Já existe um local com este número.');
                     }
                 },

@@ -20,12 +20,12 @@ class TableFactory extends Factory
      */
     public function definition(): array
     {
-        $userId = User::where(['role' => RoleEnum::ADMIN->value, 'active' => true])
+        $adminId = User::where(['role' => RoleEnum::ADMIN->value, 'active' => true])
             ->inRandomOrder()
             ->first()
             ->id;
         return [
-            'admin_id' => $userId,
+            'admin_id' => $adminId,
             'name' => null,
             'number' => fake()->unique()->numberBetween(1, 10),
             'status' => $this->faker->randomElement(array_column(TableStatusEnum::cases(), 'value')),

@@ -19,7 +19,7 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        //$admin_id = $this->getRamdomUserId();
+        //$admin_id = $this->getRamdomadminId();
 
         return [
             //'category_id' => $this->getRandomCategoryId($admin_id),

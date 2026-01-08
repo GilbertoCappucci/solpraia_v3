@@ -13,17 +13,17 @@ class OrderHeader extends Component
     #[Reactive]
     public $statusFiltersCount = 5;
     
-    public $userId;
+    public $adminId;
 
     public $selectedOrderIds = [];
     public $isActiveStatusButton = true;
     public $isActiveGroupButton = false;
 
-    public function mount($selectedTable, $statusFiltersCount = 5, $userId = null)
+    public function mount($selectedTable, $statusFiltersCount = 5, $adminId = null)
     {
         $this->selectedTable = $selectedTable;
         $this->statusFiltersCount = $statusFiltersCount;
-        $this->userId = $userId;
+        $this->adminId = $adminId;
     }
 
     public function getListeners()
@@ -33,8 +33,8 @@ class OrderHeader extends Component
             'selected-order-list-orders' => 'toggleButtonActions',
         ];
 
-        if ($this->userId) {
-            $listeners["echo-private:tables-updated.{$this->userId},.table.updated"] = 'onTableUpdated';
+        if ($this->adminId) {
+            $listeners["echo-private:tables-updated.{$this->adminId},.table.updated"] = 'onTableUpdated';
         }
 
         return $listeners;

@@ -3,7 +3,7 @@
     <livewire:order.order-header 
         :selectedTable="$selectedTable" 
         :statusFiltersCount="count($statusFilters)"
-        :userId="$userId" />
+        :adminId="$adminId" />
 
     {{-- Order List --}}
     <livewire:order.order-list 
@@ -11,7 +11,7 @@
         :checkTotal="$checkTotal"
         :statusFilters="$statusFilters"
         :timeLimits="$timeLimits"
-        :userId="$userId" />
+        :adminId="$adminId" />
 
     {{-- Footer --}}
     <livewire:order.order-footer 
@@ -19,7 +19,7 @@
         :currentCheck="$currentCheck"
         :checkTotal="$checkTotal"
         :tableId="$tableId"
-        :userId="$userId" />
+        :adminId="$adminId" />
 
     {{-- Modals --}}
     <livewire:order.order-filters />

@@ -18,7 +18,7 @@ use Livewire\Attributes\Computed;
 class Tables extends Component
 {
     public $title = 'Locais';
-    public $userId;
+    public $adminId;
     
     // Estados de filtros (controlados pelo TableFilters)
     public $filterTableStatuses = [];
@@ -70,7 +70,7 @@ class Tables extends Component
 
     public function mount()
     {
-        $this->userId = Auth::user()->admin_id;
+        $this->adminId = Auth::user()->admin_id;
         $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
         
         // Inicializa os filtros a partir das preferências salvas
@@ -101,9 +101,9 @@ class Tables extends Component
     public function getListeners()
     {
         $listeners = [
-            "echo-private:global-setting-updated.{$this->userId},.global.setting.updated" => 'refreshSetting',
-            "echo-private:tables-updated.{$this->userId},.table.updated" => 'onTableUpdated',
-            "echo-private:tables-updated.{$this->userId},.check.updated" => 'onCheckUpdated',
+            "echo-private:global-setting-updated.{$this->adminId},.global.setting.updated" => 'refreshSetting',
+            "echo-private:tables-updated.{$this->adminId},.table.updated" => 'onTableUpdated',
+            "echo-private:tables-updated.{$this->adminId},.check.updated" => 'onCheckUpdated',
             
             // Listeners para TableFilters
             'toggle-filters' => 'toggleFilters',
@@ -138,7 +138,7 @@ class Tables extends Component
     {
         logger('🎯 refreshSetting CHAMADO no Livewire! Dados recebidos:', [
             'data' => $data,
-            'userId' => $this->userId,
+            'adminId' => $this->adminId,
             'timestamp' => now()->format('H:i:s')
         ]);
         
@@ -202,29 +202,29 @@ class Tables extends Component
     {
         logger('🔄🔔 onTableUpdated invoked in Livewire Tables', [
             'data' => $data, 
-            'userIdProp' => $this->userId,
+            'adminIdProp' => $this->adminId,
             'timestamp' => now()->format('H:i:s.u')
         ]);
         
         // Só atualiza se a mesa pertencer a este usuário
-        if (isset($data['userId']) && $data['userId'] == $this->userId) {
-            logger('✅ Refreshing Tables component', ['userId' => $this->userId]);
+        if (isset($data['adminId']) && $data['adminId'] == $this->adminId) {
+            logger('✅ Refreshing Tables component', ['adminId' => $this->adminId]);
             // Força refresh dos dados
             $this->dispatch('$refresh');
         } else {
-            logger('❌ Skipping refresh - userId mismatch', [
-                'data_userId' => $data['userId'] ?? 'not set',
-                'component_userId' => $this->userId
+            logger('❌ Skipping refresh - adminId mismatch', [
+                'data_adminId' => $data['adminId'] ?? 'not set',
+                'component_adminId' => $this->adminId
             ]);
         }
     }
 
     public function onCheckUpdated($data)
     {
-        logger('🔄🔔 onCheckUpdated invoked in Livewire', ['data' => $data, 'userIdProp' => $this->userId]);
+        logger('🔄🔔 onCheckUpdated invoked in Livewire', ['data' => $data, 'adminIdProp' => $this->adminId]);
         
         // Só atualiza se a mesa pertencer a este usuário
-        if (isset($data['userId']) && $data['userId'] == $this->userId) {
+        if (isset($data['adminId']) && $data['adminId'] == $this->adminId) {
             // Força refresh dos dados
             $this->dispatch('$refresh');
         }
@@ -284,7 +284,7 @@ class Tables extends Component
         }
 
         $tables = \App\Models\Table::whereIn('id', $this->selectedTables)
-            ->where('admin_id', $this->userId)
+            ->where('admin_id', $this->adminId)
             ->get();
 
         logger('🔍 updateCanMerge', [
@@ -338,7 +338,7 @@ class Tables extends Component
     public function render()
     {
         $tables = $this->tableService->getFilteredTables(
-            $this->userId,
+            $this->adminId,
             $this->filterTableStatuses,
             $this->filterCheckStatuses,
             $this->filterOrderStatuses,

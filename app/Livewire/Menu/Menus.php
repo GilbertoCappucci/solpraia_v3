@@ -15,7 +15,7 @@ use Livewire\Attributes\Computed;
 class Menus extends Component
 {
     public $title = 'Cardápio';
-    public $userId;
+    public $adminId;
     public $tableId;
     public $selectedTable = null;
     public $currentCheck = null;
@@ -47,11 +47,11 @@ class Menus extends Component
 
     public function mount($tableId)
     {
-        $this->userId = Auth::user()->admin_id;
+        $this->adminId = Auth::user()->admin_id;
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findCheck($tableId);
-        $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
+        $this->activeMenuId = $this->menuService->getActiveMenuId($this->adminId);
         $this->title = $this->menuService->getMenuName($this->activeMenuId);
 
         $this->loadParentCategories();
@@ -73,20 +73,20 @@ class Menus extends Component
 
     public function refreshSetting($data = null)
     {
-        $this->activeMenuId = $this->menuService->getActiveMenuId($this->userId);
+        $this->activeMenuId = $this->menuService->getActiveMenuId($this->adminId);
         $this->title = $this->menuService->getMenuName($this->activeMenuId);
         $this->loadParentCategories();
     }
 
     public function loadParentCategories()
     {
-        $this->parentCategories = $this->menuService->getParentCategories($this->userId);
+        $this->parentCategories = $this->menuService->getParentCategories($this->adminId);
     }
 
     public function loadChildCategories()
     {
         if ($this->selectedParentCategoryId) {
-            $this->childCategories = $this->menuService->getChildCategories($this->userId, $this->selectedParentCategoryId);
+            $this->childCategories = $this->menuService->getChildCategories($this->adminId, $this->selectedParentCategoryId);
         } else {
             $this->childCategories = [];
         }
@@ -96,7 +96,7 @@ class Menus extends Component
     public function products()
     {
         $products = $this->menuService->getFilteredProducts(
-            $this->userId,
+            $this->adminId,
             $this->selectedParentCategoryId,
             $this->selectedChildCategoryId,
             $this->showFavoritesOnly,
@@ -141,14 +141,14 @@ class Menus extends Component
 
     public function handleAddToCart($productId)
     {
-        $product = $this->menuService->getProductWithMenuPrice($this->userId, $productId);
+        $product = $this->menuService->getProductWithMenuPrice($this->adminId, $productId);
 
         if (!$product) {
             session()->flash('error', 'Produto não disponível no menu atual.');
             return;
         }
 
-        if ($this->cartService->addItem($this->cart, $product, $this->userId)) {
+        if ($this->cartService->addItem($this->cart, $product, $this->adminId)) {
             // Success - cart updated
         } else {
             session()->flash('error', 'Estoque insuficiente.');
@@ -173,7 +173,7 @@ class Menus extends Component
         }
 
         $this->menuService->confirmOrder(
-            $this->userId,
+            $this->adminId,
             $this->tableId,
             $this->selectedTable,
             $this->currentCheck,
