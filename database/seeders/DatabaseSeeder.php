@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use CurlHandle;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -24,6 +25,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             UserSeeder::class,
+            CustomerSeeder::class,
             MenuSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
