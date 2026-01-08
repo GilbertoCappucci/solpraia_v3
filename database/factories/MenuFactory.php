@@ -25,7 +25,7 @@ class MenuFactory extends Factory
             ->first()->id;
 
         return [
-            'user_id' => $userId,
+            'admin_id' => $userId,
             'name' => $this->faker->word(),
             'active' => ($this->hasMenus($userId)) ? false : true,
         ];

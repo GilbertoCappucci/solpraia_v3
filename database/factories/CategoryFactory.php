@@ -20,11 +20,11 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
 
-        $user_id = $this->getRamdomUserId();
+        $admin_id = $this->getRamdomUserId();
 
         return [
-            'user_id' => $user_id,
-            'category_id' => fake()->boolean(10) ? null : $this->getRandomCategoryId($user_id),
+            'admin_id' => $admin_id,
+            'category_id' => fake()->boolean(10) ? null : $this->getRandomCategoryId($admin_id),
             'name' => fake()->word(),
             'description' => fake()->sentence(),
             'active' => fake()->boolean(80),
@@ -38,10 +38,10 @@ class CategoryFactory extends Factory
             ->first()->id;
     }
 
-    public function getRandomCategoryId(int $user_id): ?int
+    public function getRandomCategoryId(int $admin_id): ?int
     {
         return Category::whereNull(['category_id'])
-            ->where(['user_id' => $user_id])
+            ->where(['admin_id' => $admin_id])
             ->inRandomOrder()
             ->first()?->id;
     }

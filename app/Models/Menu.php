@@ -12,7 +12,7 @@ class Menu extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
+        'admin_id',
         'menu_id',
         'name',
         'active',
@@ -20,7 +20,7 @@ class Menu extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     public function menu()

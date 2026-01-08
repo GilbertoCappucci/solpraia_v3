@@ -22,7 +22,7 @@ class OrderDetailsModal extends Component
     public function getListeners()
     {
 
-        $userId = auth()->user()->user_id ?? null;
+        $userId = auth()->user()->admin_id ?? null;
 
         return [
             'open-details-modal' => 'openModal',

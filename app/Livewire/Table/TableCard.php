@@ -33,7 +33,7 @@ class TableCard extends Component
     {
         // Obtém o userId da table para escutar eventos específicos
         $table = Table::find($this->tableId);
-        $userId = $table ? $table->user_id : null;
+        $userId = $table ? $table->admin_id : null;
         
         $listeners = [
             'selection-mode-changed' => 'updateSelectionMode',

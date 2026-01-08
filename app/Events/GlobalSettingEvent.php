@@ -24,7 +24,7 @@ class GlobalSettingEvent implements ShouldBroadcastNow
     public function __construct(GlobalSetting $globalSetting)
     {
         $this->globalSetting = $globalSetting;
-        $this->adminId = $this->globalSetting->user_id;
+        $this->adminId = $this->globalSetting->admin_id;
     }
 
     /**

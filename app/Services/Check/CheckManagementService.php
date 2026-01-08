@@ -76,13 +76,13 @@ class CheckManagementService
             'table_id' => $tableId,
             'status' => CheckStatusEnum::OPEN->value,
             'total' => 0,
-            'user_id' => auth()->id()
+            'admin_id' => auth()->id()
         ]);
 
         logger('🆕 Check criado automaticamente', [
             'check_id' => $newCheck->id,
             'table_id' => $tableId,
-            'user_id' => auth()->id() ?? 'sistema'
+            'admin_id' => auth()->id() ?? 'sistema'
         ]);
 
         return $newCheck;

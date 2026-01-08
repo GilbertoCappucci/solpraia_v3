@@ -14,10 +14,10 @@ class CategoryForm
     {
         return $schema
             ->components([
-                \Filament\Forms\Components\Hidden::make('user_id')
+                \Filament\Forms\Components\Hidden::make('admin_id')
                     ->default(Auth::id()),
                 \Filament\Forms\Components\Select::make('category_id')
-                    ->relationship('category', 'name', fn($query) => $query->whereNull('category_id')->where('user_id', Auth::id()))
+                    ->relationship('category', 'name', fn($query) => $query->whereNull('category_id')->where('admin_id', Auth::id()))
                     ->searchable()
                     ->preload(),
                 TextInput::make('name')

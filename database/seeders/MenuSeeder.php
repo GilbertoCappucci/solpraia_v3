@@ -13,25 +13,25 @@ class MenuSeeder extends Seeder
      */
     public function run(): void
     {
-        //id:1 - user_id:1 - Main Menu
+        //id:1 - admin_id:1 - Main Menu
         Menu::factory()->create([
-            'user_id' => 1,
+            'admin_id' => 1,
             'menu_id' => null,
             'name' => 'Principal',
             'active' => true,
         ]);
 
-        //id:2 - user_id:1 - Secondary Menu
+        //id:2 - admin_id:1 - Secondary Menu
         Menu::factory()->create([
-            'user_id' => 1,
+            'admin_id' => 1,
             'menu_id' => 1,
             'name' => 'Alta temporada',
             'active' => true,
         ]);
 
-        //id:3 - user_id:1 - Secondary Menu
+        //id:3 - admin_id:1 - Secondary Menu
         Menu::factory()->create([
-            'user_id' => 1,
+            'admin_id' => 1,
             'menu_id' => 1,
             'name' => 'Baixa temporada',
             'active' => true,

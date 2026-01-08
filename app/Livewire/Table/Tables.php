@@ -55,7 +55,7 @@ class Tables extends Component
 
     public function mount()
     {
-        $this->userId = Auth::user()->user_id;
+        $this->userId = Auth::user()->admin_id;
         $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
         
         // Carrega filtros iniciais
@@ -165,7 +165,7 @@ class Tables extends Component
         }
 
         $tables = \App\Models\Table::whereIn('id', $this->selectedTables)
-            ->where('user_id', $this->userId)
+            ->where('admin_id', $this->userId)
             ->get();
 
         $this->canMerge = $this->tableService->canMergeTables($tables);

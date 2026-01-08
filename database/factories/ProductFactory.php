@@ -19,10 +19,10 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        //$user_id = $this->getRamdomUserId();
+        //$admin_id = $this->getRamdomUserId();
 
         return [
-            //'category_id' => $this->getRandomCategoryId($user_id),
+            //'category_id' => $this->getRandomCategoryId($admin_id),
             'name' => fake()->word(),
             'description' => fake()->sentence(),
             'active' => fake()->boolean(80),
@@ -31,10 +31,10 @@ class ProductFactory extends Factory
     }
 
     
-    public function getRandomCategoryId(int $user_id): int
+    public function getRandomCategoryId(int $admin_id): int
     {
         return Category::whereNull(['category_id'])
-            ->where(['user_id' => $user_id, 'active' => true])
+            ->where(['admin_id' => $admin_id, 'active' => true])
             ->inRandomOrder()
             ->first()->id;
     }

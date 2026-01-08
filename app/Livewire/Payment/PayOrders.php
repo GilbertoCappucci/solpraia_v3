@@ -37,7 +37,7 @@ class PayOrders extends Component
 
     public function getListeners()
     {        
-        $userId = Auth::user()->user_id ?? null;
+        $userId = Auth::user()->admin_id ?? null;
         return [
             "echo-private:global-setting-updated.{$userId},.global.setting.updated" => 'refreshSetting',
             "echo-private:order-status-history-created.{$userId},.order.status.history.created" => 'handleOrderStatusHistoryCreated',
@@ -89,7 +89,7 @@ class PayOrders extends Component
 
     public function mount(GlobalSettingService $globalSettings, PaymentService $paymentService, CheckService $checkService)
     {
-        $this->userId = Auth::user()->user_id;
+        $this->userId = Auth::user()->admin_id;
         $this->globalSettings = $globalSettings;
         $this->paymentService = $paymentService;
         $this->checkService = $checkService;

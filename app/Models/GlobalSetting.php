@@ -13,7 +13,7 @@ class GlobalSetting extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
+        'admin_id',
         'menu_id',
         'pix_enabled',
         'pix_key',

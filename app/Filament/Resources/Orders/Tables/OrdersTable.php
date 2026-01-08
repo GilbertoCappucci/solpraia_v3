@@ -18,7 +18,7 @@ class OrdersTable
     {
         return $table
             ->columns([
-                TextColumn::make('user_id')
+                TextColumn::make('admin_id')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('check_id')

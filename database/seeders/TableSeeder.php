@@ -20,28 +20,28 @@ class TableSeeder extends Seeder
 
         Table::factory()->createMany([
             [
-                'user_id' => 1,
+                'admin_id' => 1,
                 'number' => 1,
                 'name' => 'Venda Direta',
                 'status' => TableStatusEnum::FREE->value,
             ],
             [
-                'user_id' => 1,
+                'admin_id' => 1,
                 'number' => 2,
                 'status' => TableStatusEnum::FREE->value,
             ],
             [
-                'user_id' => 1,
+                'admin_id' => 1,
                 'number' => 3,
                 'status' => TableStatusEnum::FREE->value,
             ],
             [
-                'user_id' => 1,
+                'admin_id' => 1,
                 'number' => 4,
                 'status' => TableStatusEnum::FREE->value,  
             ],
             [
-                'user_id' => 1,
+                'admin_id' => 1,
                 'number' => 5,
                 'status' => TableStatusEnum::FREE->value,
             ],
@@ -52,11 +52,11 @@ class TableSeeder extends Seeder
 
         foreach ($users as $user) {
             // Create between 5 to 15 beach umbrellas for each user
-            $tablesCount = Table::where('user_id', $user->id)->count();
+            $tablesCount = Table::where('admin_id', $user->id)->count();
             $numUmbrellas = 100 + $tablesCount;
             for ($i = $tablesCount; $i < $numUmbrellas; $i++) {
                 Table::factory()->create([
-                    'user_id' => $user->id,
+                    'admin_id' => $user->id,
                     'number' => $i + 1,
                     'active' => true,
                 ]);

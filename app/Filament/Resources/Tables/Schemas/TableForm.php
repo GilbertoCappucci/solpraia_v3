@@ -12,7 +12,7 @@ class TableForm
     {
         return $schema
             ->components([
-                TextInput::make('user_id')
+                TextInput::make('admin_id')
                     ->required()
                     ->numeric(),
                 TextInput::make('name')

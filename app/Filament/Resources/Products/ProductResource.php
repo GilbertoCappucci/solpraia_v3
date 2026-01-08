@@ -53,7 +53,7 @@ class ProductResource extends Resource
     {
         return parent::getEloquentQuery()
             ->whereHas('category', function (Builder $query) {
-                $query->where('user_id', Auth::id());
+                $query->where('admin_id', Auth::id());
             })
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
@@ -64,7 +64,7 @@ class ProductResource extends Resource
     {
         return parent::getRecordRouteBindingEloquentQuery()
             ->whereHas('category', function (Builder $query) {
-                $query->where('user_id', Auth::id());
+                $query->where('admin_id', Auth::id());
             })
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,

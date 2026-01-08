@@ -29,7 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         'email',
         'password',
         'role',
-        'user_id',
+        'admin_id',
         'active',
     ];
 
@@ -119,12 +119,12 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 
     public function menus()
     {
-        return $this->hasMany(Menu::class, 'user_id');
+        return $this->hasMany(Menu::class, 'admin_id');
     }
 
     public function categories()
     {
-        return $this->hasMany(Category::class, 'user_id');
+        return $this->hasMany(Category::class, 'admin_id');
     }
     
     public function products()
@@ -134,12 +134,12 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 
     public function devices()
     {
-        return $this->hasMany(User::class, 'user_id');
+        return $this->hasMany(User::class, 'admin_id');
     }
 
     public function tables()
     {
-        return $this->hasMany(Table::class, 'user_id');
+        return $this->hasMany(Table::class, 'admin_id');
     }
 
     public function userPreference()

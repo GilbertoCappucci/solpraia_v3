@@ -21,7 +21,7 @@ class UserObserver
             // Invalida todas as sessões do usuário
             // Laravel armazena sessões em DB/file/redis dependendo da config
             DB::table('sessions')
-                ->where('user_id', $user->id)
+                ->where('admin_id', $user->id)
                 ->delete();
         }
     }

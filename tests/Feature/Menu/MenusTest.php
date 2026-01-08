@@ -18,7 +18,7 @@ beforeEach(function () {
 
     // Create a table
     $this->table = Table::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'number' => '10',
         'name' => 'Mesa 10',
         'status' => 'free',
@@ -26,14 +26,14 @@ beforeEach(function () {
 
     // Create a menu
     $this->menu = Menu::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'name' => 'Cardápio Principal',
         'active' => true,
     ]);
 
     // Set active menu in global settings
     \App\Models\GlobalSetting::updateOrCreate(
-        ['user_id' => $this->user->id, 'key' => 'active_menu_id'],
+        ['admin_id' => $this->user->id, 'key' => 'active_menu_id'],
         ['value' => $this->menu->id]
     );
 });
@@ -54,14 +54,14 @@ test('menus component loads table and menu data correctly', function () {
 
 test('menus component loads parent categories', function () {
     Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'name' => 'Bebidas',
         'active' => true,
         'category_id' => null,
     ]);
 
     Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'name' => 'Comidas',
         'active' => true,
         'category_id' => null,
@@ -73,7 +73,7 @@ test('menus component loads parent categories', function () {
 
 test('menus component handles search updated event', function () {
     $category = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
     ]);
 
@@ -100,13 +100,13 @@ test('menus component handles search updated event', function () {
 
 test('menus component handles category filter changed event', function () {
     $parent = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
         'category_id' => null,
     ]);
 
     $child = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
         'category_id' => $parent->id,
     ]);
@@ -124,7 +124,7 @@ test('menus component handles category filter changed event', function () {
 
 test('menus component can add product to cart', function () {
     $category = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
     ]);
 
@@ -148,7 +148,7 @@ test('menus component can add product to cart', function () {
 
 test('menus component cannot add product without stock', function () {
     $category = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
     ]);
 
@@ -172,7 +172,7 @@ test('menus component cannot add product without stock', function () {
 
 test('menus component can remove product from cart', function () {
     $category = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
     ]);
 
@@ -197,7 +197,7 @@ test('menus component can remove product from cart', function () {
 
 test('menus component decreases quantity when removing from cart with multiple items', function () {
     $category = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
     ]);
 
@@ -223,7 +223,7 @@ test('menus component decreases quantity when removing from cart with multiple i
 
 test('menus component can clear entire cart', function () {
     $category = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
     ]);
 
@@ -265,7 +265,7 @@ test('menus component shows empty cart error when confirming without items', fun
 
 test('menus component can confirm order with items in cart', function () {
     $category = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
     ]);
 
@@ -298,13 +298,13 @@ test('menus component can confirm order with items in cart', function () {
 
 test('menus component refreshes on global setting updated event', function () {
     $newMenu = Menu::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'name' => 'Novo Cardápio',
         'active' => true,
     ]);
 
     \App\Models\GlobalSetting::updateOrCreate(
-        ['user_id' => $this->user->id, 'key' => 'active_menu_id'],
+        ['admin_id' => $this->user->id, 'key' => 'active_menu_id'],
         ['value' => $newMenu->id]
     );
 

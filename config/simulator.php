@@ -210,7 +210,7 @@ return [
         'auto_cleanup' => true,
 
         // ID do usuário para os pedidos
-        'user_id' => 1,
+        'admin_id' => 1,
 
         // Percentual de pedidos que podem ser cancelados (apenas status PENDING)
         'cancel_order_chance' => 5, // 5% de chance

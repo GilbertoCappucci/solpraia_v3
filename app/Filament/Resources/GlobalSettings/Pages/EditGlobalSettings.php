@@ -23,7 +23,7 @@ class EditGlobalSettings extends EditRecord
 
         // Carregar ou criar o registro de configurações do usuário
         $setting = GlobalSetting::firstOrCreate(
-            ['user_id' => Auth::id()],
+            ['admin_id' => Auth::id()],
             [
                 'time_limit_pending' => 15,
                 'time_limit_in_production' => 30,

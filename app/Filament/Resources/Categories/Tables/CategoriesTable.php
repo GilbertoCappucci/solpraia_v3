@@ -17,7 +17,7 @@ class CategoriesTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('user_id', \Illuminate\Support\Facades\Auth::id()))
+            ->modifyQueryUsing(fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('admin_id', \Illuminate\Support\Facades\Auth::id()))
             ->columns([
                 TextColumn::make('category.name')
                     ->label('Category')

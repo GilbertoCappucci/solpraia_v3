@@ -35,7 +35,7 @@ afterEach(function () {
 test('getMenuName returns menu name', function () {
     $menu = Menu::factory()->create([
         'name' => 'Cardápio Principal',
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
     ]);
 
     $name = $this->menuService->getMenuName($menu->id);
@@ -45,7 +45,7 @@ test('getMenuName returns menu name', function () {
 
 test('getActiveMenu returns active menu for user', function () {
     $menu = Menu::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
     ]);
 
@@ -75,7 +75,7 @@ test('getActiveMenu returns null when no active menu', function () {
 
 test('getActiveMenuId returns active menu id', function () {
     $menu = Menu::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
     ]);
 
@@ -93,14 +93,14 @@ test('getActiveMenuId returns active menu id', function () {
 test('getParentCategories returns only parent categories', function () {
     // Parent categories (category_id is null)
     $parent1 = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
         'category_id' => null,
         'name' => 'Bebidas',
     ]);
 
     $parent2 = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
         'category_id' => null,
         'name' => 'Comidas',
@@ -108,7 +108,7 @@ test('getParentCategories returns only parent categories', function () {
 
     // Child category (should not be returned)
     Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
         'category_id' => $parent1->id,
         'name' => 'Refrigerantes',
@@ -116,7 +116,7 @@ test('getParentCategories returns only parent categories', function () {
 
     // Inactive parent (should not be returned)
     Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => false,
         'category_id' => null,
         'name' => 'Sobremesas',
@@ -130,21 +130,21 @@ test('getParentCategories returns only parent categories', function () {
 
 test('getChildCategories returns only child categories of parent', function () {
     $parent = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
         'category_id' => null,
         'name' => 'Bebidas',
     ]);
 
     $child1 = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
         'category_id' => $parent->id,
         'name' => 'Refrigerantes',
     ]);
 
     $child2 = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
         'category_id' => $parent->id,
         'name' => 'Sucos',
@@ -152,13 +152,13 @@ test('getChildCategories returns only child categories of parent', function () {
 
     // Child of different parent (should not be returned)
     $otherParent = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
         'category_id' => null,
     ]);
 
     Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
         'category_id' => $otherParent->id,
         'name' => 'Pizzas',
@@ -171,20 +171,20 @@ test('getChildCategories returns only child categories of parent', function () {
 });
 
 test('getFilteredProducts returns products filtered by parent category', function () {
-    $menu = Menu::factory()->create(['user_id' => $this->user->id, 'active' => true]);
+    $menu = Menu::factory()->create(['admin_id' => $this->user->id, 'active' => true]);
     
     $this->globalSettingService
         ->shouldReceive('getActiveMenu')
         ->andReturn($menu);
 
     $parent = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
         'category_id' => null,
     ]);
 
     $child = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
         'category_id' => $parent->id,
     ]);
@@ -205,14 +205,14 @@ test('getFilteredProducts returns products filtered by parent category', functio
 });
 
 test('getFilteredProducts returns only favorite products when flag is true', function () {
-    $menu = Menu::factory()->create(['user_id' => $this->user->id, 'active' => true]);
+    $menu = Menu::factory()->create(['admin_id' => $this->user->id, 'active' => true]);
     
     $this->globalSettingService
         ->shouldReceive('getActiveMenu')
         ->andReturn($menu);
 
     $category = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
     ]);
 
@@ -246,14 +246,14 @@ test('getFilteredProducts returns only favorite products when flag is true', fun
 });
 
 test('getFilteredProducts filters by search term', function () {
-    $menu = Menu::factory()->create(['user_id' => $this->user->id, 'active' => true]);
+    $menu = Menu::factory()->create(['admin_id' => $this->user->id, 'active' => true]);
     
     $this->globalSettingService
         ->shouldReceive('getActiveMenu')
         ->andReturn($menu);
 
     $category = Category::factory()->create([
-        'user_id' => $this->user->id,
+        'admin_id' => $this->user->id,
         'active' => true,
     ]);
 
@@ -286,13 +286,13 @@ test('getFilteredProducts filters by search term', function () {
 });
 
 test('getProductWithMenuPrice returns product with menu price', function () {
-    $menu = Menu::factory()->create(['user_id' => $this->user->id, 'active' => true]);
+    $menu = Menu::factory()->create(['admin_id' => $this->user->id, 'active' => true]);
     
     $this->globalSettingService
         ->shouldReceive('getActiveMenu')
         ->andReturn($menu);
 
-    $category = Category::factory()->create(['user_id' => $this->user->id]);
+    $category = Category::factory()->create(['admin_id' => $this->user->id]);
 
     $product = Product::factory()->create([
         'category_id' => $category->id,

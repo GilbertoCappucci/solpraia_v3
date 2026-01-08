@@ -30,7 +30,7 @@ class TableService
         array $filterDepartaments = [],
         string $globalFilterMode = 'OR'
     ): Collection {
-        $query = Table::where('user_id', $userId);
+        $query = Table::where('admin_id', $userId);
 
         return $query->with(['checks' => function ($query) {
             $query->with(['orders.currentStatusHistory', 'orders.product']);
@@ -64,7 +64,7 @@ class TableService
     public function createTable(int $userId, string $name, int $number): Table
     {
         return Table::create([
-            'user_id' => $userId,
+            'admin_id' => $userId,
             'name' => $name,
             'number' => $number,
             'status' => TableStatusEnum::FREE->value,
@@ -85,7 +85,7 @@ class TableService
                 'integer',
                 'min:1',
                 function ($attribute, $value, $fail) use ($userId) {
-                    if ($userId && Table::where('user_id', $userId)->where('number', $value)->exists()) {
+                    if ($userId && Table::where('admin_id', $userId)->where('number', $value)->exists()) {
                         $fail('Já existe um local com este número.');
                     }
                 },

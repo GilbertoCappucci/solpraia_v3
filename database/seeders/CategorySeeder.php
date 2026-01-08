@@ -17,7 +17,7 @@ class CategorySeeder extends Seeder
         //Id:1 - Porcoes
         Category::factory()->create(
             [
-                'user_id' => 1,
+                'admin_id' => 1,
                 'category_id' => null,
                 'name' => 'Porções',
                 'active' => true,
@@ -28,7 +28,7 @@ class CategorySeeder extends Seeder
         //Id:2 - Bebidas
         Category::factory()->create(
             [
-                'user_id' => 1,
+                'admin_id' => 1,
                 'category_id' => null,
                 'name' => 'Bebidas',
                 'active' => true,
@@ -39,7 +39,7 @@ class CategorySeeder extends Seeder
         //Id:3 - Batata frita
         Category::factory()->create(
             [
-                'user_id' => 1,
+                'admin_id' => 1,
                 'category_id' => 1,
                 'name' => 'Batata frita',
                 'active' => true,
@@ -50,7 +50,7 @@ class CategorySeeder extends Seeder
         //Id:4 - Calabresa
         Category::factory()->create(
             [
-                'user_id' => 1,
+                'admin_id' => 1,
                 'category_id' => 1,
                 'name' => 'Calabresa acebolada',
                 'active' => true,
@@ -61,7 +61,7 @@ class CategorySeeder extends Seeder
         //Id:5 - Suco de fruta
         Category::factory()->create(
             [
-                'user_id' => 1,
+                'admin_id' => 1,
                 'category_id' => 2,
                 'name' => 'Suco de Fruta',
                 'active' => true,
@@ -72,7 +72,7 @@ class CategorySeeder extends Seeder
         //Id:6 - Agua
         Category::factory()->create(
             [
-                'user_id' => 1,
+                'admin_id' => 1,
                 'category_id' => 2,
                 'name' => 'Agua',
                 'active' => true,
@@ -83,7 +83,7 @@ class CategorySeeder extends Seeder
         //Id:7 - Refrigerante
         Category::factory()->create(
             [
-                'user_id' => 1,
+                'admin_id' => 1,
                 'category_id' => 2,
                 'name' => 'Refrigerante',
                 'active' => true,

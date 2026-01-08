@@ -12,7 +12,7 @@ class Category extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
+        'admin_id',
         'category_id',
         'name',
         'description',
@@ -21,7 +21,7 @@ class Category extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     public function category()

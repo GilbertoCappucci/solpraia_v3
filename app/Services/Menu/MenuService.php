@@ -67,7 +67,7 @@ class MenuService
     public function getParentCategories(int $userId): Collection
     {
         return Category::where('active', true)
-            ->where('user_id', $userId)
+            ->where('admin_id', $userId)
             ->whereNull('category_id')
             ->orderBy('name')
             ->get();
@@ -79,7 +79,7 @@ class MenuService
     public function getChildCategories(int $userId, int $parentCategoryId): Collection
     {
         return Category::where('active', true)
-            ->where('user_id', $userId)
+            ->where('admin_id', $userId)
             ->where('category_id', $parentCategoryId)
             ->orderBy('name')
             ->get();
@@ -108,7 +108,7 @@ class MenuService
             ->where('menu_items.menu_id', $activeMenuId)
             ->where('menu_items.active', true)
             ->whereHas('category', function ($q) use ($userId) {
-                $q->where('user_id', $userId);
+                $q->where('admin_id', $userId);
             })
             ->select(
                 'products.*',
@@ -247,7 +247,7 @@ class MenuService
                     }
 
                     $order = Order::create([
-                        'user_id' => $userId,
+                        'admin_id' => $userId,
                         'check_id' => $check->id,
                         'product_id' => $productId,
                     ]);

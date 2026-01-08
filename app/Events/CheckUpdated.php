@@ -31,7 +31,7 @@ class CheckUpdated implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('tables-updated.' . $this->check->table->user_id),
+            new PrivateChannel('tables-updated.' . $this->check->table->admin_id),
         ];
     }
 
@@ -51,7 +51,7 @@ class CheckUpdated implements ShouldBroadcastNow
         return [
             'checkId' => $this->check->id,
             'tableId' => $this->check->table_id,
-            'userId' => $this->check->table->user_id,
+            'userId' => $this->check->table->admin_id,
             'checkStatus' => $this->check->status,
             'checkTotal' => $this->check->total,
             'updated_at' => $this->check->updated_at->toISOString(),

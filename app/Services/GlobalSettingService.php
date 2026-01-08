@@ -11,7 +11,7 @@ class GlobalSettingService
 
     /**
      * Carrega as configurações globais do banco de dados
-     * Busca as configurações do admin (user_id do usuário logado ou do próprio usuário se for admin)
+     * Busca as configurações do admin (admin_id do usuário logado ou do próprio usuário se for admin)
      * 
      * @param User $user
      * @return ?GlobalSetting
@@ -19,17 +19,17 @@ class GlobalSettingService
     public function loadGlobalSettings(User $user): ?GlobalSetting
     {
         // Determina qual admin buscar as configurações
-        $adminId = $user->user_id ?? $user->id;
+        $adminId = $user->admin_id ?? $user->id;
 
         // Busca configurações globais do admin
-        $settings = GlobalSetting::where('user_id', $adminId)->first();
+        $settings = GlobalSetting::where('admin_id', $adminId)->first();
 
         return $settings;
     }
 
     public function getTimeLimits(User $user): array
     {
-        $settings = GlobalSetting::where('user_id', $user->user_id ?? $user->id)->first();
+        $settings = GlobalSetting::where('admin_id', $user->admin_id ?? $user->id)->first();
 
         // Define os valores padrão para todos os limites de tempo, caso não existam configurações.
         $defaults = [
@@ -61,9 +61,9 @@ class GlobalSettingService
         ];
     }
     
-    public static function getActiveMenu(int $user_id): ?Menu
+    public static function getActiveMenu(int $admin_id): ?Menu
     {
-        $settings = GlobalSetting::where('user_id', $user_id)->first();
+        $settings = GlobalSetting::where('admin_id', $admin_id)->first();
         if (!$settings || !$settings->menu_id) {
             return null;
         }
@@ -71,15 +71,15 @@ class GlobalSettingService
     }
 
     
-    public static function getPixEnabled(int $user_id): bool
+    public static function getPixEnabled(int $admin_id): bool
     {
-        $settings = GlobalSetting::where('user_id', $user_id)->first();
+        $settings = GlobalSetting::where('admin_id', $admin_id)->first();
         return $settings->pix_enabled ?? false;
     }
 
-    public static function getPixKey(int $user_id): ?string
+    public static function getPixKey(int $admin_id): ?string
     {
-        $settings = GlobalSetting::where('user_id', $user_id)->first();
+        $settings = GlobalSetting::where('admin_id', $admin_id)->first();
         return $settings->pix_key ?? null;
     }
     

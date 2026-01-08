@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('global_settings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('admin_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('menu_id')->nullable()->constrained()->onDelete('cascade');
             $table->boolean('pix_enabled')->default(false);
             $table->string('pix_key')->nullable();

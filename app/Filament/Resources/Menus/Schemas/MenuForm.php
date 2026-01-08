@@ -15,7 +15,7 @@ class MenuForm
     {
         return $schema
             ->components([
-                \Filament\Forms\Components\Hidden::make('user_id')
+                \Filament\Forms\Components\Hidden::make('admin_id')
                     ->default(Auth::id()),
                 TextInput::make('name')
                     ->required(),
@@ -25,7 +25,7 @@ class MenuForm
                         name: 'menu',
                         titleAttribute: 'name',
                         modifyQueryUsing: fn(Builder $query, ?\App\Models\Menu $record) =>
-                        $query->where('menus.user_id', Auth::id())
+                        $query->where('menus.admin_id', Auth::id())
                             ->whereNull('menus.menu_id')
                             ->when($record, fn($q) => $q->where('menus.id', '!=', $record->id))
                     ),

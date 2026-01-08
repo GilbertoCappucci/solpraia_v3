@@ -144,7 +144,7 @@ class TableMergeModal extends Component
             $destinationCheck = Check::create([
                 'table_id' => $destinationTableId,
                 'status' => CheckStatusEnum::OPEN->value,
-                'user_id' => Auth::id(),
+                'admin_id' => Auth::id(),
                 'total' => 0.00,
             ]);
         }

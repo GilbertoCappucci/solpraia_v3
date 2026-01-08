@@ -45,7 +45,7 @@ class TableCreateModal extends Component
                 'required',
                 'integer',
                 'min:1',
-                'unique:tables,number,NULL,id,user_id,' . Auth::id()
+                'unique:tables,number,NULL,id,admin_id,' . Auth::id()
             ],
             'newTableName' => 'nullable|string|max:255',
         ], [
@@ -56,7 +56,7 @@ class TableCreateModal extends Component
         ]);
 
         Table::create([
-            'user_id' => Auth::id(),
+            'admin_id' => Auth::id(),
             'name' => $this->newTableName,
             'number' => $this->newTableNumber,
             'status' => TableStatusEnum::FREE->value,

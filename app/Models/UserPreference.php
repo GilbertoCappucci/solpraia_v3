@@ -12,7 +12,7 @@ class UserPreference extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
+        'admin_id',
         'table_filter_table',
         'table_filter_check',
         'table_filter_order',

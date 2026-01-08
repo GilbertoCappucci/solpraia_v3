@@ -36,10 +36,10 @@ class OrderStatusHistoryCreatedEvent implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        logger('📡 Broadcasting OrderStatusHistoryCreatedEvent', ['orderStatusHistoryId' => $this->orderStatusHistory->id, 'userId' => $this->orderStatusHistory->order->user_id]);
+        logger('📡 Broadcasting OrderStatusHistoryCreatedEvent', ['orderStatusHistoryId' => $this->orderStatusHistory->id, 'userId' => $this->orderStatusHistory->order->admin_id]);
 
         return [
-            new PrivateChannel('order-status-history-created.' . $this->orderStatusHistory->order->user_id),
+            new PrivateChannel('order-status-history-created.' . $this->orderStatusHistory->order->admin_id),
         ];
     }
 

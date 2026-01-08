@@ -12,7 +12,7 @@ class Setting extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
+        'admin_id',
         'time_limit_pending',
         'time_limit_in_production',
         'time_limit_in_transit',

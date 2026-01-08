@@ -70,7 +70,7 @@ class Tables extends Component
 
     public function mount()
     {
-        $this->userId = Auth::user()->user_id;
+        $this->userId = Auth::user()->admin_id;
         $this->timeLimits = $this->globalSettingService->getTimeLimits(Auth::user());
         
         // Inicializa os filtros a partir das preferências salvas
@@ -284,7 +284,7 @@ class Tables extends Component
         }
 
         $tables = \App\Models\Table::whereIn('id', $this->selectedTables)
-            ->where('user_id', $this->userId)
+            ->where('admin_id', $this->userId)
             ->get();
 
         logger('🔍 updateCanMerge', [
@@ -504,7 +504,7 @@ class Tables extends Component
                 'required',
                 'integer',
                 'min:1',
-                'unique:tables,number,NULL,id,user_id,' . Auth::id()
+                'unique:tables,number,NULL,id,admin_id,' . Auth::id()
             ],
             'newTableName' => 'nullable|string|max:255',
         ], [
@@ -515,7 +515,7 @@ class Tables extends Component
         ]);
 
         Table::create([
-            'user_id' => Auth::id(),
+            'admin_id' => Auth::id(),
             'name' => $this->newTableName,
             'number' => $this->newTableNumber,
             'status' => TableStatusEnum::FREE->value,
@@ -610,7 +610,7 @@ class Tables extends Component
 
         // Encontra as mesas e seus checks ativos
         $selectedTablesData = $this->tableService->getFilteredTables(
-            Auth::user()->user_id,
+            Auth::user()->admin_id,
             [],
             [],
             [],

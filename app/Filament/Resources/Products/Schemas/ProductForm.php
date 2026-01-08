@@ -21,7 +21,7 @@ class ProductForm
                     ->relationship(
                         name: 'category',
                         titleAttribute: 'name',
-                        modifyQueryUsing: fn(Builder $query) => $query->where('user_id', Auth::id()),
+                        modifyQueryUsing: fn(Builder $query) => $query->where('admin_id', Auth::id()),
                     )
                     ->searchable()
                     ->preload()

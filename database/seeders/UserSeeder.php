@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
         // Create admin
         User::factory()->create([
             'id' => 1,
-            'user_id' => 1,
+            'admin_id' => 1,
             'name' => 'User admin',
             'email' => 'sol@gmail.com',
             'password' => '45rtfgvb',
@@ -33,7 +33,7 @@ class UserSeeder extends Seeder
         //User 1 normal
         User::factory()->create([
             'id' => 2,
-            'user_id' => 1,
+            'admin_id' => 1,
             'name' => 'User normal',
             'email' => 'sol1@gmail.com',
             'password' => '45rtfgvb',
@@ -50,7 +50,7 @@ class UserSeeder extends Seeder
         //Create user 2 normal
         User::factory()->create([
             'id' => 3,
-            'user_id' => 1,
+            'admin_id' => 1,
             'name' => 'User normal 2',
             'email' => 'sol2@gmail.com',
             'password' => '45rtfgvb',
@@ -66,7 +66,7 @@ class UserSeeder extends Seeder
         // Create admin 2
         User::factory()->create([
             'id' => 4,
-            'user_id' => 4,
+            'admin_id' => 4,
             'name' => 'User admin 2',
             'email' => 'admin2@gmail.com',
             'password' => '45rtfgvb',

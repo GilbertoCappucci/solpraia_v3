@@ -79,7 +79,7 @@ class Check extends Component
     //Monta o PIX
     public function pix(){
 
-        $this->pixEnabled = $this->globalSettingService->getPixEnabled(Auth::user()->user_id);
+        $this->pixEnabled = $this->globalSettingService->getPixEnabled(Auth::user()->admin_id);
         $this->pixPayload = $this->paymentService->qrCodeCheck($this->check);
 
         /*

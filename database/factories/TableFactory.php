@@ -25,7 +25,7 @@ class TableFactory extends Factory
             ->first()
             ->id;
         return [
-            'user_id' => $userId,
+            'admin_id' => $userId,
             'name' => null,
             'number' => fake()->unique()->numberBetween(1, 10),
             'status' => $this->faker->randomElement(array_column(TableStatusEnum::cases(), 'value')),

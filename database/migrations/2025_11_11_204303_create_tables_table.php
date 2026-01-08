@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('tables', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('admin_id')->constrained('users')->onDelete('cascade');
             $table->string('name')->nullable();
             $table->integer('number');
             $table->enum('status', TableStatusEnum::cases())->default(TableStatusEnum::FREE->value);

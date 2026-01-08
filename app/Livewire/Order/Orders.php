@@ -39,7 +39,7 @@ class Orders extends Component
 
         $this->userId = $user->isAdmin()
             ? $user->id
-            : ($user->user_id ?? Auth::id());
+            : ($user->admin_id ?? Auth::id());
 
         $this->timeLimits = $this->globalSettingsService->getTimeLimits($user);
         $this->tableId = $tableId;
@@ -50,7 +50,7 @@ class Orders extends Component
 
     public function getListeners()
     {
-        $userId = $this->userId ?: (Auth::user()?->isAdmin() ? Auth::id() : Auth::user()?->user_id ?? Auth::id());
+        $userId = $this->userId ?: (Auth::user()?->isAdmin() ? Auth::id() : Auth::user()?->admin_id ?? Auth::id());
         
         return [
             "echo-private:global-setting-updated.{$userId},.global.setting.updated" => 'refreshSetting',

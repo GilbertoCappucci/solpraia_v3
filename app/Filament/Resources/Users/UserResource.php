@@ -45,7 +45,7 @@ class UserResource extends Resource
     {
         return $schema
             ->components([
-                Hidden::make('user_id')
+                Hidden::make('admin_id')
                     ->default(Auth::id()),
                 
                 TextInput::make('name')
@@ -150,7 +150,7 @@ class UserResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('user_id', Auth::id())
+            ->where('admin_id', Auth::id())
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);

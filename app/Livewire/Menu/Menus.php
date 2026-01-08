@@ -47,7 +47,7 @@ class Menus extends Component
 
     public function mount($tableId)
     {
-        $this->userId = Auth::user()->user_id;
+        $this->userId = Auth::user()->admin_id;
         $this->tableId = $tableId;
         $this->selectedTable = Table::findOrFail($tableId);
         $this->currentCheck = $this->orderService->findCheck($tableId);

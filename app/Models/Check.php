@@ -13,7 +13,7 @@ class Check extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
+        'admin_id',
         'table_id',
         'total',
         'status',
@@ -33,7 +33,7 @@ class Check extends Model
 
     public function admin()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
 }

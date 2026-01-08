@@ -151,7 +151,7 @@ class OrderStatusService
 
         // 2. Cria novo pedido com a quantidade movida
         $newOrder = Order::create([
-            'user_id' => $order->user_id,
+            'admin_id' => $order->admin_id,
             'check_id' => $order->check_id,
             'product_id' => $order->product_id,
         ]);

@@ -22,7 +22,7 @@ class UserPreferenceService
     public function loadUserPreferences(User $user): void
     {
         // Busca preferências do usuário no banco
-        $preferences = UserPreference::where('user_id', $user->id)->first();
+        $preferences = UserPreference::where('admin_id', $user->id)->first();
 
         if (!$preferences) {
             // Se não existe, cria com valores padrão do config
@@ -44,7 +44,7 @@ class UserPreferenceService
         $config = config('solpraia');
 
         return UserPreference::create([
-            'user_id' => $user->id,
+            'admin_id' => $user->id,
             'table_filter_table' => $config['table_filter']['table'] ?? [],
             'table_filter_check' => $config['table_filter']['check'] ?? [],
             'table_filter_order' => $config['table_filter']['order'] ?? [],
@@ -78,7 +78,7 @@ class UserPreferenceService
      */
     public function updatePreferences(User $user, array $data): bool
     {
-        $preferences = UserPreference::where('user_id', $user->id)->first();
+        $preferences = UserPreference::where('admin_id', $user->id)->first();
 
         if (!$preferences) {
             $preferences = $this->createDefaultPreferences($user);

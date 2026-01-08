@@ -18,7 +18,7 @@ class GlobalSettingsForm
                 Select::make('menu_id')
                     ->label('Menu Ativo')
                     ->options(function () {
-                        return \App\Models\Menu::where('user_id', Auth::id())
+                        return \App\Models\Menu::where('admin_id', Auth::id())
                             ->pluck('name', 'id');
                     })
                     ->nullable()

@@ -21,7 +21,7 @@ class MenuItemForm
                         name: 'menu',
                         titleAttribute: 'name',
                         modifyQueryUsing: fn(Builder $query) =>
-                        $query->where('menus.user_id', Auth::id())
+                        $query->where('menus.admin_id', Auth::id())
                     )
                     ->live()
                     ->required(),
@@ -31,7 +31,7 @@ class MenuItemForm
                         titleAttribute: 'name',
                         modifyQueryUsing: function (Builder $query, Get $get, ?\App\Models\MenuItem $record = null) // Adiciona o parâmetro $record
                         {
-                            $query->whereHas('category', fn($q) => $q->where('user_id', Auth::id()));
+                            $query->whereHas('category', fn($q) => $q->where('admin_id', Auth::id()));
 
                             $selectedMenuId = $get('menu_id');
                             $currentMenuItemId = $record?->id; // Agora usa o $record direto

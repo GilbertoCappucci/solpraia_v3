@@ -12,7 +12,7 @@ class Table extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
+        'admin_id',
         'name',
         'number',
         'status',

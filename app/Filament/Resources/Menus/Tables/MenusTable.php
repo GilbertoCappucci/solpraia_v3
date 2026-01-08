@@ -63,7 +63,7 @@ class MenusTable
                     ->form([
                         Select::make('category_id')
                             ->label('Categoria Específica')
-                            ->options(Category::where('user_id', Auth::id())->pluck('name', 'id'))
+                            ->options(Category::where('admin_id', Auth::id())->pluck('name', 'id'))
                             ->placeholder('Todas as Categorias')
                             ->searchable()
                             ->disabled(fn($get) => $get('product_id') !== null)
@@ -71,7 +71,7 @@ class MenusTable
                             ->helperText('Desabilitado se um produto for selecionado.'),
                         Select::make('product_id')
                             ->label('Produto Específico')
-                            ->options(Product::whereHas('category', fn($q) => $q->where('user_id', Auth::id()))->pluck('name', 'id'))
+                            ->options(Product::whereHas('category', fn($q) => $q->where('admin_id', Auth::id()))->pluck('name', 'id'))
                             ->placeholder('Todos os Produtos')
                             ->searchable()
                             ->disabled(fn($get) => $get('category_id') !== null)
