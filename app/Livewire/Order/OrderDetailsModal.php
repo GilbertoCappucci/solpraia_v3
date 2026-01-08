@@ -3,6 +3,7 @@
 namespace App\Livewire\Order;
 
 use App\Services\Order\OrderService;
+use Illuminate\Container\Attributes\Auth;
 use Livewire\Component;
 
 class OrderDetailsModal extends Component
@@ -51,7 +52,9 @@ class OrderDetailsModal extends Component
             return redirect()->route('orders', $data['tableId']);
         }
 
-        if ($this->orderDetails && $this->orderDetails['id'] === $order->id) {
+        $userId = auth()->user()->id;
+
+        if ($this->orderDetails && $this->orderDetails['id'] === $order->id && $userId !== $data['userId']   ) {
             logger("Refreshing OrderDetailsModal for order ID {$order->id} due to status history change", ['order_id' => $order->id, 'new_status' => $orderStatusHistory->to_status]);
 
             session()->flash('error', "O pedido #{$order->id} foi alterado. Por favor, verifique os pedidos novamente.");

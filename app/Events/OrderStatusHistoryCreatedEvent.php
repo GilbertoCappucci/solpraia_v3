@@ -12,6 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Auth;
 
 class OrderStatusHistoryCreatedEvent implements ShouldBroadcastNow
 {
@@ -44,10 +45,12 @@ class OrderStatusHistoryCreatedEvent implements ShouldBroadcastNow
 
     public function broadcastWith(): array
     {
+        $userId = Auth::user()->id;
         return [
             'orderStatusHistoryId' => $this->orderStatusHistory->id,
             'orderId' => $this->orderStatusHistory->order_id,
             'tableId' => $this->orderStatusHistory->order->check->table->id,
+            'userId' => $userId,
         ];
     }
 
