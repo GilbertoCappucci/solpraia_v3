@@ -16,6 +16,7 @@ class Order extends Model
         'user_id',
         'check_id',
         'product_id',
+        'tab_id',
         'is_paid',
         'paid_at',
     ];
@@ -66,6 +67,11 @@ class Order extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function tab()
+    {
+        return $this->belongsTo(Tab::class);
     }
 
     public function statusHistory()
