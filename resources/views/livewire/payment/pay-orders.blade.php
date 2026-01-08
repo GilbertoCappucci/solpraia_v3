@@ -2,26 +2,22 @@
     <x-flash-message />
 
     {{-- Botões de navegação e impressão - Escondidos na impressão --}}
-    <div class="print:hidden bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 flex items-center justify-between sticky top-0 z-10 shadow-md">
-        {{-- Lado Esquerdo --}}
-        <div class="flex items-center gap-2">
-            <button
-                wire:click="goBack"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-            </button>
-
-            <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-bold">{{ $table->number }}</span>
-                <span class="text-sm opacity-90">{{ $table->name }}</span>
+    <div class="print:hidden bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 sticky top-0 z-10 shadow-md">
+        <!-- Primeira linha: navegação e dados da mesa -->
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button
+                    wire:click="goBack"
+                    class="p-1.5 hover:bg-white/20 rounded-lg transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-2xl font-bold">{{ $table->number }}</span>
+                    <span class="text-sm opacity-90">{{ $table->name }}</span>
+                </div>
             </div>
-        </div>
-
-        {{-- Lado Direito --}}
-        <div class="flex items-center gap-2">
-
             <button
                 onclick="window.print()"
                 class="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 border-2 border-white/30 text-white rounded-lg text-sm font-medium transition">
@@ -29,13 +25,27 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
             </button>
-
-            <button wire:click="processPayment"
-                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition">
-                Pagar
-            </button>
-
-
+        </div>
+        <!-- Segunda linha: meios de pagamento distribuídos -->
+        <div class="grid grid-cols-3 gap-2 mt-2">
+            <div class="flex justify-start">
+                <button wire:click="processPayment"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition w-full max-w-[120px]">
+                    Cartão
+                </button>
+            </div>
+            <div class="flex justify-center">
+                <button wire:click="processPayment"
+                    class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition w-full max-w-[120px]">
+                    Dinheiro
+                </button>
+            </div>
+            <div class="flex justify-end">
+                <button wire:click="processPayment"
+                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition w-full max-w-[120px]">
+                    PIX
+                </button>
+            </div>
         </div>
     </div>
 
