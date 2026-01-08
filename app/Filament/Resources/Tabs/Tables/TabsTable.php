@@ -18,18 +18,23 @@ class TabsTable
         return $table
             ->columns([
                 TextColumn::make('customer.name')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('credit_limit')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('status')
+                    ->searchable()
                     ->badge(),
+                TextColumn::make('note')
+                    ->limit(50),
                 TextColumn::make('opened_at')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('closed_at')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
