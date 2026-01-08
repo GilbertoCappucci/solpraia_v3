@@ -81,14 +81,13 @@
                     </div>
                     <div class="flex items-center justify-between mt-1">
                         <span class="text-sm text-gray-500">{{ $order->status_changed_at ? abs((int) now()->diffInMinutes($order->status_changed_at)) : 0 }} min</span>
-                        <span>
+                        <span class="flex gap-2 items-center">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border {{ $statusConfig['color'] }}">
+                                {{ $statusConfig['label'] }}
+                            </span>
                             @if($order->is_paid)
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-emerald-100 text-emerald-800 border-emerald-200">
                                     ✓ Pago
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border {{ $statusConfig['color'] }}">
-                                    {{ $statusConfig['label'] }}
                                 </span>
                             @endif
                         </span>
@@ -117,14 +116,13 @@
                         <p class="text-sm text-gray-500 ml-2 md:ml-0">{{ $order->status_changed_at ? abs((int) now()->diffInMinutes($order->status_changed_at)) : 0 }} min</p>
                     </div>
                     <div class="flex flex-row items-center md:justify-end md:w-1/3">
-                        <div>
+                        <div class="flex gap-2 items-center">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border {{ $statusConfig['color'] }}">
+                                {{ $statusConfig['label'] }}
+                            </span>
                             @if($order->is_paid)
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border bg-emerald-100 text-emerald-800 border-emerald-200">
                                     ✓ Pago
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border {{ $statusConfig['color'] }}">
-                                    {{ $statusConfig['label'] }}
                                 </span>
                             @endif
                         </div>
