@@ -5,6 +5,7 @@ namespace App\Livewire\Payment;
 use App\Models\Check;
 use App\Models\Order;
 use App\Models\Table;
+use App\Services\CheckService;
 use App\Services\GlobalSettingService;
 use Livewire\Component;
 use App\Services\Payment\PaymentService;
@@ -14,97 +15,106 @@ class PayOrders extends Component
 {
 
     public $table;
-    public $orders;
+    public $ordersId;
+
     public float $checkTotal = 0.0;
+
     public $pix_enabled;
     public $pixPayload;
     public $pixKey;
     
     protected GlobalSettingService $globalSettings;
     protected PaymentService $paymentService;
+    protected CheckService $checkService;
 
-    public function mount(GlobalSettingService $globalSettings, PaymentService $paymentService)
+    private $userId;
+    private $firstOrder;  
+
+    public function mount(GlobalSettingService $globalSettings, PaymentService $paymentService, CheckService $checkService)
     {
-        $userId = Auth::user()->user_id;
+        $this->userId = Auth::user()->user_id;
         $this->globalSettings = $globalSettings;
         $this->paymentService = $paymentService;
+        $this->checkService = $checkService;
 
-        $this->orders = session('pay_orders', []);
+        $this->setOrders();
+        $this->table = $this->firstOrder->check->table;
 
-        if (empty($this->orders)) {
+        $this->checkTotal = $this->checkService->calculateTotalOrders($this->ordersId);
+
+        $this->setPix();
+    }
+
+    private function getCheckOrders()
+    {
+        return Order::with(['product', 'currentStatusHistory'])
+            ->whereIn('id', $this->ordersId)
+            ->get()
+            ->groupBy(fn ($order) => $order->product->name);
+    }
+
+    private function forgotSessionOrders()
+    {
+        session()->forget('pay_orders');
+    }
+
+    private function setOrders()
+    {
+        $this->ordersId = session('pay_orders');
+
+        if (empty($this->ordersId)) {
             session()->flash('error', 'Nenhum pedido encontrado.');
             return redirect()->route('tables');
         }
 
-        // Get table from first order
-        $firstOrder = Order::with('check.table')->whereIn('id', $this->orders)->first();
-        if (!$firstOrder) {
+        $this->firstOrder = Order::with('check.table')->whereIn('id', $this->ordersId)->first();
+        if (!$this->firstOrder) {
             session()->flash('error', 'Nenhum pedido encontrado.');
             return redirect()->route('tables');
         }
-        
-        $this->table = $firstOrder->check->table;
+    }
 
-        // Calculate total using CheckService
-        $checkService = app(\App\Services\CheckService::class);
-        $this->checkTotal = $checkService->calculateTotalOrders($this->orders);
-
-        $this->pix_enabled = $this->globalSettings->getPixEnabled($userId);
-        $this->pixKey = $this->globalSettings->getPixKey($userId);
-        $this->pixPayload = $this->paymentService->qrCodeOrders($this->orders);
-        
+    private function setPix()
+    {
+        $this->pix_enabled = $this->globalSettings->getPixEnabled($this->userId);
+        $this->pixKey = $this->globalSettings->getPixKey($this->userId);
+        $this->pixPayload = $this->paymentService->qrCodeOrders($this->ordersId);
     }
 
     public function goBack()
     {
+        $this->forgotSessionOrders();
         return redirect()->route('orders', $this->table->id);
     }
 
     public function goToOrders()
     {
+        $this->forgotSessionOrders();
         return redirect()->route('orders', $this->table->id);
     }
 
-    public function openStatusModal()
+    public function processPayment()
     {
-        // TODO: Implement status modal logic
-        session()->flash('info', 'Status modal não implementado ainda.');
-    }
+        $this->setOrders();
 
-    public function processPayment($orders)
-    {
-        // Lógica para processar o pagamento do pedido
-        // Isso pode incluir integração com gateway de pagamento, atualização do status do pedido, etc.
 
-        $order = \App\Models\Order::find($this->orderId);
-        if (!$order) {
-            session()->flash('error', 'Pedido não encontrado.');
-            return;
+        $this->paymentService = app(PaymentService::class);
+
+        $orders = Order::whereIn('id', $this->ordersId)->get();
+        foreach($orders as $order) {
+            $this->paymentService->processOrderPayment($order->id);
         }
 
-        $order->is_paid = true;
-        $order->save();
-        
-        $paymentService = new PaymentService();
-        $paymentService->processOrderPayment($this->orderId);
+        session()->flash('message', 'Pagamento processado com sucesso para os pedidos selecionados.');
 
-        // Exemplo simples de feedback
-        session()->flash('message', 'Pagamento processado com sucesso para o pedido #' . $this->orderId);
-
-        // Redirecionar ou atualizar a interface conforme necessário
+        $this->forgotSessionOrders();
         return redirect()->route('tables');
     }
 
     public function render()
     {
-        // Calculate checkOrders on render to avoid Livewire serialization issues
-        $checkOrders = Order::with(['product', 'currentStatusHistory'])
-            ->whereIn('id', $this->orders)
-            ->get()
-            ->groupBy(fn ($order) => $order->product->name);
-
         return view('livewire.payment.pay-orders', [
-            'checkOrders' => $checkOrders
+            'checkOrders' => $this->getCheckOrders()
         ]);
     }
 }
