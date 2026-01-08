@@ -10,6 +10,7 @@ class OrderGroupModal extends Component
     public $groupOrders = [];
     public $selectedOrderIds = [];
     public $currentCheck;
+    public $buttonPayVisible = false;
 
     public function getListeners()
     {
@@ -36,6 +37,16 @@ class OrderGroupModal extends Component
             ->whereIn('id', $this->selectedOrderIds)
             ->get()
             ->toArray();
+
+        //Verifica se alguma orden já foi paga para esconder o botão de pagar
+        $somePaid = collect($this->groupOrders)->some(fn($order) => $order['is_paid'] == true);
+
+        if($somePaid){
+            $this->buttonPayVisible = false;
+        } else {
+            $this->buttonPayVisible = true;
+        }
+
         //dd( $this->groupOrders);
         $this->show = true;
     }

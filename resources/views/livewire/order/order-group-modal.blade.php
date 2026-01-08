@@ -78,6 +78,7 @@
                     {{ count($selectedOrderIds) }} {{ count($selectedOrderIds) === 1 ? 'pedido selecionado' : 'pedidos selecionados' }}
                 </p>
             </div>
+            @if($this->buttonPayVisible)
             <button
                 wire:click="payOrders"
                 class="w-full px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold transition shadow-md flex items-center justify-center gap-2">
@@ -86,6 +87,7 @@
                 </svg>
                 Pagar
             </button>
+            @endif
             <button
                 wire:click="openGroupActionsModal"
                 class="w-full px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold transition shadow-md">
