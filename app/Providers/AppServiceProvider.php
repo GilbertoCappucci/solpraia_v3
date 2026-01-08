@@ -17,7 +17,9 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use App\Enums\RoleEnum; // Import RoleEnum
 use App\Models\GlobalSetting;
+use App\Models\OrderStatusHistory;
 use App\Observers\GlobalSettingObserver;
+use App\Observers\OrderStatusHistoryCreatedObserver;
 use Filament\Facades\Filament;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
@@ -38,15 +40,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Registrar Observer do User
         User::observe(UserObserver::class);
-
-        // Registrar Observer do GlobalSetting
         GlobalSetting::observe(GlobalSettingObserver::class);
-
-        // Registrar Observers para Broadcasting
         Table::observe(TableObserver::class);
         Check::observe(CheckObserver::class);
+        OrderStatusHistory::observe(OrderStatusHistoryCreatedObserver::class);
 
         // Definir Gates de autorização
         // Admin sempre tem acesso a tudo

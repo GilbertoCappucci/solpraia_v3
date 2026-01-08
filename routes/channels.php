@@ -9,3 +9,7 @@ Broadcast::channel('global-setting-updated.{adminId}', function ($user, $adminId
 Broadcast::channel('tables-updated.{userId}', function ($user, $userId) {
     return (int) $user->user_id === (int) $userId;
 });
+
+Broadcast::channel('order-status-history-created.{userId}', function ($user, $userId) {
+    return (int) $user->user_id === (int) $userId;
+});

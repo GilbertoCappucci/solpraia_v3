@@ -11,6 +11,7 @@ use Livewire\Component;
 use App\Services\Payment\PaymentService;
 use Illuminate\Support\Facades\Auth;
 
+use function Pest\Laravel\session;
 use function PHPUnit\Framework\isNull;
 
 class PayOrders extends Component
@@ -34,6 +35,60 @@ class PayOrders extends Component
 
     private $userId;
     private $firstOrder;  
+
+    public function getListeners()
+    {        
+        $userId = Auth::user()->user_id ?? null;
+        return [
+            "echo-private:global-setting-updated.{$userId},.global.setting.updated" => 'refreshSetting',
+            "echo-private:order-status-history-created.{$userId},.order.status.history.created" => 'handleOrderStatusHistoryCreated',
+        ];
+    }
+
+    public function refreshSetting()
+    {
+        $this->setPix();
+    }
+
+    public function handleOrderStatusHistoryCreated($data)
+    {
+        logger("Order status history created event received in PayOrders Livewire component", $data);
+        
+        $orderStatusHistoryId = $data['orderStatusHistoryId'] ?? null;
+        if (!$orderStatusHistoryId) {
+            logger("Order status history ID not found in event data");
+            return;
+        }
+        
+        $orderStatusHistory = \App\Models\OrderStatusHistory::find($orderStatusHistoryId);
+        if (!$orderStatusHistory) {
+            logger("Order status history not found", ['id' => $orderStatusHistoryId]);
+            return;
+        }
+
+        $order = $orderStatusHistory->order;
+        if (!$order) {
+            logger("Order not found for order status history", ['order_status_history_id' => $orderStatusHistoryId]);
+            return;
+        }
+
+        
+        if (!in_array($order->id, $this->ordersId)) {
+            logger("Order ID {$order->id} not in current PayOrders orders list, not refreshing", ['ordersId' => $this->ordersId]);
+            return;
+        }
+
+        if($orderStatusHistory->to_status === \App\Enums\OrderStatusEnum::PENDING->value) {
+            logger("Order ID {$order->id} new status not permitted", ['order_id' => $order->id]);
+            session()->flash(['error' => "O pedido #{$order->id} voltou ao status Pendente. Por favor, verifique os pedidos novamente."]);
+
+            return redirect()->route('orders', $this->table->id);
+        }   
+
+        logger("Refreshing PayOrders component due to order status history change", ['order_id' => $order->id, 'new_status' => $orderStatusHistory->to_status]);
+
+        $this->dispatch('$refresh');
+    }
 
     public function mount(GlobalSettingService $globalSettings, PaymentService $paymentService, CheckService $checkService)
     {
@@ -70,10 +125,10 @@ class PayOrders extends Component
 
     private function setOrders()
     {
-        $this->ordersId = session('pay_orders');
+        $this->ordersId = session(['pay_orders']);
         if (empty($this->ordersId) || isNull($this->ordersId)) {
 
-            session()->flash('error', 'Nenhum pedido encontrado.');
+            session()->flash(['error' => 'Nenhum pedido encontrado.']);
             //return redirect()->route('tables');
         }
 
