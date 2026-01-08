@@ -11,6 +11,8 @@ use Livewire\Component;
 use App\Services\Payment\PaymentService;
 use Illuminate\Support\Facades\Auth;
 
+use function PHPUnit\Framework\isNull;
+
 class PayOrders extends Component
 {
 
@@ -41,6 +43,11 @@ class PayOrders extends Component
         $this->checkService = $checkService;
 
         $this->setOrders();
+        
+        if($this->firstOrder === null || $this->ordersId === null) {
+            return;
+        }
+
         $this->table = $this->firstOrder->check->table;
 
         $this->checkTotal = $this->checkService->calculateTotalOrders($this->ordersId);
@@ -64,16 +71,16 @@ class PayOrders extends Component
     private function setOrders()
     {
         $this->ordersId = session('pay_orders');
+        if (empty($this->ordersId) || isNull($this->ordersId)) {
 
-        if (empty($this->ordersId)) {
             session()->flash('error', 'Nenhum pedido encontrado.');
-            return redirect()->route('tables');
+            //return redirect()->route('tables');
         }
 
         $this->firstOrder = Order::with('check.table')->whereIn('id', $this->ordersId)->first();
         if (!$this->firstOrder) {
             session()->flash('error', 'Nenhum pedido encontrado.');
-            return redirect()->route('tables');
+            //return redirect()->route('tables');
         }
     }
 

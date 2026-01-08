@@ -1,6 +1,4 @@
 <div>
-    <x-flash-message />
-
     {{-- Header Component --}}
     @livewire('table.table-header', [
         'selectionMode' => $selectionMode,

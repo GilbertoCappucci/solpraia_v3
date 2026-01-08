@@ -1,6 +1,4 @@
 <div>
-    <x-flash-message />
-
     {{-- Botões de navegação e impressão - Escondidos na impressão --}}
     <div class="print:hidden bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 flex items-center justify-between sticky top-0 z-10 shadow-md">
         {{-- Lado Esquerdo --}}

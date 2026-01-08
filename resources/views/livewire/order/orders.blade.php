@@ -1,6 +1,4 @@
 <div>
-    <x-flash-message />
-
     {{-- Header --}}
     <livewire:order.order-header 
         :selectedTable="$selectedTable" 
