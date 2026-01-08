@@ -93,7 +93,7 @@ class PayOrders extends Component
         return redirect()->route('orders', $this->table->id);
     }
 
-    public function processPayment()
+    public function processPayment($type)
     {
         $this->setOrders();
 

@@ -29,19 +29,19 @@
         <!-- Segunda linha: meios de pagamento distribuídos -->
         <div class="grid grid-cols-3 gap-2 mt-2">
             <div class="flex justify-start">
-                <button wire:click="processPayment"
+                <button wire:click="processPayment('card')"
                     class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition w-full max-w-[120px]">
                     Cartão
                 </button>
             </div>
             <div class="flex justify-center">
-                <button wire:click="processPayment"
+                <button wire:click="processPayment('cash')"
                     class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition w-full max-w-[120px]">
                     Dinheiro
                 </button>
             </div>
             <div class="flex justify-end">
-                <button wire:click="processPayment"
+                <button wire:click="processPayment('pix')"
                     class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition w-full max-w-[120px]">
                     PIX
                 </button>
