@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\OrderStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
@@ -52,6 +53,17 @@ class Order extends Model
     public function getQuantityAttribute()
     {
         return $this->currentStatusHistory?->quantity ?? 1;
+    }
+
+    /* =======================
+     |  RELATIONSHIPS
+     =======================*/
+
+    public function payments(): BelongsToMany
+    {
+        return $this->belongsToMany(Payment::class)
+            ->withPivot('amount_paid')
+            ->withTimestamps();
     }
 
     public function user()
