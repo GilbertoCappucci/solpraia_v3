@@ -44,7 +44,11 @@ class OrderStatusHistoryCreatedEvent implements ShouldBroadcastNow
 
     public function broadcastWith(): array
     {
-        return ['orderStatusHistoryId' => $this->orderStatusHistory->id];
+        return [
+            'orderStatusHistoryId' => $this->orderStatusHistory->id,
+            'orderId' => $this->orderStatusHistory->order_id,
+            'tableId' => $this->orderStatusHistory->order->check->table->id,
+        ];
     }
 
     public function broadcastAs(): string

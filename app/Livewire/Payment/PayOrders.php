@@ -56,25 +56,24 @@ class PayOrders extends Component
         $orderStatusHistoryId = $data['orderStatusHistoryId'] ?? null;
         if (!$orderStatusHistoryId) {
             logger("Order status history ID not found in event data");
-            return;
+            return redirect()->route('orders', $this->table->id);
         }
         
         $orderStatusHistory = \App\Models\OrderStatusHistory::find($orderStatusHistoryId);
         if (!$orderStatusHistory) {
             logger("Order status history not found", ['id' => $orderStatusHistoryId]);
-            return;
+            return redirect()->route('orders', $this->table->id);;
         }
 
         $order = $orderStatusHistory->order;
         if (!$order) {
             logger("Order not found for order status history", ['order_status_history_id' => $orderStatusHistoryId]);
-            return;
+            return redirect()->route('orders', $this->table->id);
         }
-
-        
+    
         if (!in_array($order->id, $this->ordersId)) {
             logger("Order ID {$order->id} not in current PayOrders orders list, not refreshing", ['ordersId' => $this->ordersId]);
-            return;
+            return redirect()->route('orders', $this->table->id);
         }
 
         if($orderStatusHistory->to_status === \App\Enums\OrderStatusEnum::PENDING->value) {

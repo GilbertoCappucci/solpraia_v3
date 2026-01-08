@@ -20,9 +20,45 @@ class OrderDetailsModal extends Component
 
     public function getListeners()
     {
+
+        $userId = auth()->user()->user_id ?? null;
+
         return [
             'open-details-modal' => 'openModal',
+                        "echo-private:order-status-history-created.{$userId},.order.status.history.created" => 'handleOrderStatusHistoryCreated',
         ];
+    }
+
+    public function handleOrderStatusHistoryCreated($data)
+    {
+        logger("OrderDetailsModal received OrderStatusHistoryCreatedEvent", $data);
+       
+        $orderStatusHistoryId = $data['orderStatusHistoryId'] ?? null;
+        if (!$orderStatusHistoryId) {
+            logger("Order status history ID not found in event data");
+            return redirect()->route('orders', $data['tableId']);
+        }
+        
+        $orderStatusHistory = \App\Models\OrderStatusHistory::find($orderStatusHistoryId);
+        if (!$orderStatusHistory) {
+            logger("Order status history not found", ['id' => $orderStatusHistoryId]);
+            return redirect()->route('orders', $data['tableId']);
+        }
+
+        $order = $orderStatusHistory->order;
+        if (!$order) {
+            logger("Order not found for order status history", ['order_status_history_id' => $orderStatusHistoryId]);
+            return redirect()->route('orders', $data['tableId']);
+        }
+
+        if ($this->orderDetails && $this->orderDetails['id'] === $order->id) {
+            logger("Refreshing OrderDetailsModal for order ID {$order->id} due to status history change", ['order_id' => $order->id, 'new_status' => $orderStatusHistory->to_status]);
+
+            session()->flash('error', "O pedido #{$order->id} foi alterado. Por favor, verifique os pedidos novamente.");
+
+            return redirect()->route('orders', $data['tableId']);
+        }
+
     }
 
     public function payOrder()
