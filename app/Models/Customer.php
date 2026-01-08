@@ -22,4 +22,9 @@ class Customer extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function tabs()
+    {
+        return $this->hasMany(Tab::class);
+    }
 }
