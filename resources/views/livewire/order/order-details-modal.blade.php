@@ -71,7 +71,7 @@
             @endif
 
             {{-- Botao de pagamento --}}
-            @if($orderDetails['status'] === 'completed' && !$orderDetails['is_paid'])
+            @if($orderDetails['status'] !== 'pending' && !$orderDetails['is_paid'])
             <div>
                 <button
                     wire:click="payOrder({{ $orderDetails['id'] }})"
