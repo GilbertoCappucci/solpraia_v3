@@ -113,6 +113,11 @@ class PayOrders extends Component
     {
         $this->setOrders();
 
+        if($this->ordersId === null or count($this->ordersId) === 0) {
+            session()->flash('error', 'Nenhum pedido encontrado.');
+            return redirect()->route('tables');
+        }
+
         $this->paymentService = app(PaymentService::class);
 
         $orders = Order::whereIn('id', $this->ordersId)->get();
@@ -126,6 +131,7 @@ class PayOrders extends Component
         $this->showConfirmModal = false;
         $this->paymentTypeToProcess = null;
         return redirect()->route('tables');
+        
     }
 
     public function render()
