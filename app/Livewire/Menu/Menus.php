@@ -175,11 +175,13 @@ class Menus extends Component
         $this->menuService->confirmOrder(
             $this->adminId,
             $this->tableId,
-            $this->selectedTable,
             $this->currentCheck,
             $this->cart,
-            $this->cartService->calculateTotal($this->cart)
         );
+
+        //Atualiza o check atual após confirmar o pedido
+        $check_total = $this->currentCheck->openAmount();
+        $this->currentCheck->update(['total' => $check_total]);        
 
         session()->flash('success', 'Pedido confirmado com sucesso!');
         return redirect()->route('orders', ['tableId' => $this->tableId]);

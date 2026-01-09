@@ -17,54 +17,28 @@ class Order extends Model
         'admin_id',
         'check_id',
         'product_id',
-        'tab_id',
-        'is_paid',
-        'paid_at',
+        'price',
+        'quantity',
+        'total_price',
+        'status',
     ];
 
     protected $casts = [
-        'is_paid' => 'boolean',
-        'paid_at' => 'datetime',
+        'price' => 'decimal:2',
+        'quantity' => 'integer',
+        'total_price' => 'decimal:2',
+        'status' => OrderStatusEnum::class,        
     ];
 
-    // Atributos virtuais (buscam do histórico)
-    protected $appends = ['status', 'price', 'quantity', 'status_changed_at'];
-
-    /**
-     * Retorna o status atual do pedido baseado no histórico mais recente
-     */
-    public function getStatusAttribute()
-    {
-        // Usa a relação já carregada ou retorna 'pending' se não houver histórico
-        return $this->currentStatusHistory ? $this->currentStatusHistory->to_status : OrderStatusEnum::PENDING->value;
-    }
-
-    /**
-     * Retorna o preço do pedido baseado no histórico mais recente
-     */
-    public function getPriceAttribute()
-    {
-        return $this->currentStatusHistory?->price ?? 0;
-    }
-
-    /**
-     * Retorna a quantidade do pedido baseada no histórico mais recente
-     */
-    public function getQuantityAttribute()
-    {
-        return $this->currentStatusHistory?->quantity ?? 1;
-    }
+    public const BILLABLE_STATUSES = [
+        OrderStatusEnum::IN_PRODUCTION,
+        OrderStatusEnum::IN_TRANSIT,
+        OrderStatusEnum::COMPLETED,
+    ];
 
     /* =======================
      |  RELATIONSHIPS
      =======================*/
-
-    public function payments(): BelongsToMany
-    {
-        return $this->belongsToMany(Payment::class)
-            ->withPivot('amount_paid')
-            ->withTimestamps();
-    }
 
     public function user()
     {
@@ -81,27 +55,42 @@ class Order extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function tab()
+    /* =======================
+     |  SCOPES
+     =======================*/
+
+    /* =======================
+     |  HELPERS
+    =======================*/
+
+    public function isBillable(): bool
     {
-        return $this->belongsTo(Tab::class);
+        return in_array($this->status, self::BILLABLE_STATUSES, true);
     }
 
-    public function statusHistory()
+    public function paymentOrders()
     {
-        return $this->hasMany(OrderStatusHistory::class);
+        return $this->belongsToMany(
+            PaymentOrder::class,
+            'payment_order_items'
+        )->withPivot('amount');
     }
-
-    public function currentStatusHistory()
-    {
-        return $this->hasOne(OrderStatusHistory::class)->latestOfMany();
-    }
-
 
     /**
-     * Retorna o timestamp da última mudança de status
+     * Valor total já pago para esta order
      */
-    public function getStatusChangedAtAttribute()
+    public function paidAmount(): float
     {
-        return $this->currentStatusHistory?->changed_at;
+        return (float) $this->paymentOrders()
+            ->sum('payment_order_items.amount');
     }
+
+    /**
+     * Verifica se a order está totalmente paga
+     */
+    public function isPaid(): bool
+    {
+        return $this->paidAmount() >= (float) $this->total_price;
+    }    
+
 }

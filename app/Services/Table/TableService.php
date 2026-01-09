@@ -30,10 +30,10 @@ class TableService
         array $filterDepartaments = [],
         string $globalFilterMode = 'OR'
     ): Collection {
-        $query = Table::where('admin_id', $adminId);
 
-        return $query->with(['checks' => function ($query) {
-            $query->with(['orders.currentStatusHistory', 'orders.product']);
+        return Table::where('admin_id', $adminId)
+            ->with(['checks' => function ($query) {
+            $query->with(['orders','orders.product']);
         }])
             ->orderBy('number')
             ->get()

@@ -104,7 +104,7 @@ class Orders extends Component
             return collect();
         }
 
-        $orders = \App\Models\Order::with(['product', 'currentStatusHistory'])
+        $orders = \App\Models\Order::with(['product'])
             ->where('check_id', $this->currentCheck->id)
             ->get();
 
@@ -145,7 +145,7 @@ class Orders extends Component
             return collect();
         }
 
-        return \App\Models\Order::with(['product', 'currentStatusHistory'])
+        return \App\Models\Order::with(['product'])
             ->where('check_id', $this->currentCheck->id)
             ->get();
     }

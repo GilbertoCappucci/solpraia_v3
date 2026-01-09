@@ -22,20 +22,11 @@ class CheckService
      */
     public function calculateTotal(Check $check): float
     {
-        // Busca todos os pedidos do check (se já estiverem carregados, usa a coleção, senão carrega)
-        $orders = $check->relationLoaded('orders') ? $check->orders : $check->orders()->with(['currentStatusHistory', 'product'])->get();
+        // Busca todos os pedidos do check
+        $orders = $check->orders;
+        dd($orders);
 
-        // Filtra pedidos ativos (não cancelados, não aguardando e NÃO PAGOS)
-        $activeOrders = $orders->filter(function ($order) {
-            return $order->status !== OrderStatusEnum::CANCELED->value
-                && $order->status !== OrderStatusEnum::PENDING->value
-                && !$order->is_paid;  // ← NOVO: Ignora pedidos já pagos
-        });
-
-        // Retorna a soma
-        return $activeOrders->sum(function ($order) {
-            return $order->quantity * $order->price;
-        });
+        return $check->openAmount();
     }
 
     public function calculateTotalOrders($orders):float {
@@ -47,18 +38,6 @@ class CheckService
         return $total;
     }
 
-    /**
-     * Recalcula e persiste o total de um check específico
-     */
-    public function recalculateCheckTotal(Check $check): void
-    {
-        $newTotal = $this->calculateTotal($check);
-
-        // Atualiza o total do check se mudou (Observer vai disparar o evento)
-        if ($check->total != $newTotal) {
-            $check->update(['total' => $newTotal]);
-        }
-    }
 
     public static function updateCheckTotalAfterOrderPayment(int $checkId): void
     {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\OrderStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,9 +17,10 @@ return new class extends Migration
             $table->foreignId('admin_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('check_id')->constrained('checks')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->foreignId('tab_id')->nullable()->constrained('tabs')->onDelete('cascade');
-            $table->boolean('is_paid')->default(false);
-            $table->timestamp('paid_at')->nullable();
+            $table->double('price');
+            $table->integer('quantity')->default(1);
+            $table->double('total_price');
+            $table->enum('status', OrderStatusEnum::class::cases())->default(OrderStatusEnum::PENDING);
             $table->timestamps();
             $table->softDeletes();
         });

@@ -36,4 +36,43 @@ class Check extends Model
         return $this->belongsTo(User::class, 'admin_id');
     }
 
+    /* =======================
+     |  SCOPES
+     =======================*/
+
+    /* =======================
+     |  HELPERS
+    =======================*/
+
+    public function billableOrders()
+    {
+        return $this->orders()
+            ->whereIn('status', Order::BILLABLE_STATUSES);
+    }
+
+    public function totalAmount(): float
+    {
+        return (float) $this->billableOrders()->sum('total_price');
+    }
+
+    public function paidAmount(): float
+    {
+        return (float) $this->billableOrders()
+            ->get()
+            ->sum(fn ($order) => $order->paidAmount());
+    }
+    
+    public function openAmount(): float
+    {
+        return max(
+            0,
+            $this->totalAmount() - $this->paidAmount()
+        );
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->openAmount() === 0.0;
+    }
+    
 }
