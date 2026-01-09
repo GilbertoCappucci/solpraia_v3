@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payments', function (Blueprint $table) {
+        Schema::create('payment_orders', function (Blueprint $table) {
  $table->id();
 
             $table->foreignId('admin_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
 
-            $table->foreignId('table_id')
+            $table->foreignId('check_id')
                 ->nullable()
                 ->constrained()
                 ->nullOnDelete();
@@ -32,11 +32,7 @@ return new class extends Migration
             $table->string('payment_method');
             // pix | credit_card | debit | cash
 
-            $table->string('gateway')->nullable();
-            $table->string('gateway_reference')->nullable();
-
             $table->timestamp('paid_at')->nullable();
-
             $table->timestamps();
             $table->softDeletes();
 

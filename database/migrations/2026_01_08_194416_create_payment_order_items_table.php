@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payment_order', function (Blueprint $table) {
+        Schema::create('payment_order_items', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('payment_id')
+            $table->foreignId('payment_orders_id')
                 ->constrained()
                 ->cascadeOnDelete();
 
@@ -22,12 +22,12 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->decimal('amount_paid', 12, 2);
+            $table->decimal('amount', 12, 2);
 
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['payment_id', 'order_id']);
+            $table->unique(['payment_orders_id', 'order_id']);
         });
     }
 
