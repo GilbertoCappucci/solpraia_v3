@@ -22,11 +22,11 @@ class OrderDetailsModal extends Component
     public function getListeners()
     {
 
-        $userId = auth()->user()->admin_id ?? null;
+        $adminId = auth()->user()->admin_id ?? null;
 
         return [
             'open-details-modal' => 'openModal',
-                        "echo-private:order-status-history-created.{$userId},.order.status.history.created" => 'handleOrderStatusHistoryCreated',
+                        "echo-private:order-status-history-created.{$adminId},.order.status.history.created" => 'handleOrderStatusHistoryCreated',
         ];
     }
 
@@ -52,9 +52,9 @@ class OrderDetailsModal extends Component
             return redirect()->route('orders', $data['tableId']);
         }
 
-        $userId = auth()->user()->id;
+        $adminId = auth()->user()->admin_id;
 
-        if ($this->orderDetails && $this->orderDetails['id'] === $order->id && $userId !== $data['userId']   ) {
+        if ($this->orderDetails && $this->orderDetails['id'] === $order->id && $adminId !== $data['adminId']   ) {
             logger("Refreshing OrderDetailsModal for order ID {$order->id} due to status history change", ['order_id' => $order->id, 'new_status' => $orderStatusHistory->to_status]);
 
             session()->flash('error', "O pedido #{$order->id} foi alterado. Por favor, verifique os pedidos novamente.");

@@ -36,7 +36,7 @@ class OrderStatusHistoryCreatedEvent implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        logger('📡 Broadcasting OrderStatusHistoryCreatedEvent', ['orderStatusHistoryId' => $this->orderStatusHistory->id, 'userId' => $this->orderStatusHistory->order->admin_id]);
+        logger('📡 Broadcasting OrderStatusHistoryCreatedEvent', ['orderStatusHistoryId' => $this->orderStatusHistory->id, 'adminId' => $this->orderStatusHistory->order->admin_id]);
 
         return [
             new PrivateChannel('order-status-history-created.' . $this->orderStatusHistory->order->admin_id),
@@ -45,12 +45,12 @@ class OrderStatusHistoryCreatedEvent implements ShouldBroadcastNow
 
     public function broadcastWith(): array
     {
-        $userId = Auth::user()->id;
+        $adminId = Auth::user()->id;
         return [
             'orderStatusHistoryId' => $this->orderStatusHistory->id,
             'orderId' => $this->orderStatusHistory->order_id,
             'tableId' => $this->orderStatusHistory->order->check->table->id,
-            'userId' => $userId,
+            'adminId' => $adminId,
         ];
     }
 
