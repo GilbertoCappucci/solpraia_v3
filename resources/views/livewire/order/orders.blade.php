@@ -39,4 +39,6 @@
     
     <livewire:order.order-group-actions-modal 
         :currentCheck="$currentCheck" />
+    
+    <livewire:order.order-transfer-modal />
 </div>

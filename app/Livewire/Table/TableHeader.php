@@ -7,6 +7,7 @@ use Livewire\Attributes\Reactive;
 
 class TableHeader extends Component
 {
+
     #[Reactive]
     public $selectionMode = false;
     

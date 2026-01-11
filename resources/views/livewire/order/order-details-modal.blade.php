@@ -138,6 +138,18 @@
                 @endif
             </div>
 
+            {{-- Botao de Transferencia de Orders--}}
+            <div>
+                <button
+                    wire:click="transferOrder({{ $orderDetails['id'] }})"
+                    class="w-full px-4 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-bold transition shadow-md flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Transferir
+                </button>
+            </div>
+
             {{-- Botão Remover Pedido --}}
             @if($orderDetails['status'] !== 'canceled')
             <div class="pt-2 border-t">

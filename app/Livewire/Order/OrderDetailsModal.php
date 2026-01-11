@@ -26,7 +26,7 @@ class OrderDetailsModal extends Component
 
         return [
             'open-details-modal' => 'openModal',
-                        "echo-private:order-status-history-created.{$adminId},.order.status.history.created" => 'handleOrderStatusHistoryCreated',
+            "echo-private:order-status-history-created.{$adminId},.order.status.history.created" => 'handleOrderStatusHistoryCreated',
         ];
     }
 
@@ -64,6 +64,11 @@ class OrderDetailsModal extends Component
 
     }
 
+    public function transferOrder($orderId){
+        $this->show = false;
+        $this->dispatch('open-order-transfer-modal', ['orderId' => $orderId]);
+    }
+
     public function payOrder()
     {
 
@@ -80,7 +85,7 @@ class OrderDetailsModal extends Component
 
         if (!$order) {
             session()->flash('error', 'Pedido não encontrado.');
-            return;
+            return redirect()->route('orders', $orderId);
         }
 
         // Busca estoque disponível

@@ -78,13 +78,13 @@ class TableMergeModal extends Component
         if (count($this->selectedTables) < 2) {
             session()->flash('error', 'Selecione pelo menos duas mesas para unir.');
             $this->closeModal();
-            return;
+            return redirect()->route('tables');
         }
         
         if (!$this->mergeDestinationTableId) {
             session()->flash('error', 'Selecione uma mesa de destino para a união.');
             $this->closeModal();
-            return;
+            return redirect()->route('tables');
         }
 
         $allSelectedTableIds = $this->selectedTables;
@@ -94,7 +94,7 @@ class TableMergeModal extends Component
         if (!in_array($destinationTableId, $allSelectedTableIds)) {
             session()->flash('error', 'A mesa de destino deve ser uma das mesas selecionadas.');
             $this->closeModal();
-            return;
+            return redirect()->route('tables');
         }
 
         // 2. Buscar check ativo da mesa de destino diretamente do banco
@@ -136,7 +136,7 @@ class TableMergeModal extends Component
             session()->flash('success', 'As mesas selecionadas foram liberadas.');
             $this->closeModal();
             $this->dispatch('merge-completed');
-            return;
+            return redirect()->route('tables');
         }
 
         // 5. Se há checks de origem mas não há check de destino, criar um novo check na mesa de destino
@@ -153,7 +153,7 @@ class TableMergeModal extends Component
         if (!$hasSourceChecks) {
             session()->flash('error', 'Nenhuma comanda de origem válida encontrada para unir.');
             $this->closeModal();
-            return;
+            return redirect()->route('tables');
         }
 
         $destinationCheckId = $destinationCheck->id;
@@ -172,6 +172,7 @@ class TableMergeModal extends Component
         // 9. Resetar estado e atualizar UI
         $this->closeModal();
         $this->dispatch('merge-completed');
+        return redirect()->route('tables');
     }
 
     public function render()
