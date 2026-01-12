@@ -24,7 +24,6 @@
     {{-- Modals --}}
     <livewire:order.order-filters />
     
-    {{-- Modal único que gerencia Table + Check internamente --}}
     <livewire:order.order-status-manager 
         :selectedTable="$selectedTable"
         :currentCheck="$currentCheck" />
@@ -40,5 +39,7 @@
     <livewire:order.order-group-actions-modal 
         :currentCheck="$currentCheck" />
     
-    <livewire:order.order-transfer-modal />
+    <livewire:order.order-transfer-modal 
+        :currentCheck="$currentCheck"
+    />
 </div>

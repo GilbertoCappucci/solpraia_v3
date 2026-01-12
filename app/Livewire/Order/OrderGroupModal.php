@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Order;
 
+use App\Enums\OrderStatusEnum;
+use App\Models\Order;
+use App\Models\OrderStatusHistory;
 use Livewire\Component;
 
 class OrderGroupModal extends Component
@@ -17,6 +20,45 @@ class OrderGroupModal extends Component
         return [
             'open-group-modal' => 'openModal',
         ];
+    }
+
+    public function openCancelOrdersConfirmationModal()
+    {
+        $this->show = false;
+        $this->dispatch('open-cancel-modal', $this->selectedOrderIds);
+    }
+
+    public function updateGroupStatus($newStatus)
+    {
+        $allowedStatuses = [
+            OrderStatusEnum::PENDING->value,
+            OrderStatusEnum::IN_PRODUCTION->value,
+            OrderStatusEnum::IN_TRANSIT->value,
+            OrderStatusEnum::COMPLETED->value,
+            OrderStatusEnum::CANCELED->value,
+            OrderStatusEnum::DELAYED->value,
+        ];
+
+        if (!in_array($newStatus, $allowedStatuses)) {
+            session()->flash('error', 'Status inválido selecionado.');
+            return;
+        }
+
+        foreach ($this->selectedOrderIds as $orderId) {
+            $order = Order::find($orderId);
+            OrderStatusHistory::create([
+                'order_id' => $orderId,
+                'quantity' => $order->quantity,
+                'price' => $order->price,
+                'from_status' => Order::find($orderId)->status,
+                'to_status' => $newStatus,
+                'changed_at' => now(),
+            ]);
+        }
+
+        session()->flash('success', 'Status dos pedidos atualizados com sucesso.');
+        $this->closeModal();
+        $this->dispatch('refresh-orders-list');
     }
 
     public function payOrders()

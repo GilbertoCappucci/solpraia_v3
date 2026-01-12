@@ -41,6 +41,7 @@ class OrderList extends Component
     {
         $listeners = [
             'filters-updated' => 'onFiltersUpdated',
+            'refresh-orders-list' => 'refleshOrdersList',
         ];
 
         if ($this->adminId) {
@@ -49,6 +50,11 @@ class OrderList extends Component
 
         return $listeners;
     }
+
+    public function refleshOrdersList()
+    {
+        $this->dispatch('refresh-parent');
+    }   
 
     public function onCheckUpdated($data)
     {

@@ -20,13 +20,16 @@
         {{-- Corpo do modal --}}
         @if($orderToCancelData)
         <div class="p-6">
+            @foreach ($orderToCancelData as $order)
             <div class="bg-gray-50 rounded-lg p-4 mb-4">
-                <h4 class="font-semibold text-gray-900 mb-2">{{ $orderToCancelData['product_name'] }}</h4>
+                <h4 class="font-semibold text-gray-900 mb-2">{{ $order['product_name'] }}</h4>
                 <div class="flex items-center justify-between text-sm text-gray-600">
-                    <span>Quantidade: <span class="font-semibold">{{ $orderToCancelData['quantity'] }}</span></span>
-                    <span>Valor: <span class="font-semibold">R$ {{ number_format($orderToCancelData['price'] * $orderToCancelData['quantity'], 2, ',', '.') }}</span></span>
+                    <span>Quantidade: <span class="font-semibold">{{ $order['quantity'] }}</span></span>
+                    <span>Valor: <span class="font-semibold">R$ {{ number_format($order['price'] * $order['quantity'], 2, ',', '.') }}</span></span>
                 </div>
             </div>
+            @endforeach
+
 
             <p class="text-gray-600 mb-6 text-center">
                 Tem certeza que deseja remover este item?
@@ -34,26 +37,12 @@
 
             {{-- Botões de Ação --}}
             <div class="space-y-3">
-                @if($orderToCancelData['quantity'] > 1)
-                {{-- Opções para múltiplas unidades --}}
-                <button
-                    wire:click="confirmCancelOrder(1)"
-                    class="w-full px-4 py-3 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-lg font-medium transition border-2 border-yellow-300">
-                    Remover apenas 1 unidade
-                </button>
-                <button
-                    wire:click="confirmCancelOrder({{ $orderToCancelData['quantity'] }})"
-                    class="w-full px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition">
-                    Remover todas ({{ $orderToCancelData['quantity'] }} unidades)
-                </button>
-                @else
                 {{-- Opção para única unidade --}}
                 <button
-                    wire:click="confirmCancelOrder(1)"
+                    wire:click="confirmCancelOrder()"
                     class="w-full px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition">
                     Confirmar Remoção
                 </button>
-                @endif
 
                 <button
                     wire:click="closeModal"

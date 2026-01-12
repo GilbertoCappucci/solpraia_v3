@@ -14,13 +14,31 @@ enum OrderStatusEnum: string
     public static function getLabel(self $status): string
     {
         return match ($status) {
-            self::PENDING => 'Pending',
-            self::IN_PRODUCTION => 'In Production',
-            self::IN_TRANSIT => 'In Transit',
-            self::COMPLETED => 'Completed',
-            self::CANCELED => 'Canceled',
-            self::DELAYED => 'Delayed',
+            self::PENDING => 'Aguardando',
+            self::IN_PRODUCTION => 'Em Produção',
+            self::IN_TRANSIT => 'Em Trânsito',
+            self::COMPLETED => 'Entregue',
+            self::CANCELED => 'Cancelado',
+            self::DELAYED => 'Atrasado',
         };
+    }
+
+    public static function colorsButton(self $status): array|string
+    {
+        $map = [
+            self::PENDING->value =>  'bg-yellow-500 hover:bg-yellow-600 text-white',
+            self::IN_PRODUCTION->value => 'bg-blue-500 hover:bg-blue-600 text-white',
+            self::IN_TRANSIT->value => 'bg-purple-500 hover:bg-purple-600 text-white',
+            self::COMPLETED->value => 'bg-green-500 hover:bg-green-600 text-white',
+            self::CANCELED->value => 'bg-red-500 hover:bg-red-600 text-white',
+            self::DELAYED->value => 'bg-yellow-500 hover:bg-yellow-600 text-white',
+        ];
+
+        if ($status instanceof self) {
+            return $map[$status->value] ?? '';
+        }
+
+        return $map;
     }
 
     public static function getValues(): array

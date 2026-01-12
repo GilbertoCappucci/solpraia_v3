@@ -205,7 +205,7 @@ class OrderDetailsModal extends Component
 
         $orderId = $this->orderDetails['id'];
         $this->closeModal();
-        $this->dispatch('open-cancel-modal', orderId: $orderId);
+        $this->dispatch('open-cancel-modal', [$orderId]);
     }
 
     public function render()

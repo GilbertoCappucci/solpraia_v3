@@ -25,19 +25,31 @@ class OrderCancelModal extends Component
         ];
     }
 
-    public function openModal($orderId)
+    public function openModal($ordersId)
     {
-        $this->orderToCancel = $orderId;
+        
+        if(is_array($ordersId) || count($ordersId) > 1) {
+            $orders = \App\Models\Order::with('product')->whereIn('id', $ordersId)->get();
+            $this->orderToCancelData = $orders->map(fn($order) => 
+                     [
+                    'id' => $order->id,
+                    'product_name' => $order->product->name, 
+                    'quantity' => $order->quantity,
+                    'price' => $order->price,
+                ]);
+        }else{
+        
+            $this->orderToCancel = $ordersId;
 
-        // Busca dados do pedido para exibir no modal
-        $order = \App\Models\Order::with('product')->find($orderId);
-        if ($order) {
-            $this->orderToCancelData = [
-                'id' => $order->id,
-                'product_name' => $order->product->name,
-                'quantity' => $order->quantity,
-                'price' => $order->price,
-            ];
+            $order = \App\Models\Order::with('product')->find($ordersId);
+            if ($order) {
+                $this->orderToCancelData[] = [
+                    'id' => $order->id,
+                    'product_name' => $order->product->name,
+                    'quantity' => $order->quantity,
+                    'price' => $order->price,
+                ];
+            }
         }
 
         $this->show = true;
@@ -50,24 +62,20 @@ class OrderCancelModal extends Component
         $this->orderToCancelData = null;
     }
 
-    public function confirmCancelOrder($qtyToCancel = 0)
+    public function confirmCancelOrder()
     {
-        if (!$this->orderToCancel) {
-            return;
-        }
 
-        // Se não especificou quantidade, remove TUDO
-        if ($qtyToCancel == 0 && isset($this->orderToCancelData['quantity'])) {
-            $qtyToCancel = $this->orderToCancelData['quantity'];
-        }
+        foreach($this->orderToCancelData as $orderData) {
+            //dd($orderData);
+            $result = $this->orderService->cancelOrder($orderData['id'], $orderData['quantity']);
 
-        $result = $this->orderService->cancelOrder($this->orderToCancel, $qtyToCancel);
-
-        if (!$result['success']) {
-            session()->flash('error', $result['message']);
-            $this->closeModal();
-            return;
-        }
+            if (!$result['success']) {
+                session()->flash('error', $result['message']);
+                $this->closeModal();
+                return;
+            }
+        
+        } 
 
         session()->flash('success', $result['message']);
         $this->closeModal();

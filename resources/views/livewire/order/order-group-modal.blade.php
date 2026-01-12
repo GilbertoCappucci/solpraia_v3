@@ -29,6 +29,7 @@
             $orderObj = (object) $order;
             $product = isset($order['product']) ? (object) $order['product'] : (object)['name' => 'Produto', 'price' => 0];
             $isSelected = in_array($orderObj->id, $selectedOrderIds);
+            //dd($order);
             @endphp
             <div 
                 wire:click="toggleOrderSelection({{ $orderObj->id }})"
@@ -57,6 +58,19 @@
                         <p class="text-sm text-gray-500">R$ {{ number_format($order['price'] * $order['quantity'], 2, ',', '.') }}</p>
                     </div>
 
+                    {{-- Status atual --}}
+                    <div class="flex-shrink-0">
+                        @php
+                            
+                            $currentStatus = $order['status'];
+                            $statusClass = \App\Enums\OrderStatusEnum::colorsButton(\App\Enums\OrderStatusEnum::from($currentStatus));
+
+                            $statusLabel = \App\Enums\OrderStatusEnum::getLabel(\App\Enums\OrderStatusEnum::from($currentStatus));
+                        @endphp
+                        <span class="px-2 py-1 text-sm font-medium rounded-full {{ $statusClass }}">
+                            {{ $statusLabel }}
+                        </span>
+                    </div>
                     {{-- Botão Ver Detalhes --}}
                     <button
                         wire:click.stop="openDetailsFromGroup({{ $orderObj->id }})"
@@ -72,12 +86,14 @@
 
         {{-- Footer --}}
         <div class="p-6 pt-0 flex-shrink-0 border-t space-y-2">
-            @if(count($selectedOrderIds) > 0)
+
             <div class="bg-orange-50 rounded-lg p-3 mb-2">
                 <p class="text-sm font-semibold text-orange-800 text-center">
                     {{ count($selectedOrderIds) }} {{ count($selectedOrderIds) === 1 ? 'pedido selecionado' : 'pedidos selecionados' }}
                 </p>
             </div>
+
+            {{-- Pagar --}}
             @if($this->buttonPayVisible)
             <button
                 wire:click="payOrders"
@@ -88,12 +104,48 @@
                 Pagar
             </button>
             @endif
+
+            {{-- Status --}}
+            <div class="grid grid-cols-2 gap-2 mt-2">
+                {{-- Aguardando --}}
+                <button
+                    wire:click="updateGroupStatus('{{ \App\Enums\OrderStatusEnum::PENDING}}')"
+                    class="px-4 py-2.5 rounded-lg font-medium transition shadow-sm
+                        {{ \App\Enums\OrderStatusEnum::colorsButton(\App\Enums\OrderStatusEnum::PENDING) }}">
+                    ⏳ {{ \App\Enums\OrderStatusEnum::getLabel(\App\Enums\OrderStatusEnum::PENDING) }}
+                </button>
+                {{-- Em Preparo --}}
+                <button
+                    wire:click="updateGroupStatus('{{ \App\Enums\OrderStatusEnum::IN_PRODUCTION}}')"
+                    class="px-4 py-2.5 rounded-lg font-medium transition shadow-sm
+                        {{ \App\Enums\OrderStatusEnum::colorsButton(\App\Enums\OrderStatusEnum::IN_PRODUCTION) }}">
+                    🍳 {{ \App\Enums\OrderStatusEnum::getLabel(\App\Enums\OrderStatusEnum::IN_PRODUCTION) }}
+                </button>
+                {{-- Em Trânsito --}}
+                <button
+                    wire:click="updateGroupStatus('{{ \App\Enums\OrderStatusEnum::IN_TRANSIT}}')"
+                    class="px-4 py-2.5 rounded-lg font-medium transition shadow-sm
+                        {{ \App\Enums\OrderStatusEnum::colorsButton(\App\Enums\OrderStatusEnum::IN_TRANSIT) }}">
+                    🚚 {{ \App\Enums\OrderStatusEnum::getLabel(\App\Enums\OrderStatusEnum::IN_TRANSIT) }}
+                </button>
+
+                {{-- Entregue --}}
+                <button
+                    wire:click="updateGroupStatus('{{ \App\Enums\OrderStatusEnum::COMPLETED}}')"
+                    class="px-4 py-2.5 rounded-lg font-medium transition shadow-sm
+                        {{ \App\Enums\OrderStatusEnum::colorsButton(\App\Enums\OrderStatusEnum::COMPLETED) }}">
+                    ✅ {{ \App\Enums\OrderStatusEnum::getLabel(\App\Enums\OrderStatusEnum::COMPLETED) }}
+                </button>
+            </div>
+
+            {{-- Cancel Orders --}}
             <button
-                wire:click="openGroupActionsModal"
-                class="w-full px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold transition shadow-md">
-                Ações em Grupo
+                wire:click="openCancelOrdersConfirmationModal"
+                class="w-full px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition">
+                Cancelar Pedidos
             </button>
-            @endif
+
+            {{-- Fechar --}}
             <button
                 wire:click="closeModal"
                 class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition">
