@@ -26,6 +26,37 @@ class OrderGroupModal extends Component
         ];
     }
 
+    public function increaseOrderQuantity($orderId)
+    {
+
+        $orderHistory = OrderStatusHistory::where('order_id', $orderId)
+            ->latest('changed_at')
+            ->first();
+
+        $orderHistory->update([
+            'quantity' => $orderHistory->quantity + 1,
+        ]);
+
+        $this->openModal($this->selectedOrderIds);
+        $this->dispatch('refresh-orders-list');
+    }
+
+    public function decreaseOrderQuantity($orderId)
+    {
+        $orderHistory = OrderStatusHistory::where('order_id', $orderId)
+            ->latest('changed_at')
+            ->first();
+            
+        if ($orderHistory->quantity > 1) {
+            $orderHistory->update([
+                'quantity' => $orderHistory->quantity - 1,
+            ]);
+        }
+
+        $this->openModal($this->selectedOrderIds);
+        $this->dispatch('refresh-orders-list');
+    }
+
     public function openCancelOrdersConfirmationModal()
     {
         $this->show = false;
