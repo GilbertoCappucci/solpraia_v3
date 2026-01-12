@@ -34,6 +34,8 @@
             <div 
                 wire:click="toggleOrderSelection({{ $orderObj->id }})"
                 class="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 transition cursor-pointer border-2 {{ $isSelected ? 'border-orange-500 bg-orange-50' : 'border-gray-200' }}">
+                
+                {{-- Informações da order --}}
                 <div class="flex items-center gap-3">
                     {{-- Checkbox --}}
                     <div class="flex-shrink-0">
@@ -50,6 +52,30 @@
                     {{-- Quantidade --}}
                     <div class="flex-shrink-0 w-12 text-center">
                         <span class="text-2xl font-bold text-gray-700">{{ $order['quantity'] }}</span>
+                        
+                        <div class="mt-2 flex flex-col items-center space-y-1">
+                            <button
+                                type="button"
+                                wire:click.stop="increaseOrderQuantity({{ $orderObj->id }})"
+                                class="w-9 h-9 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-md flex items-center justify-center touch-manipulation"
+                                title="Aumentar quantidade"
+                                aria-label="Aumentar quantidade">
+                                <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                            </button>
+
+                            <button
+                                type="button"
+                                wire:click.stop="decreaseOrderQuantity({{ $orderObj->id }})"
+                                class="w-9 h-9 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-md flex items-center justify-center touch-manipulation"
+                                title="Diminuir quantidade"
+                                aria-label="Diminuir quantidade">
+                                <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     {{-- Info --}}
@@ -61,24 +87,16 @@
                     {{-- Status atual --}}
                     <div class="flex-shrink-0">
                         @php
-                            
                             $currentStatus = $order['status'];
                             $statusClass = \App\Enums\OrderStatusEnum::colorsButton(\App\Enums\OrderStatusEnum::from($currentStatus));
 
                             $statusLabel = \App\Enums\OrderStatusEnum::getLabel(\App\Enums\OrderStatusEnum::from($currentStatus));
                         @endphp
+
                         <span class="px-2 py-1 text-sm font-medium rounded-full {{ $statusClass }}">
                             {{ $statusLabel }}
                         </span>
                     </div>
-                    {{-- Botão Ver Detalhes --}}
-                    <button
-                        wire:click.stop="openDetailsFromGroup({{ $orderObj->id }})"
-                        class="flex-shrink-0 p-2 hover:bg-white rounded-lg transition">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </button>
                 </div>
             </div>
             @endforeach
