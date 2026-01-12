@@ -3,6 +3,7 @@
 namespace App\Livewire\Table;
 
 use App\Enums\TableStatusEnum;
+use App\Models\Check;
 use App\Models\Table;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -55,11 +56,15 @@ class TableCreateModal extends Component
             'newTableNumber.unique' => 'Já existe um local com este número.',
         ]);
 
-        Table::create([
+        $table = Table::create([
             'admin_id' => Auth::id(),
             'name' => $this->newTableName,
             'number' => $this->newTableNumber,
-            'status' => TableStatusEnum::FREE->value,
+        ]);
+
+        $check = Check::create([
+            'admin_id' => $table->admin_id,
+            'table_id' => $table->id,
         ]);
 
         session()->flash('success', 'Local criado com sucesso!');

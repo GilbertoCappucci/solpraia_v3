@@ -16,8 +16,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('admin_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('table_id')->constrained('tables')->onDelete('cascade');
-            $table->enum('status', array_column(CheckStatusEnum::cases(), 'value'))->default(CheckStatusEnum::OPEN->value);
-            $table->decimal('total', 10, 2);
+            $table->enum('status', array_column(CheckStatusEnum::cases(), 'value'))->default(CheckStatusEnum::OPEN);
+            $table->decimal('total', 10, 2)->default(0);
             $table->dateTime('opened_at')->nullable();
             $table->dateTime('closed_at')->nullable();
             $table->timestamps();

@@ -3,6 +3,7 @@
 namespace App\Services\Table;
 
 use App\Enums\TableStatusEnum;
+use App\Models\Check;
 use App\Models\Table;
 use Illuminate\Support\Collection;
 
@@ -22,6 +23,10 @@ class TableMergeService
             $table = Table::find($tableId);
             if ($table) {
                 $table->update(['status' => TableStatusEnum::FREE->value]);
+                Check::created([
+                    'admin_id' => $table->admin_id,
+                    'table_id' => $table->id,
+                ]);
             }
         }
     }

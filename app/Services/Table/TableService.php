@@ -5,6 +5,7 @@ namespace App\Services\Table;
 use App\Enums\CheckStatusEnum;
 use App\Enums\OrderStatusEnum;
 use App\Enums\TableStatusEnum;
+use App\Models\Check;
 use App\Models\Table;
 use App\Services\GlobalSettingService;
 use Illuminate\Support\Collection;
@@ -63,12 +64,19 @@ class TableService
      */
     public function createTable(int $adminId, string $name, int $number): Table
     {
-        return Table::create([
+
+        $table = Table::create([
             'admin_id' => $adminId,
             'name' => $name,
             'number' => $number,
-            'status' => TableStatusEnum::FREE->value,
         ]);
+
+        Check::created([
+            'admin_id' => $adminId,
+            'table_id' => $table->id,
+        ]);
+
+        return $table;
     }
 
     /**
