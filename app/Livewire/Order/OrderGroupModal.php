@@ -22,13 +22,22 @@ class OrderGroupModal extends Component
 
         return [
             'open-group-modal' => 'openModal',
-            "echo-private:order-status-history-created.admin.{$adminId}.check.{$this->currentCheck->id},.order.status.history.created" => 'closeModal',
+            "echo-private:order-status-history-created.admin.{$adminId}.check.{$this->currentCheck->id},.order.status.history.updated" => 'closeModal',
+            "echo-private:order-status-history-updated.admin.{$adminId}.check.{$this->currentCheck->id},.order.status.history.updated" => 'handleQuantityUpdated',
         ];
+    }
+
+    public function handleQuantityUpdated($payload)
+    {
+        if ($payload['userId'] !== Auth::user()->id) {
+            $this->dispatch('flash', message: 'A quantidade foi alterada por outro operador.'
+        ); 
+            $this->closeModal();
+        }
     }
 
     public function increaseOrderQuantity($orderId)
     {
-
         $orderHistory = OrderStatusHistory::where('order_id', $orderId)
             ->latest('changed_at')
             ->first();

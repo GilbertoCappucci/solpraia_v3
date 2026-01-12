@@ -1,4 +1,5 @@
 <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 flex items-center justify-between sticky top-0 z-10 shadow-md">
+    <x-flash-message-ui />
     {{-- Lado Esquerdo --}}
     <div class="flex items-center gap-2">
         {{-- Botão Voltar --}}

@@ -19,7 +19,7 @@ use App\Enums\RoleEnum; // Import RoleEnum
 use App\Models\GlobalSetting;
 use App\Models\OrderStatusHistory;
 use App\Observers\GlobalSettingObserver;
-use App\Observers\OrderStatusHistoryCreatedObserver;
+use App\Observers\OrderStatusHistoryObserver;
 use Filament\Facades\Filament;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
@@ -44,7 +44,7 @@ class AppServiceProvider extends ServiceProvider
         GlobalSetting::observe(GlobalSettingObserver::class);
         Table::observe(TableObserver::class);
         Check::observe(CheckObserver::class);
-        OrderStatusHistory::observe(OrderStatusHistoryCreatedObserver::class);
+        OrderStatusHistory::observe(OrderStatusHistoryObserver::class);
 
         // Definir Gates de autorização
         // Admin sempre tem acesso a tudo

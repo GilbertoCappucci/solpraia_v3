@@ -46,6 +46,7 @@ class OrderList extends Component
             'filters-updated' => 'onFiltersUpdated',
             'refresh-orders-list' => 'refleshOrdersList',
             "echo-private:order-status-history-created.admin.{$this->adminId}.check.{$this->currentCheckId},.order.status.history.created" => 'onCheckUpdated',
+            "echo-private:order-status-history-updated.admin.{$this->adminId}.check.{$this->currentCheckId},.order.status.history.updated" => 'onCheckUpdated',
         ];
 
         return $listeners;
