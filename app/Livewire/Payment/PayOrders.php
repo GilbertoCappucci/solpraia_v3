@@ -40,7 +40,6 @@ class PayOrders extends Component
         $adminId = Auth::user()->admin_id ?? null;
         return [
             "echo-private:global-setting-updated.{$adminId},.global.setting.updated" => 'refreshSetting',
-            "echo-private:order-status-history-created.{$adminId},.order.status.history.created" => 'handleOrderStatusHistoryCreated',
         ];
     }
 

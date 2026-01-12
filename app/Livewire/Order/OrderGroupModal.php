@@ -5,6 +5,7 @@ namespace App\Livewire\Order;
 use App\Enums\OrderStatusEnum;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class OrderGroupModal extends Component
@@ -17,8 +18,11 @@ class OrderGroupModal extends Component
 
     public function getListeners()
     {
+        $adminId = Auth::user()->admin_id ?? null;
+
         return [
             'open-group-modal' => 'openModal',
+            "echo-private:order-status-history-created.admin.{$adminId}.check.{$this->currentCheck->id},.order.status.history.created" => 'closeModal',
         ];
     }
 
@@ -95,6 +99,7 @@ class OrderGroupModal extends Component
 
     public function closeModal()
     {
+        logger("Closing OrderGroupModal and resetting state");
         $this->show = false;
         $this->groupOrders = [];
         $this->selectedOrderIds = [];

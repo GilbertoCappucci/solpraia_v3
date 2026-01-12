@@ -3,6 +3,7 @@
 namespace App\Livewire\Order;
 
 use App\Services\Order\OrderService;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class OrderCancelModal extends Component
@@ -20,8 +21,11 @@ class OrderCancelModal extends Component
 
     public function getListeners()
     {
+        $adminId = Auth::user()->admin_id ?? null;
+
         return [
             'open-cancel-modal' => 'openModal',
+            'close-cancel-modal' => 'closeModal',
         ];
     }
 

@@ -36,10 +36,13 @@ class OrderStatusHistoryCreatedEvent implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        logger('📡 Broadcasting OrderStatusHistoryCreatedEvent', ['orderStatusHistoryId' => $this->orderStatusHistory->id, 'adminId' => $this->orderStatusHistory->order->admin_id]);
+        logger('📡 Broadcasting OrderStatusHistoryCreatedEvent', [
+            'orderStatusHistoryId' => $this->orderStatusHistory->id, 'adminId' => $this->orderStatusHistory->order->admin_id,
+            'checkId' => $this->orderStatusHistory->order->check->id,
+        ]);
 
         return [
-            new PrivateChannel('order-status-history-created.' . $this->orderStatusHistory->order->admin_id),
+            new PrivateChannel('order-status-history-created.admin.' . $this->orderStatusHistory->order->admin_id . '.check.' . $this->orderStatusHistory->order->check->id),
         ];
     }
 
@@ -51,6 +54,7 @@ class OrderStatusHistoryCreatedEvent implements ShouldBroadcastNow
             'orderId' => $this->orderStatusHistory->order_id,
             'tableId' => $this->orderStatusHistory->order->check->table->id,
             'adminId' => $adminId,
+            'checkId' => $this->orderStatusHistory->order->check->id,
         ];
     }
 

@@ -23,13 +23,14 @@ class OrderList extends Component
     public $timeLimits = [];
 
     public $adminId;
+    public $currentCheckId;
     public $selectedOrderIds = [];
     public $selectedMeta = null;
     public $globalSettingsService;
 
-    public function mount($listOrders, $checkTotal = 0, $statusFilters = [], $timeLimits = [], $adminId = null)
+    public function mount($currentCheckId, $listOrders, $checkTotal = 0, $statusFilters = [], $timeLimits = [], $adminId = null)
     {
-
+        $this->currentCheckId = $currentCheckId;
         $this->listOrders = $listOrders;
         $this->checkTotal = $checkTotal;
         $this->statusFilters = $statusFilters;
@@ -37,19 +38,19 @@ class OrderList extends Component
 
     }
 
+
     public function getListeners()
     {
-        $listeners = [
+
+        $listeners = [  
             'filters-updated' => 'onFiltersUpdated',
             'refresh-orders-list' => 'refleshOrdersList',
+            "echo-private:order-status-history-created.admin.{$this->adminId}.check.{$this->currentCheckId},.order.status.history.created" => 'onCheckUpdated',
         ];
-
-        if ($this->adminId) {
-            $listeners["echo-private:tables-updated.{$this->adminId},.check.updated"] = 'onCheckUpdated';
-        }
 
         return $listeners;
     }
+
 
     public function refleshOrdersList()
     {

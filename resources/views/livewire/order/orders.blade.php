@@ -7,6 +7,7 @@
 
     {{-- Order List --}}
     <livewire:order.order-list 
+        :currentCheckId="$currentCheck->id"
         :listOrders="$listOrders" 
         :checkTotal="$checkTotal"
         :statusFilters="$statusFilters"

@@ -26,7 +26,6 @@ class OrderDetailsModal extends Component
 
         return [
             'open-details-modal' => 'openModal',
-            "echo-private:order-status-history-created.{$adminId},.order.status.history.created" => 'handleOrderStatusHistoryCreated',
         ];
     }
 

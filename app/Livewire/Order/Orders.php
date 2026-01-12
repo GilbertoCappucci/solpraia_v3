@@ -16,8 +16,8 @@ class Orders extends Component
     public $title = 'Pedidos';
     public $adminId;
     public $tableId;
-    public $selectedTable = null;
-    public $currentCheck = null;
+    public $selectedTable;
+    public $currentCheck;
     public $statusFilters = [];
     public $timeLimits = [];
 
@@ -56,7 +56,7 @@ class Orders extends Component
             "echo-private:global-setting-updated.{$adminId},.global.setting.updated" => 'refreshSetting',
             "echo-private:tables-updated.{$adminId},.table.updated" => 'refreshData',
             "echo-private:tables-updated.{$adminId},.check.updated" => 'refreshData',
-            "echo-private:order-status-history-created.{$this->adminId},.order.status.history.created" => 'refreshData',
+            "echo-private:order-status-history-created.admin.{$adminId}.check.{$this->currentCheck->id},.order.status.history.created" => 'refreshData',
             'refresh-parent' => 'refreshData',
             'refresh-modal-data' => 'refreshModalData',
 
@@ -89,6 +89,7 @@ class Orders extends Component
 
         // Atualiza filtros
         $this->statusFilters = session('orders.statusFilters', OrderStatusEnum::getValues());
+        
     }
 
     public function refreshModalData()
