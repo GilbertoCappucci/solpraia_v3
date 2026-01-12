@@ -22,11 +22,7 @@ class TableMergeService
         foreach ($tableIds as $tableId) {
             $table = Table::find($tableId);
             if ($table) {
-                $table->update(['status' => TableStatusEnum::FREE->value]);
-                Check::created([
-                    'admin_id' => $table->admin_id,
-                    'table_id' => $table->id,
-                ]);
+                $table->update(['status' => TableStatusEnum::FREE]);
             }
         }
     }

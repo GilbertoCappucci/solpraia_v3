@@ -171,14 +171,14 @@ class Check extends Component
 
         // Se o check foi marcado como PAID, coloca mesa em RELEASING e volta para tables
         if ($this->newCheckStatus === 'Paid') {
-            $this->table->update(['status' => TableStatusEnum::RELEASING->value]);
+            $this->table->update(['status' => TableStatusEnum::RELEASING]);
             session()->flash('success', 'Pagamento finalizado!');
             return redirect()->route('tables');
         }
 
         // Se foi CANCELED, libera direto para FREE
         if ($this->newCheckStatus === 'Canceled') {
-            $this->table->update(['status' => TableStatusEnum::FREE->value]);
+            $this->table->update(['status' => TableStatusEnum::FREE]);
             session()->flash('success', 'Check cancelado com sucesso!');
             $this->loadCheck();
             return;

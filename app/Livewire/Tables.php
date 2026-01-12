@@ -514,11 +514,15 @@ class Tables extends Component
             'newTableNumber.unique' => 'Já existe um local com este número.',
         ]);
 
-        Table::create([
+        $table = Table::create([
             'admin_id' => Auth::id(),
             'name' => $this->newTableName,
             'number' => $this->newTableNumber,
-            'status' => TableStatusEnum::FREE->value,
+        ]);
+
+        $check = Check::create([
+            'admin_id' => Auth::id(),
+            'table_id' => $table->id,
         ]);
 
         session()->flash('success', 'Local criado com sucesso!');

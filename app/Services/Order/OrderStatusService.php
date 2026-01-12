@@ -86,9 +86,9 @@ class OrderStatusService
         // Se foi CANCELED, libera direto para FREE
         if ($checkWasUpdated) {
             if ($newCheckStatus === CheckStatusEnum::PAID->value) {
-                $table->update(['status' => TableStatusEnum::RELEASING->value]);
+                $table->update(['status' => TableStatusEnum::RELEASING]);
             } elseif ($newCheckStatus === CheckStatusEnum::CANCELED->value) {
-                $table->update(['status' => TableStatusEnum::FREE->value]);
+                $table->update(['status' => TableStatusEnum::FREE]);
             }
         }
 

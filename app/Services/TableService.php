@@ -66,12 +66,21 @@ class TableService
      */
     public function createTable(int $adminId, string $name, int $number): Table
     {
-        return Table::create([
+        
+        $table = Table::create([
             'admin_id' => $adminId,
             'name' => $name,
             'number' => $number,
-            'status' => TableStatusEnum::FREE->value,
         ]);
+
+        $check = Check::create([
+            'admin_id' => $adminId,
+            'table_id' => $table->id,
+        ]);
+
+        return $table;
+
+
     }
 
     /**

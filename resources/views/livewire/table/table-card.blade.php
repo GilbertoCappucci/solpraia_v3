@@ -65,7 +65,7 @@
             @if($this->enrichedTable->ordersPending > 0)
             <livewire:components.order-status-indicator 
                 wire:key="pending-{{ $tableId }}-{{ $this->enrichedTable->pendingTimestamp }}"
-                status="pending" 
+                status="{{ \App\Enums\OrderStatusEnum::PENDING }}" 
                 :count="$this->enrichedTable->ordersPending ?? 0" 
                 :minutes="$this->enrichedTable->pendingMinutes ?? 0" 
                 :timestamp="$this->enrichedTable->pendingTimestamp"
@@ -77,7 +77,7 @@
             @if($this->enrichedTable->ordersInProduction > 0)
             <livewire:components.order-status-indicator 
                 wire:key="production-{{ $tableId }}-{{ $this->enrichedTable->productionTimestamp }}"
-                status="production" 
+                status="{{ \App\Enums\OrderStatusEnum::IN_PRODUCTION }}" 
                 :count="$this->enrichedTable->ordersInProduction ?? 0" 
                 :minutes="$this->enrichedTable->productionMinutes ?? 0" 
                 :timestamp="$this->enrichedTable->productionTimestamp"
@@ -89,7 +89,7 @@
             @if($this->enrichedTable->ordersInTransit > 0)
             <livewire:components.order-status-indicator 
                 wire:key="transit-{{ $tableId }}-{{ $this->enrichedTable->transitTimestamp }}"
-                status="transit" 
+                status="{{ \App\Enums\OrderStatusEnum::IN_TRANSIT }}" 
                 :count="$this->enrichedTable->ordersInTransit ?? 0" 
                 :minutes="$this->enrichedTable->transitMinutes ?? 0" 
                 :timestamp="$this->enrichedTable->transitTimestamp"

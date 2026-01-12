@@ -25,6 +25,7 @@ class TableSeeder extends Seeder
                 'admin_id' => 1,
                 'number' => 1,
                 'name' => 'Venda Direta',
+                'status' => TableStatusEnum::FREE,
             ]
         );
 
@@ -39,6 +40,7 @@ class TableSeeder extends Seeder
             [
                 'admin_id' => 1,
                 'number' => 2,
+                'status' => TableStatusEnum::FREE,
             ]
         );
 
@@ -53,6 +55,7 @@ class TableSeeder extends Seeder
             [
                 'admin_id' => 1,
                 'number' => 3,
+                'status' => TableStatusEnum::FREE,
             ]
         );
 
@@ -67,6 +70,7 @@ class TableSeeder extends Seeder
             [
                 'admin_id' => 1,
                 'number' => 4,
+                'status' => TableStatusEnum::FREE,
             ]
         );
         
