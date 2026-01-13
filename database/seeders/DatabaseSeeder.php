@@ -32,8 +32,6 @@ class DatabaseSeeder extends Seeder
             StockSeeder::class,
             MenuItemSeeder::class,
             TableSeeder::class,
-            //CheckSeeder::class,
-            //OrderSeeder::class,
             GlobalSettingSeeder::class,
         ]);
     }

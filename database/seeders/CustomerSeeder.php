@@ -15,11 +15,12 @@ class CustomerSeeder extends Seeder
     public function run(): void
     {
         Customer::factory()->create([
+            'admin_id' => 1,
             'name' => 'John Doe',
             'phone' => '123-456-7890',
             'email' => 'john.doe@example.com',
-            'is_active' => true,
-            'notes' => 'Important customer',
+            'enabled' => true,
+            'note' => 'Important customer',
         ]);
     }
 }

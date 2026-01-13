@@ -20,8 +20,8 @@ class CustomerFactory extends Factory
             'name' => $this->faker->name(),
             'phone' => $this->faker->unique()->phoneNumber(),
             'email' => $this->faker->unique()->safeEmail(),
-            'is_active' => $this->faker->boolean(90), // 90% chance to be active
-            'notes' => $this->faker->optional()->paragraph(),
+            'enabled' => $this->faker->boolean(90), // 90% chance to be active
+            'note' => $this->faker->optional()->paragraph(),
         ];
     }
 }

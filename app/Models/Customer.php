@@ -15,16 +15,16 @@ class Customer extends Model
         'name',
         'phone',
         'email',
-        'is_active',
-        'notes',
+        'enabled',
+        'note',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'enabled' => 'boolean',
     ];
 
-    public function tabs()
+    public function customerAccounts()
     {
-        return $this->hasMany(Tab::class);
+        return $this->hasMany(CustomerAccount::class);
     }
 }

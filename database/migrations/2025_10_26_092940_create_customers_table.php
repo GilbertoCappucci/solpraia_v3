@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('admin_id')->constrained('users')->onDelete('cascade');
             $table->string('name');
             $table->string('phone')->nullable()->unique();
             $table->string('email')->nullable()->unique();
-            $table->boolean('is_active')->default(true);
-            $table->text('notes')->nullable();
+            $table->boolean('enabled')->default(true);
+            $table->text('note')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

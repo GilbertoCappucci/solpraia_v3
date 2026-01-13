@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('admin_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('check_id')->constrained('checks')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->foreignId('tab_id')->nullable()->constrained('tabs')->onDelete('cascade');
+            $table->foreignId('customer_account_id')->nullable()->constrained('customer_accounts')->onDelete('cascade');
             $table->boolean('is_paid')->default(false);
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();

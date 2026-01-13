@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tabs', function (Blueprint $table) {
+        Schema::create('customer_accounts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->decimal('credit_limit', 10, 2)->default(0);
-            $table->text('notes')->nullable();
-            $table->enum('status', ['open', 'closed', 'suspended'])->default('open');
+            $table->decimal('total_balance', 10, 2)->default(0);
+            $table->text('note')->nullable();
+            $table->boolean('enabled')->default(true);
             $table->timestamp('opened_at')->nullable();
             $table->timestamp('closed_at')->nullable();
             $table->timestamps();

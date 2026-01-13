@@ -16,7 +16,7 @@ class Order extends Model
         'admin_id',
         'check_id',
         'product_id',
-        'tab_id',
+        'customer_account_id',
         'is_paid',
         'paid_at',
     ];
@@ -69,9 +69,9 @@ class Order extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function tab()
+    public function customerAccount()
     {
-        return $this->belongsTo(Tab::class);
+        return $this->belongsTo(CustomerAccount::class);
     }
 
     public function statusHistory()
