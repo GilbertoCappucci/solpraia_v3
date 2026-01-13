@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Components;
 
+use App\Enums\OrderStatusEnum;
+use App\Models\Order;
 use Livewire\Component;
 
 class OrderStatusIndicator extends Component
 {
-    public string $status = 'pending'; // pending, production, transit
+    public string $status = OrderStatusEnum::PENDING->value;
     public int $count = 0;
     public int $minutes = 0;
     public ?string $timestamp = null;
@@ -14,7 +16,7 @@ class OrderStatusIndicator extends Component
     public string $textSize = 'text-lg';
     public string $padding = 'py-3';
 
-    public function mount(string $status = 'pending', int $count = 0, int $minutes = 0, ?string $timestamp = null, string $dotSize = 'w-4 h-4', string $textSize = 'text-lg', string $padding = 'py-3')
+    public function mount(string $status = OrderStatusEnum::PENDING->value, int $count = 0, int $minutes = 0, ?string $timestamp = null, string $dotSize = 'w-4 h-4', string $textSize = 'text-lg', string $padding = 'py-3')
     {
         $this->status = $status;
         $this->count = $count;
@@ -28,18 +30,18 @@ class OrderStatusIndicator extends Component
     public function getConfig(): array
     {
         return match ($this->status) {
-            'pending' => [
-                'label' => 'Aguardando',
+            OrderStatusEnum::PENDING->value => [
+                'label' => OrderStatusEnum::getLabel(OrderStatusEnum::PENDING),
                 'color' => 'bg-yellow-400',
                 'textColor' => 'text-yellow-600',
             ],
-            'production' => [
-                'label' => 'Em Preparo',
+            OrderStatusEnum::IN_PRODUCTION->value => [
+                'label' => OrderStatusEnum::getLabel(OrderStatusEnum::IN_PRODUCTION),
                 'color' => 'bg-blue-400',
                 'textColor' => 'text-blue-600',
             ],
-            'transit' => [
-                'label' => 'Em Trânsito',
+            OrderStatusEnum::IN_TRANSIT->value => [
+                'label' => OrderStatusEnum::getLabel(OrderStatusEnum::IN_TRANSIT),
                 'color' => 'bg-purple-400',
                 'textColor' => 'text-purple-600',
             ],
