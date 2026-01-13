@@ -59,7 +59,9 @@ class OrderOperationsService
                 'changed_at' => now(),
             ]);
 
-            $this->checkService->recalculateCheckTotal($order->check);
+            // Recalcula total do check
+            $newCheckTotal = $this->checkService->calculateTotal($order->check);
+            $order->check->update(['total' => $newCheckTotal]);
 
             return ['success' => true];
         });
@@ -186,7 +188,8 @@ class OrderOperationsService
             }
 
             // Recalcula total da comanda de destino
-            $this->checkService->recalculateCheckTotal($destinationCheck);
+            $newCheckTotal = $this->checkService->calculateTotal($destinationCheck);
+            $destinationCheck->update(['total' => $newCheckTotal]);
 
             return ['success' => true, 'message' => 'Mesas unidas com sucesso!'];
         });
