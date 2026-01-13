@@ -5,6 +5,7 @@ namespace App\Livewire\Order;
 use App\Enums\OrderStatusEnum;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
+use App\Services\CheckService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -15,6 +16,13 @@ class OrderGroupModal extends Component
     public $selectedOrderIds = [];
     public $currentCheck;
     public $buttonPayVisible = false;
+
+    protected $checkService;
+
+    public function boot(CheckService $checkService)
+    {
+        $this->checkService = $checkService;
+    }
 
     public function getListeners()
     {
@@ -52,8 +60,14 @@ class OrderGroupModal extends Component
             'quantity' => $orderHistory->quantity + 1,
         ]);
 
+        $newCheckTotal = $this->checkService->calculateTotal($this->currentCheck);
+        $this->currentCheck->update([
+            'total'=> $newCheckTotal,
+        ]);
+
         $this->openModal($this->selectedOrderIds);
         $this->dispatch('refresh-orders-list');
+
     }
 
     public function decreaseOrderQuantity($orderId)
@@ -67,6 +81,11 @@ class OrderGroupModal extends Component
                 'quantity' => $orderHistory->quantity - 1,
             ]);
         }
+
+        $newCheckTotal = $this->checkService->calculateTotal($this->currentCheck);
+        $this->currentCheck->update([
+            'total'=> $newCheckTotal,
+        ]);
 
         $this->openModal($this->selectedOrderIds);
         $this->dispatch('refresh-orders-list');

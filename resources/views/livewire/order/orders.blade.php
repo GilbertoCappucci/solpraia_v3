@@ -31,13 +31,8 @@
     
     <livewire:order.order-cancel-modal />
     
-    <livewire:order.order-details-modal 
-        :currentCheck="$currentCheck" />
     
     <livewire:order.order-group-modal 
-        :currentCheck="$currentCheck" />
-    
-    <livewire:order.order-group-actions-modal 
         :currentCheck="$currentCheck" />
     
     <livewire:order.order-transfer-modal 

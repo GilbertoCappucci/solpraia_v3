@@ -43,7 +43,7 @@ class TableCard extends Component
         // Adiciona listeners para eventos de atualização de checks, tables e global settings
         if ($adminId) {
             $listeners["echo-private:tables-updated.{$adminId},.check.updated"] = 'onCheckUpdated';
-            $listeners["echo-private:tables-updated.{$adminId},.table.updated"] = 'onTableUpdated';
+            $listeners["echo-private:check-updated.{$adminId},.table.updated"] = 'onTableUpdated';
             $listeners["echo-private:global-setting-updated.{$adminId},.global.setting.updated"] = 'onGlobalSettingUpdated';
         }
         

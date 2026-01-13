@@ -10,6 +10,10 @@ Broadcast::channel('tables-updated.{adminId}', function ($user, $adminId) {
     return (int) $user->admin_id === (int) $adminId;
 });
 
+Broadcast::channel('check-updated.{adminId}', function ($user, $adminId) {
+    return (int) $user->admin_id === (int) $adminId;
+});
+
 Broadcast::channel('order-status-history-created.admin.{adminId}.check.{checkId}', function ($user, $adminId, $checkId) {
     return (int) $user->admin_id === (int) $adminId;
 });

@@ -76,7 +76,7 @@ class Tables extends Component
         return [
             "echo-private:global-setting-updated.{$this->adminId},.global.setting.updated" => 'refreshSetting',
             "echo-private:tables-updated.{$this->adminId},.table.updated" => 'onTableUpdated',
-            "echo-private:tables-updated.{$this->adminId},.check.updated" => 'onCheckUpdated',
+            "echo-private:check-updated.{$this->adminId},.check.updated" => 'onCheckUpdated',
             'filters-updated' => 'onFiltersUpdated',
             'table-selected' => 'selectTable',
             'select-table-for-merge' => 'selectTableForMerge',

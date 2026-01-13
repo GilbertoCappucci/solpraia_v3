@@ -36,7 +36,7 @@ class OrderFooter extends Component
 
         if ($this->adminId) {
             $listeners["echo-private:tables-updated.{$this->adminId},.table.updated"] = 'onTableUpdated';
-            $listeners["echo-private:tables-updated.{$this->adminId},.check.updated"] = 'onCheckUpdated';
+            $listeners["echo-private:check-updated.{$this->adminId},.check.updated"] = 'onCheckUpdated';
         }
 
         return $listeners;

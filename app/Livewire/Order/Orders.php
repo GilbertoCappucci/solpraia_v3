@@ -55,7 +55,7 @@ class Orders extends Component
         return [
             "echo-private:global-setting-updated.{$adminId},.global.setting.updated" => 'refreshSetting',
             "echo-private:tables-updated.{$adminId},.table.updated" => 'refreshData',
-            "echo-private:tables-updated.{$adminId},.check.updated" => 'refreshData',
+            "echo-private:check-updated.{$adminId},.check.updated" => 'refreshData',
             "echo-private:order-status-history-created.admin.{$adminId}.check.{$this->currentCheck->id},.order.status.history.created" => 'refreshData',
             'refresh-parent' => 'refreshData',
             'refresh-modal-data' => 'refreshModalData',

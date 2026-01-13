@@ -103,7 +103,7 @@ class Tables extends Component
         $listeners = [
             "echo-private:global-setting-updated.{$this->adminId},.global.setting.updated" => 'refreshSetting',
             "echo-private:tables-updated.{$this->adminId},.table.updated" => 'onTableUpdated',
-            "echo-private:tables-updated.{$this->adminId},.check.updated" => 'onCheckUpdated',
+            "echo-private:check-updated.{$this->adminId},.check.updated" => 'onCheckUpdated',
             
             // Listeners para TableFilters
             'toggle-filters' => 'toggleFilters',
