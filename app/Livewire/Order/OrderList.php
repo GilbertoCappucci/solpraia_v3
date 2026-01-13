@@ -81,9 +81,14 @@ class OrderList extends Component
         $this->dispatch('selected-order-list-orders', $this->selectedOrderIds);
     }
 
+    public function rowClick($orderId, $status, $isPaid, $productId)
+    {
+        $this->toggleSelection($orderId, $status, $isPaid, $productId);
+        $this->dispatch('open-group-modal', ordersId: $this->selectedOrderIds);
+    }
+
     public function openSelectedGroupActions()
     {
-        dd('openSelectedGroupActions');
         $this->dispatch('open-group-modal', productId: $productId, status: $status);
         $this->clearSelection();
     }

@@ -20,11 +20,17 @@ class OrderGroupModal extends Component
     {
         $adminId = Auth::user()->admin_id ?? null;
 
-        return [
+        $listeners = [
             'open-group-modal' => 'openModal',
-            "echo-private:order-status-history-created.admin.{$adminId}.check.{$this->currentCheck->id},.order.status.history.updated" => 'closeModal',
-            "echo-private:order-status-history-updated.admin.{$adminId}.check.{$this->currentCheck->id},.order.status.history.updated" => 'handleQuantityUpdated',
         ];
+
+        // Only register private echo listeners when we have a current check and admin id
+        if ($adminId && $this->currentCheck && isset($this->currentCheck->id)) {
+            $listeners["echo-private:order-status-history-created.admin.{$adminId}.check.{$this->currentCheck->id},.order.status.history.updated"] = 'closeModal';
+            $listeners["echo-private:order-status-history-updated.admin.{$adminId}.check.{$this->currentCheck->id},.order.status.history.updated"] = 'handleQuantityUpdated';
+        }
+
+        return $listeners;
     }
 
     public function handleQuantityUpdated($payload)
@@ -115,12 +121,12 @@ class OrderGroupModal extends Component
         redirect()->route('pay.orders');
     }   
 
-    public function openModal($selectedOrderIds)
+    public function openModal($ordersId)
     {
-
-        $this->selectedOrderIds = $selectedOrderIds;
+        $this->selectedOrderIds = $ordersId;
+        
         $this->groupOrders = \App\Models\Order::with('product')
-            ->whereIn('id', $this->selectedOrderIds)
+            ->whereIn('id', $this->selectedOrderIds ?: [0])
             ->get()
             ->toArray();
 
@@ -133,7 +139,6 @@ class OrderGroupModal extends Component
             $this->buttonPayVisible = true;
         }
 
-        //dd( $this->groupOrders);
         $this->show = true;
     }
 

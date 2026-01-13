@@ -42,7 +42,7 @@
 
         {{-- Lista das orders --}}
         <div
-            wire:click="{{ $order->order_count === 1 ? 'openDetailsModal(' . $order->orders->first()->id . ')' : 'openGroupModal(' . $order->product_id . ', \' ' . $order->status . '\')' }}"
+            wire:click="rowClick({{ $order->id }}, '{{ $order->status }}', {{ $order->is_paid ? 'true' : 'false' }}, {{ $order->product_id }})"
             class="group cursor-pointer {{ $delayAnimation }} mb-4 md:mb-0 md:rounded-none md:shadow-none md:border-0 md:p-0"
         >
             <div
