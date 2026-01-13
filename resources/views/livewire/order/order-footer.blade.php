@@ -4,7 +4,7 @@
         <div class="flex-1">
             <div class="flex items-center justify-left gap-2">
                 <span class="text-lg font-semibold">Total:</span>
-                <span class="text-lg font-bold">R$ {{ number_format($checkTotal, 2, ',', '.') }}</span>
+                <span class="text-lg font-bold">R$ {{ number_format($this->checkTotal, 2, ',', '.') }}</span>
             </div>
         </div>
 

@@ -213,7 +213,7 @@ class MenuService
      */
     public function confirmOrder(int $adminId, int $tableId, Table $table, ?Check $check, array $cart, float $total): void
     {
-
+        //dd($adminId, $tableId, $table, $check, $cart, $total);
         DB::transaction(function () use ($adminId, $tableId, $table, &$check, $cart, $total) {
             // Valida Stock para todos os itens novamente antes de efetivar
             foreach ($cart as $productId => $item) {
@@ -235,38 +235,33 @@ class MenuService
                     throw new \Exception("Erro ao debitar estoque do produto: {$item['product']['name']}");
                 }
 
-                // Cria múltiplos pedidos individuais baseados na quantidade
-                //for ($i = 0; $i < $item['quantity']; $i++) {
-                    // Busca o produto novamente para garantir que o preço do menu seja usado
-                    $productWithCorrectPrice = $this->getProductWithMenuPrice($adminId, $productId);
+                $productWithCorrectPrice = $this->getProductWithMenuPrice($adminId, $productId);
 
-                    if (!$productWithCorrectPrice) {
-                        throw new \Exception("Produto não encontrado ao confirmar o pedido: {$item['product']['name']}");
-                    }
+                if (!$productWithCorrectPrice) {
+                    throw new \Exception("Produto não encontrado ao confirmar o pedido: {$item['product']['name']}");
+                }
 
-                    $order = Order::create([
-                        'admin_id' => $adminId,
-                        'check_id' => $check->id,
-                        'product_id' => $productId,
-                    ]);
+                $order = Order::create([
+                    'admin_id' => $adminId,
+                    'check_id' => $check->id,
+                    'product_id' => $productId,
+                ]);
 
-                    // Cria histórico inicial com price e quantity
-                    OrderStatusHistory::create([
-                        'order_id' => $order->id,
-                        'from_status' => null,
-                        'to_status' => OrderStatusEnum::PENDING->value,
-                        'price' => $productWithCorrectPrice->price,
-                        'quantity' => $item['quantity'],
-                        'changed_at' => now(),
-                    ]);
-                //}
+                // Cria histórico inicial com price e quantity
+                $OrderStatusHistory = OrderStatusHistory::create([
+                    'order_id' => $order->id,
+                    'from_status' => null,
+                    'to_status' => OrderStatusEnum::PENDING,
+                    'price' => $productWithCorrectPrice->price,
+                    'quantity' => $item['quantity'],
+                    'changed_at' => now(),
+                ]);
+                
             }
 
-            // 3. Recalcula o total do check
-            $this->checkService->recalculateCheckTotal($check);
-            
-            // 4. Força atualização do timestamp do check para garantir disparo do evento
-            $check->touch();
+            //Atualiza o total no check
+            $newTotal = $this->checkService->calculateTotal($check);
+            $check->update(['total' => $newTotal]);
         });
     }
 }
