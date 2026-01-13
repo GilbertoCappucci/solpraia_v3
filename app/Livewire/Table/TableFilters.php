@@ -63,11 +63,13 @@ class TableFilters extends Component
 
     public function toggleTableStatusFilter($status)
     {
+
         if (in_array($status, $this->filterTableStatuses)) {
             $this->filterTableStatuses = array_values(array_filter($this->filterTableStatuses, fn($s) => $s !== $status));
         } else {
             $this->filterTableStatuses[] = $status;
         }
+
         $this->saveAndEmit();
     }
 

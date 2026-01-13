@@ -4,6 +4,7 @@ namespace App\Services\Table;
 
 use App\Enums\CheckStatusEnum;
 use App\Enums\OrderStatusEnum;
+use App\Models\Order;
 use App\Models\Table;
 use App\Services\GlobalSettingService;
 
@@ -25,7 +26,7 @@ class TableFilterService
         string $globalFilterMode = 'OR'
     ): bool {
         $currentCheck = $table->checks->sortByDesc('created_at')->first();
-
+       
         // Se nenhum filtro está ativo, mostra todas as tables
         $hasAnyFilter = !empty($filterTableStatuses) || !empty($filterCheckStatuses) || !empty($filterOrderStatuses) || !empty($filterDepartaments);
         if (!$hasAnyFilter) {
@@ -34,8 +35,8 @@ class TableFilterService
 
         // Verifica filtro de status da mesa (OR: qualquer um dos status selecionados)
         $matchesTableStatus = !empty($filterTableStatuses) && in_array($table->status, $filterTableStatuses);
-
         $matchesCheckStatus = false;
+
         if (!empty($filterCheckStatuses) && $currentCheck) {
             // Verifica se há filtro de 'delayed_closed'
             $hasDelayedClosedFilter = in_array('delayed_closed', $filterCheckStatuses);
@@ -76,9 +77,9 @@ class TableFilterService
                         if (!$order->status_changed_at) return false;
                         $minutes = abs((int) $now->diffInMinutes($order->status_changed_at));
                         return match ($order->status) {
-                            OrderStatusEnum::PENDING->value => $minutes > $timeLimits['pending'],
-                            OrderStatusEnum::IN_PRODUCTION->value => $minutes > $timeLimits['in_production'],
-                            OrderStatusEnum::IN_TRANSIT->value => $minutes > $timeLimits['in_transit'],
+                            OrderStatusEnum::PENDING->value => $minutes > $timeLimits[OrderStatusEnum::PENDING->value],
+                            OrderStatusEnum::IN_PRODUCTION->value => $minutes > $timeLimits[OrderStatusEnum::IN_PRODUCTION->value],
+                            OrderStatusEnum::IN_TRANSIT->value => $minutes > $timeLimits[OrderStatusEnum::IN_TRANSIT->value],
                             default => false
                         };
                     })
@@ -128,6 +129,7 @@ class TableFilterService
             if (!empty($filterTableStatuses) && !$matchesTableStatus) {
                 return false;
             }
+
             if (!empty($filterCheckStatuses) && !$matchesCheckStatus) {
                 return false;
             }
