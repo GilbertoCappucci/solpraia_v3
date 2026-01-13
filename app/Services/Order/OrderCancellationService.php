@@ -54,10 +54,9 @@ class OrderCancellationService
             }
 
             // Recalcula total do check
-            if ($order->check) {
-                $this->checkService->recalculateCheckTotal($order->check);
-            }
-
+            $newCheckTotal = $this->checkService->calculateTotal($order->check);
+            $order->check->update(['total' => $newCheckTotal]);
+            
             return ['success' => true, 'message' => 'Item removido com sucesso.'];
         });
     }
@@ -105,9 +104,8 @@ class OrderCancellationService
             }
 
             // Recalcula total do check uma única vez
-            if ($check) {
-                $this->checkService->recalculateCheckTotal($check);
-            }
+            $newCheckTotal = $this->checkService->calculateTotal($check);
+            $check->update(['total' => $newCheckTotal]);
 
             return [
                 'success' => true,
