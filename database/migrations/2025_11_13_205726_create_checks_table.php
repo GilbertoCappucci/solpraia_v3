@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('table_id')->constrained('tables')->onDelete('cascade');
             $table->enum('status', array_column(CheckStatusEnum::cases(), 'value'))->default(CheckStatusEnum::OPEN);
             $table->decimal('total', 10, 2)->default(0);
-            $table->dateTime('opened_at')->nullable();
+            $table->dateTime('opened_at')->default(now());
             $table->dateTime('closed_at')->nullable();
             $table->timestamps();
             $table->softDeletes();

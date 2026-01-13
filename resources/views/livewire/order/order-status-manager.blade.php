@@ -76,39 +76,42 @@
             </div>
 
             @php
-            $isOpenAllowed = in_array('Open', $checkStatusAllowed) || $newCheckStatus === 'Open';
-            $isClosedAllowed = in_array('Closed', $checkStatusAllowed) || $newCheckStatus === 'Closed';
-            $isPaidAllowed = in_array('Paid', $checkStatusAllowed) || $newCheckStatus === 'Paid';
-            $isCanceledAllowed = in_array('Canceled', $checkStatusAllowed) || $newCheckStatus === 'Canceled';
+            $isOpenAllowed = in_array(\App\Enums\CheckStatusEnum::OPEN->value, $checkStatusAllowed) || $newCheckStatus === \App\Enums\CheckStatusEnum::OPEN->value;
+
+            $isClosedAllowed = in_array(\App\Enums\CheckStatusEnum::CLOSED->value, $checkStatusAllowed) || $newCheckStatus === \App\Enums\CheckStatusEnum::CLOSED->value;
+
+            $isPaidAllowed = in_array(\App\Enums\CheckStatusEnum::PAID->value, $checkStatusAllowed) || $newCheckStatus === \App\Enums\CheckStatusEnum::PAID->value;
+            
+            $isCanceledAllowed = in_array(\App\Enums\CheckStatusEnum::CANCELED->value, $checkStatusAllowed) || $newCheckStatus === \App\Enums\CheckStatusEnum::CANCELED->value;
             @endphp
             
             <div class="flex flex-wrap gap-2 mb-3">
                 <button
-                    wire:click="setCheckStatus('Open')"
+                    wire:click="setCheckStatus('{{\App\Enums\CheckStatusEnum::OPEN->value}}')"
                     @if(!$isOpenAllowed) disabled @endif
                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                        {{ !$isOpenAllowed ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Open' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                        {{ !$isOpenAllowed ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === \App\Enums\CheckStatusEnum::OPEN->value ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                     Aberto
                 </button>
                 <button
-                    wire:click="setCheckStatus('Closed')"
+                    wire:click="setCheckStatus('{{\App\Enums\CheckStatusEnum::CLOSED->value}}'  )"
                     @if(!$isClosedAllowed) disabled @endif
                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                        {{ !$isClosedAllowed ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Closed' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                        {{ !$isClosedAllowed ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === \App\Enums\CheckStatusEnum::CLOSED->value ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                     Fechado
                 </button>
                 <button
-                    wire:click="setCheckStatus('Paid')"
+                    wire:click="setCheckStatus('{{\App\Enums\CheckStatusEnum::PAID->value}}')"
                     @if(!$isPaidAllowed) disabled @endif
                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                        {{ !$isPaidAllowed ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Paid' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                        {{ !$isPaidAllowed ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === \App\Enums\CheckStatusEnum::PAID->value ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                     Pago
                 </button>
                 <button
-                    wire:click="setCheckStatus('Canceled')"
+                    wire:click="setCheckStatus('{{\App\Enums\CheckStatusEnum::CANCELED->value}}')"
                     @if(!$isCanceledAllowed) disabled @endif
                     class="px-3 py-2 rounded-lg text-sm font-medium transition
-                        {{ !$isCanceledAllowed ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === 'Canceled' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                        {{ !$isCanceledAllowed ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newCheckStatus === \App\Enums\CheckStatusEnum::CANCELED->value ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                     Cancelar
                 </button>
             </div>

@@ -70,7 +70,6 @@ class OrderCancelModal extends Component
     {
 
         foreach($this->orderToCancelData as $orderData) {
-            //dd($orderData);
             $result = $this->orderService->cancelOrder($orderData['id'], $orderData['quantity']);
 
             if (!$result['success']) {

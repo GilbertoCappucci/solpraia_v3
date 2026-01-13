@@ -230,8 +230,6 @@ class MenuService
             // 2. Cria os pedidos e debita estoque
             foreach ($cart as $productId => $item) {
                 
-                //dd($productId, $item);
-
                 // Debita o estoque total deste item
                 if (!$this->stockService->decrement($productId, $item['quantity'])) {
                     throw new \Exception("Erro ao debitar estoque do produto: {$item['product']['name']}");

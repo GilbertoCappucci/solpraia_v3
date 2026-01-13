@@ -129,7 +129,6 @@ class Check extends Component
         // Recalcula o total do check
         $this->checkService->recalculateCheckTotal($this->check);
 
-        //dd($this->check);
         $this->currentCheck = $this->check;
 
         // Define status permitidos para o check com base no status da mesa

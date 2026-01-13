@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\MenuItem;
 use App\Services\Order\OrderService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class CheckService
 {
@@ -106,10 +107,6 @@ class CheckService
                 $errors[] = 'Não é possível fechar o check. Todos os pedidos precisam estar entregues (Pronto).';
             }
 
-            // Validação: Não pode fechar conta sem pedidos
-            if ($check->total <= 0) {
-                $errors[] = 'Não é possível fechar conta sem pedidos.';
-            }
         }
 
         // Validação: Não pode marcar como PAID sem estar CLOSED
@@ -123,15 +120,33 @@ class CheckService
             return ['success' => false, 'errors' => $errors];
         }
 
-        // Atualiza o status do check (Observer vai disparar o evento)
-        $check->update(['status' => $newStatus]);
+        if(in_array($newStatus, [CheckStatusEnum::CANCELED->value, CheckStatusEnum::PAID->value, CheckStatusEnum::CLOSED->value])) {
 
-        // Se foi marcado como Closed ou Paid, atualiza closed_at
-        if (in_array($newStatus, [CheckStatusEnum::CLOSED->value, CheckStatusEnum::PAID->value])) {
-            $check->update(['closed_at' => now()]);
+            $check->update([
+                'status' => $newStatus,
+                'closed_at' => now()
+            ]);
+
+            Check::create([
+                'table_id' => $check->table_id,
+                'admin_id' => $check->admin_id,
+                'status' => CheckStatusEnum::OPEN,
+                'opened_at' => now(),
+                'total' => 0,
+            ]);
+
+            Session::flash('success', 'Status do check atualizado com sucesso!');
+            return ['success' => [true, [
+                'check' => $check,
+            ]], 'errors' => []];
         }
 
-        return ['success' => true, 'errors' => []];
+        $check->update(['status' => $newStatus]);
+
+        Session::flash('success', 'Status do check atualizado com sucesso!');
+        return ['success' => [true, [
+            'check' => $check,
+        ]], 'errors' => []];
     }
 
     /**
@@ -142,9 +157,9 @@ class CheckService
     {
         $allowedStatuses = [];
 
-        // Se não houver check, não há transições de status de comanda possíveis
-        if (!$check) {
-            return $allowedStatuses;
+        //Caso o Check esteja com total 0, permite cancelar diretamente
+        if ($check->total == 0) {
+            return [CheckStatusEnum::CANCELED->value];
         }
 
         // Se houver check, valida se todos os pedidos estão finalizados

@@ -5,7 +5,10 @@ namespace App\Livewire\Order;
 use App\Services\CheckService;
 use App\Services\Order\OrderService;
 use App\Services\Table\TableService;
+use Illuminate\Support\Facades\Session;
 use Livewire\Component;
+
+use function Pest\Laravel\session;
 
 class OrderStatusManager extends Component
 {
@@ -100,24 +103,29 @@ class OrderStatusManager extends Component
     // Check Status Methods
     public function setCheckStatus($status)
     {
-        if ($this->currentCheck) {
-            $this->newCheckStatus = $status;
-            
-            // Atualiza status permitidos
-            $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses(
-                $this->newCheckStatus,
-                $this->currentCheck
-            );
-            
-            // Atualiza automaticamente
-            $this->updateCheckStatus();
+        if (!$this->currentCheck) {
+            Session::flash('error', 'Check inválido para atualização de status.');
+            return redirect()->route('tables');
         }
+
+        $this->newCheckStatus = $status;
+        
+        // Atualiza status permitidos
+        $this->checkStatusAllowed = $this->checkService->getAllowedCheckStatuses(
+            $this->newCheckStatus,
+            $this->currentCheck
+        );
+        
+        // Atualiza automaticamente
+        $this->updateCheckStatus();
+        
     }
 
     public function updateCheckStatus()
     {
         if (!$this->currentCheck || !$this->newCheckStatus) {
-            return;
+            Session::flash('error', 'Check inválido para atualização de status.');
+            return redirect()->route('tables');
         }
 
         $result = $this->checkService->validateAndUpdateCheckStatus(
@@ -126,17 +134,18 @@ class OrderStatusManager extends Component
         );
 
         if (!$result['success']) {
-            session()->flash('error', implode(' ', $result['errors']));
-            return;
+            Session::flash('error', implode(' ', $result['errors']));
+            
+            return redirect()->route('tables');
         }
 
         // Se alterou para Fechado, redireciona para a tela do check
         if ($this->newCheckStatus === 'Closed') {
-            session()->flash('success', 'Check fechado! Finalize o pagamento.');
+            Session::flash('success', 'Check fechado! Finalize o pagamento.');
             return redirect()->route('check', ['checkId' => $this->currentCheck->id]);
         }
 
-        session()->flash('success', 'Status do check atualizado com sucesso!');
+        Session::flash('success', 'Status do check atualizado com sucesso!');
         $this->dispatch('check-status-updated');
         $this->dispatch('refresh-parent');
     }

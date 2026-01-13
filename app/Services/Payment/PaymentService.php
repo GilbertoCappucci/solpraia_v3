@@ -92,8 +92,6 @@ class PaymentService
                     $pixName = $globalSetting->pix_name;
                     $pixCity = $globalSetting->pix_city;
 
-                    //dd($pixKey, $pixKeyType, $pixName, $pixCity, $ordersTotal, $transactionId);
-
                     return $this->pixService->generatePayload(
                         $pixKey,
                         $pixKeyType,

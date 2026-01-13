@@ -19,67 +19,81 @@ class TableSeeder extends Seeder
     public function run(): void
     {
 
+        Table::withoutEvents(function () {
+            Table::factory()->create(
+                [
+                    'admin_id' => 1,
+                    'number' => 1,
+                    'name' => 'Venda Direta',
+                    'status' => TableStatusEnum::FREE,
+                ]
+            );
+        });
 
-        Table::factory()->create(
-            [
-                'admin_id' => 1,
-                'number' => 1,
-                'name' => 'Venda Direta',
-                'status' => TableStatusEnum::FREE,
-            ]
-        );
+        Check::withoutEvents(function () {
+            Check::factory()->create(
+                [
+                    'admin_id' => 1,
+                    'table_id' => 1,
+                ]
+            );
+        });
 
-        Check::factory()->create(
-            [
-                'admin_id' => 1,
-                'table_id' => 1,
-            ]
-        );
+        Table::withoutEvents(function () {
+            Table::factory()->create(   
+                [
+                    'admin_id' => 1,
+                    'number' => 2,
+                    'status' => TableStatusEnum::FREE,
+                ]
+            );
+        });
 
-        Table::factory()->create(   
-            [
-                'admin_id' => 1,
-                'number' => 2,
-                'status' => TableStatusEnum::FREE,
-            ]
-        );
+        Check::withoutEvents(function () {
+            Check::factory()->create(
+                [
+                    'admin_id' => 1,
+                    'table_id' => 2,
+                ]
+            );
+        });
 
-        Check::factory()->create(
-            [
-                'admin_id' => 1,
-                'table_id' => 2,
-            ]
-        );
+        Table::withoutEvents(function () {
+            Table::factory()->create(   
+                [
+                    'admin_id' => 1,
+                    'number' => 3,
+                    'status' => TableStatusEnum::FREE,
+                ]
+            );
+        });
 
-        Table::factory()->create(   
-            [
-                'admin_id' => 1,
-                'number' => 3,
-                'status' => TableStatusEnum::FREE,
-            ]
-        );
+        Check::withoutEvents(function () {
+            Check::factory()->create(
+                [
+                    'admin_id' => 1,
+                    'table_id' => 3,
+                ]
+            );
+        });
 
-        Check::factory()->create(
-            [
-                'admin_id' => 1,
-                'table_id' => 3,
-            ]
-        );
-
-        Table::factory()->create(   
-            [
-                'admin_id' => 1,
-                'number' => 4,
-                'status' => TableStatusEnum::FREE,
-            ]
-        );
+        Table::withoutEvents(function () {
+            Table::factory()->create(   
+                [
+                    'admin_id' => 1,
+                    'number' => 4,
+                    'status' => TableStatusEnum::FREE,
+                ]
+            );
+        });
         
-
-        Check::factory()->create(
-            [
-                'admin_id' => 1,
-                'table_id' => 4,
-            ]
-        );
+        Check::withoutEvents(function () {
+            Check::factory()->create(
+                [
+                    'admin_id' => 1,
+                    'table_id' => 4,
+                ]
+            );
+        });
     }
 }
