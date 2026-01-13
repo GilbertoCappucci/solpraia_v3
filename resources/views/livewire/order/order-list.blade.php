@@ -17,9 +17,9 @@
         @foreach($listOrders as $order)
         @php
         $statusConfig = match($order->status) {
-            'pending' => ['label' => 'Aguardando', 'color' => 'bg-yellow-100 text-yellow-800 border-yellow-200'],
-            'in_production' => ['label' => 'Em Preparo', 'color' => 'bg-blue-100 text-blue-800 border-blue-200'],
-            'in_transit' => ['label' => 'Em Trânsito', 'color' => 'bg-purple-100 text-purple-800 border-purple-200'],
+            \App\Enums\OrderStatusEnum::PENDING->value => ['label' => \App\Enums\OrderStatusEnum::getLabel(\App\Enums\OrderStatusEnum::PENDING), 'color' => 'bg-yellow-100 text-yellow-800 border-yellow-200'],
+            \App\Enums\OrderStatusEnum::IN_PRODUCTION->value => ['label' => \App\Enums\OrderStatusEnum::getLabel(\App\Enums\OrderStatusEnum::IN_PRODUCTION), 'color' => 'bg-blue-100 text-blue-800 border-blue-200'],
+            \App\Enums\OrderStatusEnum::IN_TRANSIT->value => ['label' => \App\Enums\OrderStatusEnum::getLabel(\App\Enums\OrderStatusEnum::IN_TRANSIT), 'color' => 'bg-purple-100 text-purple-800 border-purple-200'],
             'completed' => ['label' => 'Entregue', 'color' => 'bg-green-100 text-green-800 border-green-200'],
             'canceled' => ['label' => 'Cancelado', 'color' => 'bg-red-100 text-red-800 border-red-200'],
             default => ['label' => 'Desconhecido', 'color' => 'bg-gray-100 text-gray-800 border-gray-200']
@@ -30,9 +30,9 @@
         if ($order->status_changed_at) {
             $minutes = abs((int) now()->diffInMinutes($order->status_changed_at));
             $isDelayed = match($order->status) {
-                'pending' => $minutes > $timeLimits['pending'],
-                'in_production' => $minutes > $timeLimits['in_production'],
-                'in_transit' => $minutes > $timeLimits['in_transit'],
+                \App\Enums\OrderStatusEnum::PENDING->value => $minutes > $timeLimits[\App\Enums\OrderStatusEnum::PENDING->value],
+                \App\Enums\OrderStatusEnum::IN_PRODUCTION->value => $minutes > $timeLimits[\App\Enums\OrderStatusEnum::IN_PRODUCTION->value],
+                \App\Enums\OrderStatusEnum::IN_TRANSIT->value => $minutes > $timeLimits[\App\Enums\OrderStatusEnum::IN_TRANSIT->value],
                 default => false
             };
         }
