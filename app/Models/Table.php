@@ -27,4 +27,9 @@ class Table extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function checkLast()
+    {
+        return $this->hasOne(Check::class)->latestOfMany();
+    }
 }

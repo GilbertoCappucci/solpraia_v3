@@ -44,6 +44,7 @@ class TableCard extends Component
         if ($adminId) {
             $listeners["echo-private:tables-updated.{$adminId},.check.updated"] = 'onCheckUpdated';
             $listeners["echo-private:check-updated.{$adminId},.table.updated"] = 'onTableUpdated';
+            $listeners["echo-private:order-status-history-created.admin.{$adminId}.check.{$table->checkLast->id},.order.status.history.updated"] = 'onTableUpdated';
             $listeners["echo-private:global-setting-updated.{$adminId},.global.setting.updated"] = 'onGlobalSettingUpdated';
         }
         
