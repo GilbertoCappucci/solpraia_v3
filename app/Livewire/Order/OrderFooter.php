@@ -59,7 +59,7 @@ class OrderFooter extends Component
     public function goToMenu()
     {
         // Verifica se a mesa está fechada
-        if ($this->selectedTable->status === \App\Enums\TableStatusEnum::CLOSE->value) {
+        if ($this->selectedTable->status === \App\Enums\TableStatusEnum::CLOSED->value) {
             session()->flash('error', 'Mesa fechada! Não é possível adicionar pedidos.');
             return;
         }

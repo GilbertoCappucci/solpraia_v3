@@ -55,7 +55,9 @@ class TableFilters extends Component
     public function toggleFilters()
     {
         $this->showFilters = !$this->showFilters;
+
         session(['tables.showFilters' => $this->showFilters]);
+        
         $this->dispatch('filters-toggled', $this->showFilters);
     }
 

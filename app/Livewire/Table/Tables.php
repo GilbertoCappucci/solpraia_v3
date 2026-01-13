@@ -180,6 +180,8 @@ class Tables extends Component
         $this->filterDepartaments = $filters['departaments'] ?? [];
         $this->globalFilterMode = $filters['mode'] ?? 'AND';
         $this->hasActiveFilters = $filters['hasActive'] ?? false;
+
+        //dd($this->hasActiveFilters, $this->filterTableStatuses, $this->filterCheckStatuses, $this->filterOrderStatuses, $this->filterDepartaments);
     }
 
     public function openCreateModal()
@@ -262,7 +264,7 @@ class Tables extends Component
             $this->filterDepartaments,
             $this->globalFilterMode
         );
-        
+
         $canMerge = $this->tableService->canMergeTables($tables);
         $this->canMerge = $canMerge;
 

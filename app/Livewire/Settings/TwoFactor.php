@@ -161,7 +161,7 @@ class TwoFactor extends Component
             return [
                 'title' => __('Two-Factor Authentication Enabled'),
                 'description' => __('Two-factor authentication is now enabled. Scan the QR code or enter the setup key in your authenticator app.'),
-                'buttonText' => __('Close'),
+                'buttonText' => __('Closed'),
             ];
         }
 

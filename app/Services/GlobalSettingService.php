@@ -41,7 +41,7 @@ class GlobalSettingService
             'paid' => 120,      // Valor padrão, pois não está no formulário
             'occupied' => 999,  // Valor padrão, pois não está no formulário
             'reserved' => 999,  // Valor padrão, pois não está no formulário
-            'close' => 999,     // Valor padrão, pois não está no formulário
+            'closed' => 999,     // Valor padrão, pois não está no formulário
         ];
 
         if (!$settings) {
@@ -57,7 +57,7 @@ class GlobalSettingService
             'paid' => $settings->time_limit_paid ?? $defaults['paid'], // Mantém a lógica, mas usa um padrão
             'occupied' => $settings->time_limit_occupied ?? $defaults['occupied'], // Mantém a lógica, mas usa um padrão
             'reserved' => $settings->time_limit_reserved ?? $defaults['reserved'], // Mantém a lógica, mas usa um padrão
-            'close' => $settings->time_limit_close ?? $defaults['close'], // Mantém a lógica, mas usa um padrão
+            'closed' => $settings->time_limit_close ?? $defaults['closed'], // Mantém a lógica, mas usa um padrão
         ];
     }
     

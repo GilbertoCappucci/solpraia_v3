@@ -22,22 +22,9 @@ class TableEnrichmentService
     {
         $currentCheck = $table->checks->sortByDesc('created_at')->first();
 
-        // Checks pagos ou cancelados são considerados inativos, 
-        // a menos que esteja Pago mas a mesa ainda não tenha sido liberada (status RELEASING)
-        $checkIsActive = $currentCheck && (
-            !in_array($currentCheck->status, [
-                CheckStatusEnum::PAID->value,
-                CheckStatusEnum::CANCELED->value,
-                CheckStatusEnum::MERGED->value,
-            ]) || ($currentCheck->status === CheckStatusEnum::PAID->value && $table->status === TableStatusEnum::RELEASING->value)
-        );
+        $this->setCheckData($table, $currentCheck);
 
-        if ($checkIsActive) {
-            $this->setCheckData($table, $currentCheck);
-            $this->setOrdersData($table, $currentCheck);
-        } else {
-            $this->setEmptyData($table);
-        }
+        $this->setOrdersData($table, $currentCheck);
 
         return $table;
     }
@@ -49,28 +36,28 @@ class TableEnrichmentService
     {
         $table->checkId = $currentCheck->id;
         $table->checkStatus = $currentCheck->status;
+
         $table->checkStatusLabel = match ($currentCheck->status) {
-            CheckStatusEnum::OPEN->value => 'Aberto',
-            CheckStatusEnum::CLOSED->value => 'Fechado',
-            CheckStatusEnum::PAID->value => 'Pago',
-            CheckStatusEnum::CANCELED->value => 'Cancelado',
-            CheckStatusEnum::MERGED->value => 'Unida',
-            default => 'Livre'
+            CheckStatusEnum::OPEN->value => CheckStatusEnum::OPEN->getLabel(CheckStatusEnum::OPEN),
+            CheckStatusEnum::CLOSED->value => CheckStatusEnum::CLOSED->getLabel(CheckStatusEnum::CLOSED),
+            CheckStatusEnum::PAID->value => CheckStatusEnum::PAID->getLabel(CheckStatusEnum::PAID),
+            CheckStatusEnum::CANCELED->value => CheckStatusEnum::CANCELED->getLabel(CheckStatusEnum::CANCELED),
+            CheckStatusEnum::MERGED->value => CheckStatusEnum::MERGED->getLabel(CheckStatusEnum::MERGED),
         };
+
         $table->checkStatusColor = match ($currentCheck->status) {
-            CheckStatusEnum::OPEN->value => 'green',
-            CheckStatusEnum::CLOSED->value => 'red',
-            CheckStatusEnum::PAID->value => 'gray',
-            CheckStatusEnum::CANCELED->value => 'orange',
-            CheckStatusEnum::MERGED->value => 'purple',
-            default => 'gray'
+            CheckStatusEnum::OPEN->value => CheckStatusEnum::OPEN->getColor(CheckStatusEnum::OPEN),
+            CheckStatusEnum::CLOSED->value => CheckStatusEnum::CLOSED->getColor(CheckStatusEnum::CLOSED),
+            CheckStatusEnum::PAID->value => CheckStatusEnum::PAID->getColor(CheckStatusEnum::PAID),
+            CheckStatusEnum::CANCELED->value => CheckStatusEnum::CANCELED->getColor(CheckStatusEnum::CANCELED),
+            CheckStatusEnum::MERGED->value => CheckStatusEnum::MERGED->getColor(CheckStatusEnum::MERGED),
         };
 
         $table->checkTotal = $currentCheck->total ?? 0;
 
         if ($table->status === TableStatusEnum::RELEASING->value) {
-            $table->checkStatusLabel = 'Liberando';
-            $table->checkStatusColor = 'teal';
+            $table->checkStatusLabel = TableStatusEnum::RELEASING->getLabel(TableStatusEnum::RELEASING);
+            $table->checkStatusColor = TableStatusEnum::RELEASING->getColor(TableStatusEnum::RELEASING);
             $table->releasingMinutes = $table->updated_at ? abs((int) now()->diffInMinutes($table->updated_at)) : 0;
             $table->releasingTimestamp = $table->updated_at;
         } else {
@@ -140,12 +127,13 @@ class TableEnrichmentService
             $minutes = abs((int) $now->diffInMinutes($order->status_changed_at));
 
             return match ($order->status) {
-                OrderStatusEnum::PENDING->value => $minutes > $timeLimits['pending'],
-                OrderStatusEnum::IN_PRODUCTION->value => $minutes > $timeLimits['in_production'],
-                OrderStatusEnum::IN_TRANSIT->value => $minutes > $timeLimits['in_transit'],
+                OrderStatusEnum::PENDING->value => $minutes > $timeLimits[OrderStatusEnum::PENDING->value],
+                OrderStatusEnum::IN_PRODUCTION->value => $minutes > $timeLimits[OrderStatusEnum::IN_PRODUCTION->value],
+                OrderStatusEnum::IN_TRANSIT->value => $minutes > $timeLimits[OrderStatusEnum::IN_TRANSIT->value],
                 default => false
             };
         });
+        
         $table->ordersDelayed = $delayedOrders->count();
     }
 
@@ -161,7 +149,7 @@ class TableEnrichmentService
             'occupied' => 'Ocupada',
             'reserved' => 'Reservada',
             'releasing' => 'Liberando',
-            'close' => 'Fechada',
+            'closed' => 'Fechada',
             default => 'Livre'
         };
 
@@ -169,7 +157,7 @@ class TableEnrichmentService
             'occupied' => 'green',
             'reserved' => 'purple',
             'releasing' => 'teal',
-            'close' => 'red',
+            'closed' => 'red',
             default => 'gray'
         };
 

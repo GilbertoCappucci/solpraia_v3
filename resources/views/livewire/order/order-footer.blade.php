@@ -10,7 +10,7 @@
 
         {{-- Botão ou Mensagem de Status (Direita) --}}
         <div class="flex-shrink-0">
-            @if($selectedTable->status === 'close')
+            @if($selectedTable->status === 'closed')
             <div class="bg-red-100 border-2 border-red-300 text-red-700 py-3 px-6 rounded-xl font-bold text-center text-sm">
                 Mesa Fechada
             </div>

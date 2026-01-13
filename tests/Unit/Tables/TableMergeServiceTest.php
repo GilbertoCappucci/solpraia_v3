@@ -7,7 +7,7 @@ test('canTableBeMerged rejects excluded statuses', function () {
 
     $reserved = (object)['status' => 'reserved'];
     $releasing = (object)['status' => 'releasing'];
-    $close = (object)['status' => 'close'];
+    $close = (object)['status' => 'closed'];
     $ok = (object)['status' => 'occupied'];
 
     expect($service->canTableBeMerged($reserved))->toBeFalse();

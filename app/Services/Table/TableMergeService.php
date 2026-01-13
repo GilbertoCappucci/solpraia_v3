@@ -39,7 +39,7 @@ class TableMergeService
         // - releasing: mesa está sendo liberada
         // - close: mesa está fechada permanentemente
         // - reserved: mesa está reservada
-        $excludedStatuses = ['releasing', 'close', 'reserved'];
+        $excludedStatuses = ['releasing', 'closed', 'reserved'];
         return !in_array($table->status, $excludedStatuses);
     }
 

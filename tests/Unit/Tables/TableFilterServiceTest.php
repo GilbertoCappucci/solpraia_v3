@@ -70,7 +70,7 @@ test('applyFilters recognizes delayed_closed via global time limits', function (
     });
 
     $table = new Table();
-    $table->status = 'close';
+    $table->status = 'closed';
     $check = new stdClass();
     $check->status = CheckStatusEnum::CLOSED->value;
     $check->updated_at = now()->subMinutes(10);

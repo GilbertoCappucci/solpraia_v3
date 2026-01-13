@@ -52,10 +52,10 @@
                         Liberando
                     </button>
                     <button 
-                        wire:click="setStatus('close')"
+                        wire:click="setStatus('closed')"
                         @if($hasActiveCheck) disabled @endif
                         class="px-3 py-2 rounded-lg text-sm font-medium transition
-                            {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'close' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
+                            {{ $hasActiveCheck ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ($newTableStatus === 'closed' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') }}">
                         Fechada
                     </button>
                 </div>

@@ -64,27 +64,27 @@
                 <div class="flex flex-wrap gap-2">
                     <button wire:click="toggleTableStatusFilter('free')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('free', $filterTableStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\TableStatusEnum::FREE->value, $filterTableStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Livre
                     </button>
                     <button wire:click="toggleTableStatusFilter('occupied')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('occupied', $filterTableStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\TableStatusEnum::OCCUPIED->value, $filterTableStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Ocupada
                     </button>
                     <button wire:click="toggleTableStatusFilter('reserved')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('reserved', $filterTableStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\TableStatusEnum::RESERVED->value, $filterTableStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Reservada
                     </button>
                     <button wire:click="toggleTableStatusFilter('releasing')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('releasing', $filterTableStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\TableStatusEnum::RELEASING->value, $filterTableStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Liberando
                     </button>
-                    <button wire:click="toggleTableStatusFilter('close')"
+                    <button wire:click="toggleTableStatusFilter('closed')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('close', $filterTableStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\TableStatusEnum::CLOSED->value, $filterTableStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Fechada
                     </button>
                 </div>
@@ -101,17 +101,17 @@
                 <div class="flex flex-wrap gap-2">
                     <button wire:click="toggleCheckStatusFilter('Open')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('Open', $filterCheckStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\CheckStatusEnum::OPEN->value, $filterCheckStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Aberto
                     </button>
                     <button wire:click="toggleCheckStatusFilter('Closed')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('Closed', $filterCheckStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\CheckStatusEnum::CLOSED->value, $filterCheckStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Fechado
                     </button>
                     <button wire:click="toggleCheckStatusFilter('Paid')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('Paid', $filterCheckStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\CheckStatusEnum::PAID->value, $filterCheckStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Pago
                     </button>
                     <button wire:click="toggleCheckStatusFilter('delayed_closed')"
@@ -134,22 +134,22 @@
                 <div class="flex flex-wrap gap-2">
                     <button wire:click="toggleOrderStatusFilter('pending')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('pending', $filterOrderStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\OrderStatusEnum::PENDING->value, $filterOrderStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Aguardando
                     </button>
                     <button wire:click="toggleOrderStatusFilter('in_production')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('in_production', $filterOrderStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\OrderStatusEnum::IN_PRODUCTION->value, $filterOrderStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Em Preparo
                     </button>
                     <button wire:click="toggleOrderStatusFilter('in_transit')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('in_transit', $filterOrderStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\OrderStatusEnum::IN_TRANSIT->value, $filterOrderStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Em Trânsito
                     </button>
                     <button wire:click="toggleOrderStatusFilter('completed')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('completed', $filterOrderStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\OrderStatusEnum::COMPLETED->value, $filterOrderStatuses) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Pronto
                     </button>
                     <button wire:click="toggleOrderStatusFilter('delayed')"
@@ -171,27 +171,27 @@
                 <div class="flex flex-wrap gap-2">
                     <button wire:click="toggleDepartamentFilter('Administration')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('Administration', $filterDepartaments) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\DepartamentEnum::ADMINISTRATION->value, $filterDepartaments) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Administração
                     </button>
                     <button wire:click="toggleDepartamentFilter('Expedition')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('Expedition', $filterDepartaments) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\DepartamentEnum::EXPEDITION->value, $filterDepartaments) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Expedição
                     </button>
                     <button wire:click="toggleDepartamentFilter('Bar')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('Bar', $filterDepartaments) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\DepartamentEnum::BAR->value, $filterDepartaments) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Bar
                     </button>
                     <button wire:click="toggleDepartamentFilter('Kitchen')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('Kitchen', $filterDepartaments) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\DepartamentEnum::KITCHEN->value, $filterDepartaments) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Cozinha
                     </button>
                     <button wire:click="toggleDepartamentFilter('Finance')"
                         class="px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm border-2 transform hover:scale-105
-                            {{ in_array('Finance', $filterDepartaments) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
+                            {{ in_array(\App\Enums\DepartamentEnum::FINANCE->value, $filterDepartaments) ? 'bg-gray-700 text-white border-gray-800 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500' }}">
                         Financeiro
                     </button>
                     <button wire:click="toggleDepartamentFilter('Service')"

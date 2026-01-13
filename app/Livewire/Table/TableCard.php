@@ -130,7 +130,7 @@ class TableCard extends Component
     #[Computed]
     public function canTableBeMerged()
     {
-        return !in_array($this->enrichedTable->status, ['releasing', 'close']);
+        return !in_array($this->enrichedTable->status, ['releasing', 'closed']);
     }
 
     #[Computed]
@@ -164,7 +164,7 @@ class TableCard extends Component
             $table->checkStatus === 'Paid' => 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-400 hover:border-gray-500',
             $table->status === 'occupied' => 'bg-white border-green-400 hover:border-green-500',
             $table->status === 'reserved' => 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-400 hover:border-purple-500',
-            $table->status === 'close' => 'bg-gradient-to-br from-red-50 to-red-100 border-red-600 hover:border-red-700',
+            $table->status === 'closed' => 'bg-gradient-to-br from-red-50 to-red-100 border-red-600 hover:border-red-700',
             default => 'bg-white border-gray-300 hover:border-gray-400'
         };
     }
@@ -181,7 +181,7 @@ class TableCard extends Component
             $table->checkStatus === 'Paid' => 'bg-gray-100',
             $table->status === 'occupied' => 'bg-white',
             $table->status === 'reserved' => 'bg-purple-100',
-            $table->status === 'close' => 'bg-red-100',
+            $table->status === 'closed' => 'bg-red-100',
             default => 'bg-white'
         };
     }

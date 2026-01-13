@@ -22,7 +22,7 @@ class TableForm
                     ->numeric(),
                 Select::make('status')
                     ->options([
-            'close' => 'Close',
+            'closed' => 'Closed',
             'free' => 'Free',
             'occupied' => 'Occupied',
             'reserved' => 'Reserved',
