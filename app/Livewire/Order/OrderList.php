@@ -83,8 +83,8 @@ class OrderList extends Component
 
     public function rowClick($orderId, $status, $isPaid, $productId)
     {
-        $this->toggleSelection($orderId, $status, $isPaid, $productId);
-        $this->dispatch('open-group-modal', ordersId: $this->selectedOrderIds);
+        // Não altera a seleção ao clicar na linha — somente abre o modal
+        $this->dispatch('open-group-modal', ordersId: [$orderId]);
     }
 
     public function openSelectedGroupActions()
