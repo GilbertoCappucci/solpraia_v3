@@ -187,9 +187,21 @@ class OrderOperationsService
                 }
             }
 
-            // Recalcula total da comanda de destino
-            $newCheckTotal = $this->checkService->calculateTotal($destinationCheck);
-            $destinationCheck->update(['total' => $newCheckTotal]);
+            // Recalcula total da comanda do source destino
+            $newCheckDestinyTotal = $this->checkService->calculateTotal($destinationCheck);
+            $destinationCheck->update(['total' => $newCheckDestinyTotal]);
+
+            //Recalula total das comandas de origem
+            foreach ($sourceCheckIds as $sourceCheckId) {
+                $sourceCheck = Check::find($sourceCheckId);
+                if ($sourceCheck) {
+                    $newCheckSourceTotal = $this->checkService->calculateTotal($sourceCheck);
+                    $sourceCheck->update([
+                        'status' => CheckStatusEnum::OPEN->value,
+                        'total' => $newCheckSourceTotal
+                    ]);
+                }
+            }
 
             return ['success' => true, 'message' => 'Mesas unidas com sucesso!'];
         });

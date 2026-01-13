@@ -139,15 +139,6 @@ class TableMergeModal extends Component
             return redirect()->route('tables');
         }
 
-        // 5. Se há checks de origem mas não há check de destino, criar um novo check na mesa de destino
-        if ($hasSourceChecks && !$destinationCheck) {
-            $destinationCheck = Check::create([
-                'table_id' => $destinationTableId,
-                'status' => CheckStatusEnum::OPEN->value,
-                'admin_id' => Auth::id(),
-                'total' => 0.00,
-            ]);
-        }
 
         // 6. Se não há checks de origem, não há o que unir
         if (!$hasSourceChecks) {
